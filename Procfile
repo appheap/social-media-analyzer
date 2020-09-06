@@ -1,0 +1,1 @@
+web : social_media_analyzer.wsgi
