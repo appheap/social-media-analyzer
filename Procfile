@@ -1,1 +1,1 @@
-web : social_media_analyzer.wsgi
+web : gunicorn social_media_analyzer.wsgi
