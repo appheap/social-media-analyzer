@@ -1,3 +1,25 @@
+**/__pycache__/**
+!**/migrations/**
+
+package.json
+package-lock.json
+yarn.lock
+
+node_modules/*
+node_modules/
+
+social_media_analyzer/__pycache__/
+
+users/__pycache__/
+users/migrations/__pycache__/
+
+telegram/__pycache__/
+telegram/migrations/__pycache__/
+
+
+pages/__pycache__/
+pages/migrations/__pycache__/
+
 # Byte-compiled / optimized / DLL files
 # test
 __pycache__/
