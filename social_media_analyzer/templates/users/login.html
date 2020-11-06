@@ -1,0 +1,72 @@
+{% extends 'layouts/base-fullscreen.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Login{% endblock title %}
+
+{% block content %}
+
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+        <div class="row w-100">
+            <div class="content-wrapper full-page-wrapper auth login-2 login-bg">
+                <div class="card col-lg-4">
+
+                    <div class="card-body px-5 py-5">
+                        <h3 class="card-title text-left mb-3">
+                            Sign In
+                        </h3>
+
+
+                        <div class="d-flex">
+                            <br>
+                        </div>
+                        <form role="form" method="post">
+                            {% csrf_token %}
+                            <div>
+                                {% for error in form.non_field_errors %}
+                                    <label class="error text-danger px-2 mt-2 mb-0">
+                                        {{ error }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            <div class="fieldWrapper mb-1">
+                                {{ form.username.label_tag }}
+                                <div class="form-group">
+                                    {{ form.username }}
+                                </div>
+                            </div>
+                            <div class="fieldWrapper mb-1">
+                                {{ form.password.label_tag }}
+                                <div class="input-group">
+                                    {{ form.password }}
+                                </div>
+                            </div>
+                            <div class="form-group d-flex align-items-center justify-content-between">
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" checked=""> Remember me <i
+                                            class="input-helper"></i></label>
+                                </div>
+                                <a href="{% url 'users:signup' %}" class="forgot-pass">Create Account</a>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" name="login" class="btn btn-primary btn-block enter-btn">Login
+                                </button>
+                            </div>
+                            <div class="d-flex">
+                                <br>
+                            </div>
+                            <p class="sign-up">
+                                ©<a target="_blank" rel="noreferrer noopener"
+                                    href="{% url 'pages:home' %}">SocialHub</a>
+                            </p>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+            <!-- content-wrapper ends -->
+        </div>
+        <!-- row ends -->
+    </div>
+{% endblock content %}

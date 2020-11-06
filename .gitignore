@@ -20,6 +20,13 @@ telegram/migrations/__pycache__/
 pages/__pycache__/
 pages/migrations/__pycache__/
 
+/authentication/__pycache__/
+/authentication/migrations/__pycache__/
+
+/dashboard/__pycache__/
+/dashboard/migrations/__pycache__/
+
+
 # Byte-compiled / optimized / DLL files
 # test
 __pycache__/
@@ -151,3 +158,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/celerybeat-schedule.db
+/celerybeat.pid
+/telegram/sessions/
+/.env

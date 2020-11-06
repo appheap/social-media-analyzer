@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
-from utils.utils import get_env_variable
+
+from decouple import config, AutoConfig
+
+import utils.utils as utils
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -19,13 +22,14 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', cast=bool, default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', 'localhost']
 
 # Application definition
 
@@ -38,11 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # 3-rd party
+    'django_celery_beat',
+    'crispy_forms',
 
     # local
     'users',
     'pages',
     'telegram',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +60,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # debug in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'social_media_analyzer.urls'
@@ -60,7 +70,7 @@ ROOT_URLCONF = 'social_media_analyzer.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'social_media_analyzer/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,6 +78,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_media_analyzer.context_processors.full_user',
+                'social_media_analyzer.context_processors.current_url',
             ],
         },
     },
@@ -78,11 +90,11 @@ WSGI_APPLICATION = 'social_media_analyzer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DB_NAME = get_env_variable('DJANGO_DB_NAME')
-DB_USER = get_env_variable('DJANGO_DB_USER')
-DB_PASSWORD = get_env_variable('DJANGO_DB_PASSWORD')
-DB_HOST = get_env_variable('DJANGO_DB_HOST')
-DB_PORT = get_env_variable('DJANGO_DB_PORT')
+DB_NAME = config('DJANGO_DB_NAME')
+DB_USER = config('DJANGO_DB_USER')
+DB_PASSWORD = config('DJANGO_DB_PASSWORD')
+DB_HOST = config('DJANGO_DB_HOST')
+DB_PORT = config('DJANGO_DB_PORT')
 
 DATABASES = {
     'default': {
@@ -129,12 +141,62 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
 
 #####################################################
 # added settings
 AUTH_USER_MODEL = 'users.CustomUser'
 
-LOGIN_REDIRECT_URL = 'pages:home'
+LOGIN_REDIRECT_URL = 'dashboard:main'
 LOGOUT_REDIRECT_URL = 'pages:home'
+
+# todo: move this vars to env vars for security reasons
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.mailgun.org'
+# EMAIL_HOST_USER = ''
+# EMAIL_HOST_PASSWORD = ''
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+
+# Extra places for `collectstatic` to find static files.
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'social_media_analyzer/static'),
+)
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+CELERY_BROKER_URL = 'amqp://localhost'
+# CELERY_RESULT_BACKEND = 'amqp://localhost' # todo remove this url and add it to env vars
+CELERY_RESULT_BACKEND = config('DJANGO_CELERY_RESULT_BACKEND')
+
+# Celery Data Format
+CELERY_ACCEPT_CONTENT = ['application/json', 'pickle', ]
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_CREATE_MISSING_QUEUES = True
+CELERY_RESULT_EXPIRES = 3600
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# task_routes = {
+#     'path.to.the.new_task': {
+#         'queue': 'tg_queue',
+#         'routing_key': 'tg_queue',
+#     },
+#     'path.to.the.slow_task': {
+#         'queue': 'slow_queue',
+#         'routing_key': 'slow_queue'
+#     }
+# }
+
+# task_annotations = {
+#     'telegram.tasks.get_me': {'rate_limit': '5/m'}
+#     '*': {'rate_limit': '2/m'}
+# }
 #####################################################

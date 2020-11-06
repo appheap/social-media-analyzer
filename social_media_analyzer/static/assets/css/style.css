@@ -11923,7 +11923,9 @@ input[type="button"].btn-block {
     display: none;
     float: left;
     min-width: 10rem;
-    padding: 0.5rem 0;
+    /*min-width: 12.5rem;*/
+    /*padding: 0.5rem 0;*/
+    padding: 0 0;
     margin: 0.125rem 0 0;
     font-size: 1rem;
     color: #ffffff;
@@ -26099,7 +26101,7 @@ div.tagsinput span.tag a {
 }
 
 .wizard > .steps .disabled a:active {
-    background: #e6e9ed e;
+    background: #e6e9ed;
     color: #434a54;
     cursor: default;
 }
@@ -26874,7 +26876,14 @@ div.tagsinput span.tag a {
     left: 0;
 }
 
-.navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown .dropdown-menu.navbar-dropdown .dropdown-item {
+.dropdown .dropdown-menu .dropdown-item {
+    margin-bottom: 0;
+    padding: 11px 13px;
+    cursor: pointer;
+    align-items: center;
+}
+
+.navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown .dropdown-menu.navbar-dropdown .dropdown-item, .dropdown .dropdown-menu .dropdown-item {
     margin-bottom: 0;
     padding: 11px 13px;
     cursor: pointer;
@@ -26901,6 +26910,11 @@ div.tagsinput span.tag a {
 .navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown .dropdown-menu.navbar-dropdown .dropdown-divider {
     margin: 0;
 }
+
+.dropdown .dropdown-menu .dropdown-divider {
+    margin: 0;
+}
+
 
 @media (max-width: 991px) {
     .navbar .navbar-menu-wrapper .navbar-nav .nav-item.dropdown {
@@ -27816,4 +27830,3 @@ div.tagsinput span.tag a {
     flex-grow: 1;
 }
 
-/*# sourceMappingURL=maps/style.css.map */

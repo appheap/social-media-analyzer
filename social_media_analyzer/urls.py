@@ -14,12 +14,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
 from django.urls import include
+from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('users/', include('django.contrib.auth.urls')),
     path('users/', include('users.urls')),
+    path('users/', include('django.contrib.auth.urls')),
+    path('telegram/', include('telegram.urls')),
+    path('dashboard/', include('dashboard.urls')),
     path('', include('pages.urls')),
 ]
+
+import django.conf.urls as urls
+
+urls.handler403 = 'pages.views.bad_request'
+urls.handler403 = 'pages.views.permission_denied'
+urls.handler404 = 'pages.views.page_not_found'
+urls.handler500 = 'pages.views.server_error'

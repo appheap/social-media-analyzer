@@ -1,50 +1,71 @@
 import arrow
+from django.core.validators import MinLengthValidator
 from django.db import models
-from users import models as users_models
+from django.urls import reverse
 
 
 # Create your models here.
+
+class ChatTypes(models.TextChoices):
+    CHANNEL = 'CHANNEL'
+    SUPERGROUP = 'SUPERGROUP'
+    GROUP = 'GROUP'
+    PRIVATE = 'PRIVATE'
+    BOT = 'BOT'
+
+
+class AddChannelRequestStatusTypes(models.TextChoices):
+    INIT = 'INIT'
+    CHANNEL_MEMBER = 'CHANNEL_MEMBER'
+    CHANNEL_ADMIN = 'CHANNEL_ADMIN'
 
 
 ################################################
 # models used as proxy to control access,etc to the objects they refer to
 class TelegramAccount(models.Model):
-    user_id = models.BigIntegerField()
-    username = models.CharField(max_length=32, null=True)
-    first_name = models.CharField(max_length=64, null=True)
-    last_name = models.CharField(max_length=64, null=True)
+    user_id = models.BigIntegerField(primary_key=True)
+    username = models.CharField(max_length=32, null=True, blank=True)
+    first_name = models.CharField(max_length=64, null=True, blank=True)
+    last_name = models.CharField(max_length=64, null=True, blank=True)
     is_bot = models.BooleanField(default=False)
     is_restricted = models.BooleanField(default=False)
     is_scam = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=20, null=True)
-    dc_id = models.IntegerField(null=True)
-    language_code = models.CharField(max_length=5, null=True)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    dc_id = models.IntegerField(null=True, blank=True)
+    language_code = models.CharField(max_length=5, null=True, blank=True)
+
+    # fields needed for telegram client api
+    api_id = models.CharField(max_length=255, null=True, blank=True)
+    api_hash = models.CharField(max_length=255, null=True, blank=True)
+    session_name = models.CharField(max_length=255, null=True, blank=True)
 
     is_deleted = models.BooleanField(default=False)
-    deleted_at = models.BigIntegerField(null=True)
+    deleted_at = models.BigIntegerField(null=True, blank=True)
     created_at = models.BigIntegerField()
     modified_at = models.BigIntegerField()
 
     # `telegram_channels` : telegram channels added by this account
+    # `telegram_channel_add_requests` : requests for adding telegram channel this account is requested to be admin of
     # `admin_logs` : admin logs logged by this account
     # `message_views` : message views logged by this account
     # `member_count_history` : member counts logged by this account
     # `shared_media_history` : shared media counts logged by this account
+    # `admin_rights` : admin rights belonging to this account
 
     # User who is the owner of this telegram account
     custom_user = models.ForeignKey(
         'users.CustomUser',
         on_delete=models.CASCADE,
         related_name='telegram_accounts',
-        null=True,
+        null=True, blank=True,
     )
 
     # Telegram User this account belongs to
     telegram_user = models.ForeignKey(
         'telegram.User',
         related_name='telegram_accounts',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
     )
 
@@ -52,30 +73,110 @@ class TelegramAccount(models.Model):
     blockage = models.OneToOneField(
         'users.Blockage',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='telegram_account',
     )
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(TelegramAccount, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.username
+        return str(self.username if self.username else "") + str(self.first_name if self.first_name else "") + str(
+            self.last_name if self.last_name else "")
+
+
+class AddChannelRequest(models.Model):
+    done = models.BooleanField(null=False, default=False, )
+    status = models.CharField(
+        AddChannelRequestStatusTypes.choices,
+        max_length=20,
+        null=True, blank=True,
+        default=AddChannelRequestStatusTypes.INIT,
+    )
+    channel_username = models.CharField(
+        null=False,
+        verbose_name='channel username',
+        max_length=32,
+        validators=[MinLengthValidator(5)])
+
+    channel_id = models.BigIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='channel id',
+    )
+
+    # User who added made this request
+    custom_user = models.ForeignKey(
+        'users.CustomUser',
+        on_delete=models.CASCADE,
+        verbose_name='Owner',
+        related_name='telegram_channel_add_requests',
+        null=False,
+    )
+
+    # telegram channel requested to be the admin of
+    telegram_channel = models.ForeignKey(
+        'telegram.TelegramChannel',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='add_requests',
+    )
+
+    # telegram account chosen to be the admin of the channel
+    telegram_account = models.ForeignKey(
+        'telegram.TelegramAccount',
+        on_delete=models.CASCADE,
+        related_name='telegram_channel_add_requests',
+        null=False,
+        verbose_name='admin',
+    )
+
+    created_at = models.BigIntegerField()
+    modified_at = models.BigIntegerField()
+
+    def save(self, *args, **kwargs):
+        if not self.created_at:
+            self.created_at = arrow.utcnow().timestamp
+        self.modified_at = arrow.utcnow().timestamp
+        return super(AddChannelRequest, self).save(*args, **kwargs)
+
+    # def get_absolute_url(self):
+    #     return reverse('dashboard/')
+    def __str__(self):
+        return str(
+            f"{arrow.get(self.created_at)} : {self.custom_user} : @{self.channel_username} : {self.telegram_account}")
 
 
 class TelegramChannel(models.Model):
     channel_id = models.BigIntegerField()
-    is_account_creator = models.BooleanField(null=True)
-    is_account_admin = models.BooleanField(null=True)
+    is_account_creator = models.BooleanField(null=True, blank=True)
+    is_account_admin = models.BooleanField(null=False, default=False, )
+    is_active = models.BooleanField(null=False, default=False, )
 
-    is_public = models.BooleanField(default=False, null=True)
+    username = models.CharField(
+        max_length=32,
+        null=True,
+        blank=True,
+        verbose_name='username',
+        validators=[MinLengthValidator(5)],
+    )
+    is_public = models.BooleanField(default=False, null=True, blank=True)
     created_at = models.BigIntegerField()
     modified_at = models.BigIntegerField()
     is_deleted = models.BooleanField(default=False)
-    deleted_at = models.BigIntegerField(null=True)
+    deleted_at = models.BigIntegerField(null=True, blank=True)
+
+    # User who added this telegram channel
+    custom_user = models.ForeignKey(
+        'users.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='telegram_channels',
+        null=True, blank=True,
+    )
 
     # telegram account which added this channel
     telegram_account = models.ForeignKey(
@@ -83,13 +184,14 @@ class TelegramChannel(models.Model):
         on_delete=models.CASCADE,
         related_name='telegram_channels',
         null=False,
+        verbose_name='admin',
     )
 
     # Chat this channel belongs to
     chat = models.ForeignKey(
         'telegram.Chat',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='telegram_channels',
     )
 
@@ -97,22 +199,27 @@ class TelegramChannel(models.Model):
     blockage = models.OneToOneField(
         'users.Blockage',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='telegram_channel',
     )
 
     ################################################
     # `chat_member_analyzer_metadata` : chat member analyzer of this channel
     # `admin_log_analyzer_metadata` : admin log analyzer of this channel
+    # `add_requests` : requests made for adding this channel to an user's accounts
+    # `admin_rights`: admin rights belonging to this channel
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(TelegramChannel, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.channel_id
+        return str(self.chat.title) if self.chat else str(self.username)
+
+    def get_absolute_url(self):
+        return reverse('dashboard:accounts')
 
 
 ################################################
@@ -153,22 +260,22 @@ class EntityTypes(models.TextChoices):
 
 
 class User(models.Model):
-    user_id = models.BigIntegerField()
-    is_deleted = models.BooleanField(null=True)
-    is_bot = models.BooleanField(null=True)
-    is_verified = models.BooleanField(null=True)
-    is_restricted = models.BooleanField(null=True)
-    is_spam = models.BooleanField(null=True)
-    is_support = models.BooleanField(null=True)
-    first_name = models.CharField(max_length=64, null=True)
-    last_name = models.CharField(max_length=64, null=True)
-    username = models.CharField(max_length=32, null=True)
-    language_code = models.CharField(max_length=20, null=True)
-    dc_id = models.IntegerField(null=True)
-    phone_number = models.CharField(max_length=20, null=True)
+    user_id = models.BigIntegerField(primary_key=True)
+    is_deleted = models.BooleanField(null=True, blank=True)
+    is_bot = models.BooleanField(null=True, blank=True)
+    is_verified = models.BooleanField(null=True, blank=True)
+    is_restricted = models.BooleanField(null=True, blank=True)
+    is_scam = models.BooleanField(null=True, blank=True)
+    is_support = models.BooleanField(null=True, blank=True)
+    first_name = models.CharField(max_length=64, null=True, blank=True)
+    last_name = models.CharField(max_length=64, null=True, blank=True)
+    username = models.CharField(max_length=32, null=True, blank=True)
+    language_code = models.CharField(max_length=20, null=True, blank=True)
+    dc_id = models.IntegerField(null=True, blank=True)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
 
     ##############################################################
-    deleted_at = models.BigIntegerField(null=True)
+    deleted_at = models.BigIntegerField(null=True, blank=True)
 
     created_at = models.BigIntegerField()
     modified_at = models.BigIntegerField()
@@ -190,43 +297,43 @@ class User(models.Model):
     # )
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(User, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.first_name}, {self.last_name}"
+        return str(self.first_name if self.first_name else "") + str(self.last_name if self.last_name else "")
 
 
 class Chat(models.Model):
-    chat_id = models.BigIntegerField()
+    chat_id = models.BigIntegerField(primary_key=True)
     type = models.CharField(
-        users_models.ChatTypes.choices,
+        ChatTypes.choices,
         max_length=15,
-        default=users_models.ChatTypes.CHANNEL)
-    is_verified = models.BooleanField(null=True)
-    is_restricted = models.BooleanField(null=True)
-    is_scam = models.BooleanField(null=True)
-    is_support = models.BooleanField(null=True)
-    title = models.CharField(max_length=255, null=True)
-    username = models.CharField(max_length=32, null=True)
-    first_name = models.CharField(max_length=64, null=True)
-    last_name = models.CharField(max_length=64, null=True)
-    description = models.CharField(max_length=255, null=True)
-    dc_id = models.IntegerField(null=True)
-    invite_link = models.CharField(max_length=255, null=True)
+        default=ChatTypes.CHANNEL)
+    is_verified = models.BooleanField(null=True, blank=True)
+    is_restricted = models.BooleanField(null=True, blank=True)
+    is_scam = models.BooleanField(null=True, blank=True)
+    is_support = models.BooleanField(null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    username = models.CharField(max_length=32, null=True, blank=True)
+    first_name = models.CharField(max_length=64, null=True, blank=True)
+    last_name = models.CharField(max_length=64, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    dc_id = models.IntegerField(null=True, blank=True)
+    invite_link = models.CharField(max_length=255, null=True, blank=True)
     # Default chat member permissions, for groups and supergroups.
     permissions = models.OneToOneField(
         'telegram.ChatPermissions',
         on_delete=models.SET_NULL,
         related_name='chat',
-        null=True,
+        null=True, blank=True,
     )
     # the chat linked to the current chat
     linked_chat = models.ForeignKey(
         'self',
-        null=True,
+        null=True, blank=True,
         related_name='linked_chats_reverse',
         on_delete=models.SET_NULL,
     )
@@ -235,35 +342,35 @@ class Chat(models.Model):
     shared_media_analyzer = models.OneToOneField(
         'telegram.SharedMediaAnalyzerMetaData',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='chat',
     )
 
     member_count_analyzer = models.OneToOneField(
         'telegram.ChatMemberCountAnalyzerMetaData',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='chat',
     )
 
     message_view_analyzer = models.OneToOneField(
         'telegram.ChatMessageViewsAnalyzerMetaData',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='chat',
     )
 
     members_analyzer = models.OneToOneField(
         'telegram.ChatMembersAnalyzerMetaData',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='chat',
     )
 
     admin_log_analyzer = models.OneToOneField(
         'telegram.AdminLogAnalyzerMetaData',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='chat',
     )
 
@@ -276,7 +383,7 @@ class Chat(models.Model):
     )
 
     is_deleted = models.BooleanField(default=False)
-    deleted_at = models.BigIntegerField(null=True)
+    deleted_at = models.BigIntegerField(null=True, blank=True)
     created_at = models.BigIntegerField()
     modified_at = models.BigIntegerField()
 
@@ -294,7 +401,7 @@ class Chat(models.Model):
     #
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(Chat, self).save(*args, **kwargs)
@@ -323,23 +430,23 @@ class Membership(models.Model):
         ]
 
     active = models.BooleanField(default=True)
-    joined_at = models.BigIntegerField(null=True)
-    left_at = models.BigIntegerField(null=True)
+    joined_at = models.BigIntegerField(null=True, blank=True)
+    left_at = models.BigIntegerField(null=True, blank=True)
     join_type = models.CharField(max_length=64, null=False, )
     invited_by = models.ForeignKey(
         'telegram.User',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='invited_users',
     )
 
-    current_role = models.CharField(max_length=64, null=True, )
-    prev_role = models.CharField(max_length=64, null=True, )
-    role_changed_at = models.BigIntegerField(null=True)
+    current_role = models.CharField(max_length=64, null=True, blank=True, )
+    prev_role = models.CharField(max_length=64, null=True, blank=True, )
+    role_changed_at = models.BigIntegerField(null=True, blank=True)
     role_changed_by = models.ForeignKey(
         'telegram.User',
         on_delete=models.CASCADE,
-        null=True,
+        null=True, blank=True,
         related_name='modified_user_roles',
     )
 
@@ -347,7 +454,7 @@ class Membership(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(Membership, self).save(*args, **kwargs)
@@ -361,62 +468,62 @@ class Message(models.Model):
         'telegram.Chat',
         on_delete=models.CASCADE,
         related_name='messages',
-        null=True,
+        null=True, blank=True,
     )
     # Sender, null for messages sent to channels or sender user got deleted
     from_user = models.ForeignKey(
         'telegram.User',
         on_delete=models.SET_NULL,
         related_name='messages',
-        null=True,
+        null=True, blank=True,
     )
     # For forwarded messages, sender of the original message
     forward_from = models.ForeignKey(
         'telegram.User',
         on_delete=models.SET_NULL,
         related_name='forwarded_messages',
-        null=True,
+        null=True, blank=True,
     )
-    forward_sender_name = models.CharField(max_length=64, null=True)
+    forward_sender_name = models.CharField(max_length=64, null=True, blank=True)
     # For messages forwarded from channels, original channel of the message.
     forward_from_chat = models.ForeignKey(
         'telegram.Chat',
         related_name='forwarded_messages',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
     )
-    forward_from_message_id = models.IntegerField(null=True)
-    forward_signature = models.CharField(max_length=255, null=True)
-    forward_date = models.BigIntegerField(null=True)
+    forward_from_message_id = models.IntegerField(null=True, blank=True)
+    forward_signature = models.CharField(max_length=255, null=True, blank=True)
+    forward_date = models.BigIntegerField(null=True, blank=True)
     # For replies, the original message.
     reply_to_message = models.ForeignKey(
         'self',
         related_name='replies',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
     )
-    mentioned = models.BooleanField(null=True)
+    mentioned = models.BooleanField(null=True, blank=True)
     empty = models.BooleanField()
-    edit_date = models.BigIntegerField(null=True)
-    media_group_id = models.BigIntegerField(null=True)
-    author_signature = models.CharField(max_length=255, null=True)
-    text = models.TextField(max_length=4096, null=True)
-    caption = models.TextField(max_length=1024, null=True)
+    edit_date = models.BigIntegerField(null=True, blank=True)
+    media_group_id = models.BigIntegerField(null=True, blank=True)
+    author_signature = models.CharField(max_length=255, null=True, blank=True)
+    text = models.TextField(max_length=4096, null=True, blank=True)
+    caption = models.TextField(max_length=1024, null=True, blank=True)
     # The information of the bot that generated the message from an inline query of a user.
     via_bot = models.ForeignKey(
         'telegram.User',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='via_bot_messages',
     )
-    outgoing = models.BooleanField(null=True)
+    outgoing = models.BooleanField(null=True, blank=True)
 
-    emptied_at = models.BigIntegerField(null=True)
+    emptied_at = models.BigIntegerField(null=True, blank=True)
     has_media = models.BooleanField()
     media_type = models.CharField(
         ChatMediaTypes.choices,
         max_length=20,
-        null=True,
+        null=True, blank=True,
     )
 
     # `replies` : replies to this message
@@ -433,7 +540,7 @@ class Message(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(Message, self).save(*args, **kwargs)
@@ -459,14 +566,14 @@ class MessageView(models.Model):
     telegram_account = models.ForeignKey(
         'telegram.TelegramAccount',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='messages_views',
     )
     # Chat this view belongs to
     chat = models.ForeignKey(
         'telegram.Chat',
         on_delete=models.CASCADE,
-        null=True,
+        null=True, blank=True,
         related_name='message_views',
     )
 
@@ -500,7 +607,7 @@ class Entity(models.Model):
     user = models.ForeignKey(
         'telegram.User',
         related_name='mentioned_entities',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
     )
 
@@ -544,7 +651,7 @@ class ChatMemberCount(models.Model):
     telegram_account = models.ForeignKey(
         'telegram.TelegramAccount',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='member_count_history',
     )
 
@@ -581,7 +688,7 @@ class ChatSharedMedia(models.Model):
     telegram_account = models.ForeignKey(
         'telegram.TelegramAccount',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='shared_media_history',
     )
 
@@ -590,31 +697,31 @@ class Restriction(models.Model):
     """
     The reason why this chat/bot might be unavailable to some users. This field is available only in case is_restricted of `chat` or `bot` is True.
     """
-    platform = models.CharField(max_length=255, null=True)
-    reason = models.CharField(max_length=255, null=True)
-    text = models.CharField(max_length=255, null=True)
+    platform = models.CharField(max_length=255, null=True, blank=True)
+    reason = models.CharField(max_length=255, null=True, blank=True)
+    text = models.CharField(max_length=255, null=True, blank=True)
 
     chat = models.ForeignKey(
         'telegram.Chat',
         on_delete=models.CASCADE,
-        null=True,
+        null=True, blank=True,
         related_name='restrictions',
     )
 
     user = models.ForeignKey(
         'telegram.User',
         on_delete=models.CASCADE,
-        null=True,
+        null=True, blank=True,
         related_name='restrictions',
     )
     ##############################################
     created_at = models.BigIntegerField()
     modified_at = models.BigIntegerField()
     is_deleted = models.BooleanField(default=False, null=False)
-    deleted_at = models.BigIntegerField(null=True)
+    deleted_at = models.BigIntegerField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(Restriction, self).save(*args, **kwargs)
@@ -642,7 +749,7 @@ class AdminLog(models.Model):
     # Chat this AdminLog belongs to
     chat = models.ForeignKey(
         'telegram.Chat',
-        null=True,
+        null=True, blank=True,
         on_delete=models.CASCADE,
         related_name='admin_logs',
     )
@@ -680,7 +787,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionChangeTitle',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # The description was changed
@@ -688,14 +795,14 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionChangeAbout',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
     # Channel/supergroup username was changed
     action_change_username = models.OneToOneField(
         'telegram.AdminLogEventActionChangeUsername',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # The channel/supergroup's picture was changed
@@ -703,7 +810,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionChangePhoto',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # Invites were enabled/disabled
@@ -711,7 +818,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionToggleInvites',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # Channel signatures were enabled/disabled
@@ -719,7 +826,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionToggleSignatures',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # A message was pinned
@@ -727,7 +834,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionUpdatePinned',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # A message was deleted
@@ -735,7 +842,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionEditMessage',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # A message was deleted
@@ -743,7 +850,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionDeleteMessage',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # A user has joined the group (in the case of big groups, info of the user that has joined isn't shown)
@@ -751,7 +858,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionParticipantJoin',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # A user left the channel/supergroup (in the case of big groups, info of the user that has joined isn't shown)
@@ -759,7 +866,7 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionParticipantLeave',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     # A user was invited to the group
@@ -767,13 +874,13 @@ class AdminLogEvent(models.Model):
         'telegram.AdminLogEventActionParticipantInvite',
         on_delete=models.SET_NULL,
         related_name='admin_log_event',
-        null=True,
+        null=True, blank=True,
     )
 
     #############################################
     # user = models.ForeignKey(
     #     'telegram.User',
-    #     null=True,
+    #     null=True, blank=True,
     #     on_delete=models.SET_NULL,
     #     related_name='admin_log_events',
     #     verbose_name='User this event is about'
@@ -795,8 +902,8 @@ class AdminLogEventActionChangeTitle(models.Model):
     """
     Channel/supergroup title was changed
     """
-    prev_value = models.CharField(max_length=255, null=True)
-    new_value = models.CharField(max_length=255, null=True)
+    prev_value = models.CharField(max_length=255, null=True, blank=True)
+    new_value = models.CharField(max_length=255, null=True, blank=True)
 
     ###########################################
     # `admin_log_event` : AdminLogEvent this action belongs to
@@ -806,8 +913,8 @@ class AdminLogEventActionChangeAbout(models.Model):
     """
     The description was changed
     """
-    prev_value = models.CharField(max_length=255, null=True)
-    new_value = models.CharField(max_length=255, null=True)
+    prev_value = models.CharField(max_length=255, null=True, blank=True)
+    new_value = models.CharField(max_length=255, null=True, blank=True)
 
     ###########################################
     # `admin_log_event` : AdminLogEvent this action belongs to
@@ -817,8 +924,8 @@ class AdminLogEventActionChangeUsername(models.Model):
     """
     Channel/supergroup username was changed
     """
-    prev_value = models.CharField(max_length=32, null=True)
-    new_value = models.CharField(max_length=32, null=True)
+    prev_value = models.CharField(max_length=32, null=True, blank=True)
+    new_value = models.CharField(max_length=32, null=True, blank=True)
 
     ###########################################
     # `admin_log_event` : AdminLogEvent this action belongs to
@@ -864,7 +971,7 @@ class AdminLogEventActionUpdatePinned(models.Model):
         'telegram.Message',
         on_delete=models.SET_NULL,
         related_name='actions_update_pinned',
-        null=True,
+        null=True, blank=True,
     )
 
     ###########################################
@@ -879,7 +986,7 @@ class AdminLogEventActionEditMessage(models.Model):
     # old message
     prev_message = models.ForeignKey(
         'telegram.Message',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='actions_edit_message_prev',
     )
@@ -887,7 +994,7 @@ class AdminLogEventActionEditMessage(models.Model):
     # new message
     new_message = models.ForeignKey(
         'telegram.Message',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='actions_edit_message_new',
     )
@@ -904,7 +1011,7 @@ class AdminLogEventActionDeleteMessage(models.Model):
     # The message that was deleted
     message = models.OneToOneField(
         'telegram.Message',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='action_delete_message',
     )
@@ -938,7 +1045,7 @@ class AdminLogEventActionParticipantInvite(models.Model):
     participant = models.OneToOneField(
         'telegram.ChannelParticipant',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_participant_invite",
     )
 
@@ -946,7 +1053,7 @@ class AdminLogEventActionParticipantInvite(models.Model):
     participant_self = models.OneToOneField(
         'telegram.ChannelParticipantSelf',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_participant_invite",
     )
 
@@ -954,7 +1061,7 @@ class AdminLogEventActionParticipantInvite(models.Model):
     participant_creator = models.OneToOneField(
         'telegram.ChannelParticipantCreator',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_participant_invite",
     )
 
@@ -962,7 +1069,7 @@ class AdminLogEventActionParticipantInvite(models.Model):
     participant_admin = models.OneToOneField(
         'telegram.ChannelParticipantAdmin',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_participant_invite",
     )
 
@@ -970,7 +1077,7 @@ class AdminLogEventActionParticipantInvite(models.Model):
     participant_banned = models.OneToOneField(
         'telegram.ChannelParticipantBanned',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_participant_invite",
     )
 
@@ -986,62 +1093,62 @@ class AdminLogEventActionToggleBan(models.Model):
     prev_participant = models.OneToOneField(
         'telegram.ChannelParticipant',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_prev",
     )
     prev_participant_self = models.OneToOneField(
         'telegram.ChannelParticipantSelf',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_prev",
     )
     prev_participant_creator = models.OneToOneField(
         'telegram.ChannelParticipantCreator',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_prev",
     )
     prev_participant_admin = models.OneToOneField(
         'telegram.ChannelParticipantAdmin',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_prev",
     )
     prev_participant_banned = models.OneToOneField(
         'telegram.ChannelParticipantBanned',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_prev",
     )
 
     new_participant = models.OneToOneField(
         'telegram.ChannelParticipant',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_new",
     )
     new_participant_self = models.OneToOneField(
         'telegram.ChannelParticipantSelf',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_new",
     )
     new_participant_creator = models.OneToOneField(
         'telegram.ChannelParticipantCreator',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_new",
     )
     new_participant_admin = models.OneToOneField(
         'telegram.ChannelParticipantAdmin',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_new",
     )
     new_participant_banned = models.OneToOneField(
         'telegram.ChannelParticipantBanned',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_ban_new",
     )
 
@@ -1056,62 +1163,62 @@ class AdminLogEventActionToggleAdmin(models.Model):
     prev_participant = models.OneToOneField(
         'telegram.ChannelParticipant',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_prev",
     )
     prev_participant_self = models.OneToOneField(
         'telegram.ChannelParticipantSelf',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_prev",
     )
     prev_participant_creator = models.OneToOneField(
         'telegram.ChannelParticipantCreator',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_prev",
     )
     prev_participant_admin = models.OneToOneField(
         'telegram.ChannelParticipantAdmin',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_prev",
     )
     prev_participant_banned = models.OneToOneField(
         'telegram.ChannelParticipantBanned',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_prev",
     )
 
     new_participant = models.OneToOneField(
         'telegram.ChannelParticipant',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_new",
     )
     new_participant_self = models.OneToOneField(
         'telegram.ChannelParticipantSelf',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_new",
     )
     new_participant_creator = models.OneToOneField(
         'telegram.ChannelParticipantCreator',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_new",
     )
     new_participant_admin = models.OneToOneField(
         'telegram.ChannelParticipantAdmin',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_new",
     )
     new_participant_banned = models.OneToOneField(
         'telegram.ChannelParticipantBanned',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name="action_toggle_admin_new",
     )
 
@@ -1146,7 +1253,7 @@ class AdminLogEventActionDefaultBannedRights(models.Model):
         'telegram.ChatBannedRight',
         on_delete=models.SET_NULL,
         related_name='action_banned_rights_prev',
-        null=True,
+        null=True, blank=True,
     )
 
     # New global banned rights.
@@ -1154,7 +1261,7 @@ class AdminLogEventActionDefaultBannedRights(models.Model):
         'telegram.ChatBannedRight',
         on_delete=models.SET_NULL,
         related_name='action_banned_rights_new',
-        null=True,
+        null=True, blank=True,
     )
 
     ###########################################
@@ -1169,7 +1276,7 @@ class AdminLogEventActionStopPoll(models.Model):
     # The poll that was stopped
     message = models.ForeignKey(
         'telegram.Message',
-        null=True,
+        null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='actions_stop_poll',
     )
@@ -1184,9 +1291,9 @@ class AdminLogEventActionChangeLinkedChat(models.Model):
     """
 
     # Previous linked chat
-    prev_value = models.IntegerField(null=True, )
+    prev_value = models.IntegerField(null=True, blank=True, )
     # New linked chat
-    new_value = models.IntegerField(null=True, )
+    new_value = models.IntegerField(null=True, blank=True, )
 
     ###########################################
     # `admin_log_event` : AdminLogEvent this action belongs to
@@ -1197,15 +1304,15 @@ class AdminLogEventActionChangeLocation(models.Model):
     The geogroup location was changed
     """
 
-    prev_address = models.CharField(max_length=255, null=True)
-    prev_lat = models.FloatField(null=True)
-    prev_long = models.FloatField(null=True)
-    prev_access_hash = models.BigIntegerField(null=True)
+    prev_address = models.CharField(max_length=255, null=True, blank=True)
+    prev_lat = models.FloatField(null=True, blank=True)
+    prev_long = models.FloatField(null=True, blank=True)
+    prev_access_hash = models.BigIntegerField(null=True, blank=True)
 
-    new_address = models.CharField(max_length=255, null=True)
-    new_lat = models.FloatField(null=True)
-    new_long = models.FloatField(null=True)
-    new_access_hash = models.BigIntegerField(null=True)
+    new_address = models.CharField(max_length=255, null=True, blank=True)
+    new_lat = models.FloatField(null=True, blank=True)
+    new_long = models.FloatField(null=True, blank=True)
+    new_access_hash = models.BigIntegerField(null=True, blank=True)
 
     ###########################################
     # `admin_log_event` : AdminLogEvent this action belongs to
@@ -1217,9 +1324,9 @@ class AdminLogEventActionToggleSlowMode(models.Model):
     """
 
     # Previous slow mode value
-    prev_value = models.IntegerField(null=True, )
+    prev_value = models.IntegerField(null=True, blank=True, )
     # New slow mode value
-    new_value = models.IntegerField(null=True, )
+    new_value = models.IntegerField(null=True, blank=True, )
 
     ###########################################
     # `admin_log_event` : AdminLogEvent this action belongs to
@@ -1230,14 +1337,14 @@ class AdminLogEventActionToggleSlowMode(models.Model):
 #
 #     channel_ref = models.ForeignKey(
 #         'users.TelegramChannel',
-#         null=True,
+#         null=True, blank=True,
 #         related_name='participants_log',
 #         on_delete=models.CASCADE,
 #     )
 #
 #     chat_ref = models.ForeignKey(
 #         'telegram.Chat',v
-#         null=True,
+#         null=True, blank=True,
 #         related_name='participants_log',
 #         on_delete=models.CASCADE,
 #     )
@@ -1255,7 +1362,7 @@ class ChannelParticipant(models.Model):
 
     # participants_log_ref = models.ForeignKey(
     #     'telegram.ParticipantsLog',
-    #     null=True,
+    #     null=True, blank=True,
     #     on_delete=models.DO_NOTHING,
     #     related_name='participants'
     # )
@@ -1270,7 +1377,7 @@ class ChannelParticipant(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChannelParticipant, self).save(*args, **kwargs)
@@ -1290,7 +1397,7 @@ class ChannelParticipantSelf(models.Model):
 
     # participants_log_ref = models.ForeignKey(
     #     'telegram.ParticipantsLog',
-    #     null=True,
+    #     null=True, blank=True,
     #     on_delete=models.DO_NOTHING,
     #     related_name='self_participant'
     # )
@@ -1305,7 +1412,7 @@ class ChannelParticipantSelf(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChannelParticipantSelf, self).save(*args, **kwargs)
@@ -1321,13 +1428,13 @@ class ChannelParticipantCreator(models.Model):
     # The role (rank) of the group creator in the group: just an arbitrary string, admin by default
     rank = models.CharField(
         max_length=255,
-        null=True,
+        null=True, blank=True,
         default='admin',
     )
 
     # participants_log_ref = models.ForeignKey(
     #     'telegram.ParticipantsLog',
-    #     null=True,
+    #     null=True, blank=True,
     #     on_delete=models.DO_NOTHING,
     #     related_name='creator_participants'
     # )
@@ -1342,7 +1449,7 @@ class ChannelParticipantCreator(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChannelParticipantCreator, self).save(*args, **kwargs)
@@ -1366,16 +1473,16 @@ class ChannelParticipantAdmin(models.Model):
     # When did the user join
     date = models.BigIntegerField()
     # The role (rank) of the admin in the group: just an arbitrary string, admin by default
-    rank = models.CharField(max_length=255, null=True, default='admin', )
+    rank = models.CharField(max_length=255, null=True, blank=True, default='admin', )
     admin_rights = models.OneToOneField(
         'telegram.AdminRights',
         on_delete=models.SET_NULL,
-        null=True,
+        null=True, blank=True,
         related_name='participant',
     )
     # participants_log_ref = models.ForeignKey(
     #     'telegram.ParticipantsLog',
-    #     null=True,
+    #     null=True, blank=True,
     #     on_delete=models.DO_NOTHING,
     #     related_name='admin_participants',
     # )
@@ -1390,7 +1497,7 @@ class ChannelParticipantAdmin(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChannelParticipantAdmin, self).save(*args, **kwargs)
@@ -1414,12 +1521,12 @@ class ChannelParticipantBanned(models.Model):
         'telegram.ChatBannedRight',
         on_delete=models.SET_NULL,
         related_name='participant',
-        null=True,
+        null=True, blank=True,
     )
 
     # participants_log_ref = models.ForeignKey(
     #     'telegram.ParticipantsLog',
-    #     null=True,
+    #     null=True, blank=True,
     #     on_delete=models.DO_NOTHING,
     #     related_name='banned_participants',
     # )
@@ -1434,7 +1541,7 @@ class ChannelParticipantBanned(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChannelParticipantBanned, self).save(*args, **kwargs)
@@ -1480,7 +1587,7 @@ class ChatBannedRight(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChatBannedRight, self).save(*args, **kwargs)
@@ -1488,27 +1595,27 @@ class ChatBannedRight(models.Model):
 
 class ChatPermissions(models.Model):
     # True, if the user is allowed to send text messages, contacts, locations and venues.
-    can_send_messages = models.BooleanField(null=True, )
+    can_send_messages = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes, implies can_send_messages.
-    can_send_media_messages = models.BooleanField(null=True, )
+    can_send_media_messages = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send stickers, implies can_send_media_messages.
-    can_send_stickers = models.BooleanField(null=True, )
+    can_send_stickers = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send animations (GIFs), implies can_send_media_messages.
-    can_send_animations = models.BooleanField(null=True, )
+    can_send_animations = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send games, implies can_send_media_messages.
-    can_send_games = models.BooleanField(null=True, )
+    can_send_games = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to use inline bots, implies can_send_media_messages.
-    can_use_inline_bots = models.BooleanField(null=True, )
+    can_use_inline_bots = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to add web page previews to their messages, implies can_send_media_messages.
-    can_add_web_page_previews = models.BooleanField(null=True, )
+    can_add_web_page_previews = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send polls, implies can_send_messages.
-    can_send_polls = models.BooleanField(null=True, )
+    can_send_polls = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to change the chat title, photo and other settings. Ignored in public supergroups.
-    can_change_info = models.BooleanField(null=True, )
+    can_change_info = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to invite new users to the chat.
-    can_invite_users = models.BooleanField(null=True, )
+    can_invite_users = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to pin messages. Ignored in public supergroups.
-    can_pin_messages = models.BooleanField(null=True, )
+    can_pin_messages = models.BooleanField(null=True, blank=True, )
 
     ###########################################
     # `chat` : chat this permissions belongs to
@@ -1517,20 +1624,44 @@ class ChatPermissions(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChatPermissions, self).save(*args, **kwargs)
 
 
 class AdminRights(models.Model):
-    change_info = models.BooleanField(null=True)
-    post_messages = models.BooleanField(null=True)
-    edit_messages = models.BooleanField(null=True)
-    delete_messages = models.BooleanField(null=True)
-    ban_users = models.BooleanField(null=True)
-    pin_messages = models.BooleanField(null=True)
-    add_admins = models.BooleanField(null=True)
+    change_info = models.BooleanField(null=True, blank=True)
+    post_messages = models.BooleanField(null=True, blank=True)
+    edit_messages = models.BooleanField(null=True, blank=True)
+    delete_messages = models.BooleanField(null=True, blank=True)
+    ban_users = models.BooleanField(null=True, blank=True)
+    invite_users = models.BooleanField(null=True, blank=True)
+    pin_messages = models.BooleanField(null=True, blank=True)
+    add_admins = models.BooleanField(null=True, blank=True)
+
+    # channel this rights belongs to
+    telegram_channel = models.ForeignKey(
+        'telegram.TelegramChannel',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='telegram channel',
+        related_name='admin_rights',
+    )
+
+    # admin this rights belongs to
+    admin = models.ForeignKey(
+        'telegram.TelegramAccount',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name='admin',
+        related_name='admin_rights',
+    )
+
+    # whether this rights are the latest stored
+    is_latest = models.BooleanField(null=False, default=False, )
 
     #################################################
     # `participant` : Participant this rights belongs to
@@ -1538,19 +1669,24 @@ class AdminRights(models.Model):
     modified_at = models.BigIntegerField()
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(AdminRights, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return str(
+            f"{self.admin if self.admin else ''} @ {self.telegram_channel if self.telegram_channel else ''}{' : current' if self.is_latest else ''}") if self.admin and self.telegram_channel else str(
+            self.pk)
 
 
 ##########################################################################
 # Analyzer tables
 class SharedMediaAnalyzerMetaData(models.Model):
     enabled = models.BooleanField()
-    first_analyzed_at = models.BigIntegerField(null=True)
-    last_analyzed_at = models.BigIntegerField(null=True)
-    disabled_at = models.BigIntegerField(null=True)
+    first_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    last_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    disabled_at = models.BigIntegerField(null=True, blank=True)
     disable_reason = models.CharField(max_length=255)
 
     ######################################
@@ -1561,7 +1697,7 @@ class SharedMediaAnalyzerMetaData(models.Model):
     # `chat` : chat this analyzer metadata belongs to
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(SharedMediaAnalyzerMetaData, self).save(*args, **kwargs)
@@ -1569,9 +1705,9 @@ class SharedMediaAnalyzerMetaData(models.Model):
 
 class AdminLogAnalyzerMetaData(models.Model):
     enabled = models.BooleanField()
-    first_analyzed_at = models.BigIntegerField(null=True)
-    last_analyzed_at = models.BigIntegerField(null=True)
-    disabled_at = models.BigIntegerField(null=True)
+    first_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    last_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    disabled_at = models.BigIntegerField(null=True, blank=True)
     disable_reason = models.CharField(max_length=255)
 
     ######################################
@@ -1582,14 +1718,14 @@ class AdminLogAnalyzerMetaData(models.Model):
         'telegram.TelegramChannel',
         on_delete=models.SET_NULL,
         related_name='admin_log_analyzer_metadata',
-        null=True,
+        null=True, blank=True,
     )
 
     ######################################
     # `chat` : chat this analyzer metadata belongs to
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(AdminLogAnalyzerMetaData, self).save(*args, **kwargs)
@@ -1597,9 +1733,9 @@ class AdminLogAnalyzerMetaData(models.Model):
 
 class ChatMemberCountAnalyzerMetaData(models.Model):
     enabled = models.BooleanField()
-    first_analyzed_at = models.BigIntegerField(null=True)
-    last_analyzed_at = models.BigIntegerField(null=True)
-    disabled_at = models.BigIntegerField(null=True)
+    first_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    last_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    disabled_at = models.BigIntegerField(null=True, blank=True)
     disable_reason = models.CharField(max_length=255)
 
     ######################################
@@ -1610,7 +1746,7 @@ class ChatMemberCountAnalyzerMetaData(models.Model):
     # `chat` : chat this analyzer metadata belongs to
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChatMemberCountAnalyzerMetaData, self).save(*args, **kwargs)
@@ -1618,9 +1754,9 @@ class ChatMemberCountAnalyzerMetaData(models.Model):
 
 class ChatMembersAnalyzerMetaData(models.Model):
     enabled = models.BooleanField()
-    first_analyzed_at = models.BigIntegerField(null=True)
-    last_analyzed_at = models.BigIntegerField(null=True)
-    disabled_at = models.BigIntegerField(null=True)
+    first_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    last_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    disabled_at = models.BigIntegerField(null=True, blank=True)
     disable_reason = models.CharField(max_length=255)
 
     ######################################
@@ -1631,14 +1767,14 @@ class ChatMembersAnalyzerMetaData(models.Model):
         'telegram.TelegramChannel',
         on_delete=models.SET_NULL,
         related_name='chat_member_analyzer_metadata',
-        null=True,
+        null=True, blank=True,
     )
 
     ######################################
     # `chat` : chat this analyzer metadata belongs to
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChatMemberCountAnalyzerMetaData, self).save(*args, **kwargs)
@@ -1646,9 +1782,9 @@ class ChatMembersAnalyzerMetaData(models.Model):
 
 class ChatMessageViewsAnalyzerMetaData(models.Model):
     enabled = models.BooleanField()
-    first_analyzed_at = models.BigIntegerField(null=True)
-    last_analyzed_at = models.BigIntegerField(null=True)
-    disabled_at = models.BigIntegerField(null=True)
+    first_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    last_analyzed_at = models.BigIntegerField(null=True, blank=True)
+    disabled_at = models.BigIntegerField(null=True, blank=True)
     disable_reason = models.CharField(max_length=255)
 
     ######################################
@@ -1659,7 +1795,7 @@ class ChatMessageViewsAnalyzerMetaData(models.Model):
     # `chat` : chat this analyzer metadata belongs to
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.created_at:
             self.created_at = arrow.utcnow().timestamp
         self.modified_at = arrow.utcnow().timestamp
         return super(ChatMessageViewsAnalyzerMetaData, self).save(*args, **kwargs)

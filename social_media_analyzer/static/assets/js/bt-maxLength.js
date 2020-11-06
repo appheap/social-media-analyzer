@@ -11,6 +11,12 @@
         warningClass: "badge mt-1 badge-success",
         limitReachedClass: "badge mt-1 badge-danger"
     });
+    $('#id_username').maxlength({
+        alwaysShow: true,
+        threshold: 20,
+        warningClass: "badge mt-1 badge-success",
+        limitReachedClass: "badge mt-1 badge-danger"
+    });
 
     $('#defaultconfig-3').maxlength({
         alwaysShow: true,

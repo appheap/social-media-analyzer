@@ -1,0 +1,288 @@
+{% extends "layouts/base_home.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Add Telegram Channel
+{% endblock title %}
+
+<!-- Specific Plugin CSS goes HERE -->
+{% block plugin_stylesheets %}
+
+    <!-- Plugin css for this page -->
+    <link rel="stylesheet" href="/static/assets/vendors/jquery-toast-plugin/jquery.toast.css">
+    <link rel="stylesheet" href="/static/assets/vendors/jvectormap/jquery-jvectormap.css">
+    <link rel="stylesheet" href="/static/assets/vendors/flag-icon-css/css/flag-icon.min.css">
+    <link rel="stylesheet" href="/static/assets/vendors/owl-carousel-2/owl.carousel.min.css">
+    <link rel="stylesheet" href="/static/assets/vendors/owl-carousel-2/owl.theme.default.min.css">
+
+{% endblock plugin_stylesheets %}
+
+{% block content %}
+    {% include 'includes/sidebar.html' %}
+
+    <div class="container-fluid">
+
+        {% include "includes/navigation.html" %}
+
+
+        <div class="main-panel">
+
+            <div class="content-wrapper ">
+
+                <div class="row mt-0">
+                    <div class="col-12 card">
+                        <div class="card-header">
+                            Add a new Telegram Channel
+                        </div>
+                        <div class="card-body">
+                            <p>
+                                For making thing easier you don't have to add a new Telegram account, just add one of
+                                our accounts as an<code data-toggle="tooltip" data-placement="bottom"
+                                                        title="An telegram account which has admin rights in the channel">admin</code>
+                                in your channel.
+                            </p>
+                            <br>
+                            <h6>Our Accounts</h6>
+
+                            <ul>
+                                {% for tg_account in telegram_accounts %}
+                                    {% if tg_account.username %}
+                                        <li class="">
+                                            <a class="nav-link"
+                                               href="https://t.me/{{ tg_account.username }}/">
+                                                <p>@{{ tg_account.username }}</p>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row mt-2">
+
+                    <div class="col-12 col-md-3 col-lg-4 grid-margin p-0">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Add Channel</h4>
+                                <div class="">
+                                    <form action="." method="post" novalidate
+                                          class="justify-content-center d-flex flex-column p-2 p-md-0"
+                                          id="form_add_channel"
+                                          data-url='{{ request.build_absolute_uri|safe }}'>
+                                        {% csrf_token %}
+
+                                        <div id="non_field_errors" class="form-group"></div>
+
+                                        <div class="fieldWrapper mb-1">
+                                            {{ form.channel_username.label_tag }}
+                                            <div class="form-group">
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <div class="input-group-text">@</div>
+                                                    </div>
+                                                    {{ form.channel_username }}
+                                                </div>
+                                                <div id="channel_username" class="error-container">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="fieldWrapper mb-1">
+                                            {{ form.telegram_account.label_tag }}
+                                            <div class="form-group">
+                                                {{ form.telegram_account }}
+                                                <div id="telegram_account" class="error-container">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <input type="submit" value="Add channel"
+                                               class="btn btn-inverse-primary"
+                                               id="btn_add_channel"/>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+{% endblock content %}
+
+
+<!-- Specific Plugin JS goes HERE  -->
+{% block plugin_javascripts %}
+    <script src="/static/assets/vendors/my-wizard/my_wizard.jquery.js"></script>
+    <script src="/static/assets/vendors/jquery-toast-plugin/jquery.toast.min.js"></script>
+    <script src="/static/assets/vendors/jquery-validation/jquery.validate.min.js"></script>
+    <script src="/static/assets/vendors/bootstrap-maxlength/bootstrap-maxlength.min.js"></script>
+
+    <script>
+        (function ($) {
+            showSuccessToast = function (text, afterHidden, position = 'top-right',) {
+                resetToastPosition();
+                $.toast({
+                    heading: 'Success',
+                    text: text,
+                    showHideTransition: 'slide',
+                    icon: 'success',
+                    loaderBg: '#f96868',
+                    position: position,
+                    afterHidden: afterHidden,
+                })
+            };
+            showInfoToast = function (text, afterHidden, position = 'top-right',) {
+                resetToastPosition();
+                $.toast({
+                    heading: 'Info',
+                    text: text,
+                    showHideTransition: 'slide',
+                    icon: 'info',
+                    loaderBg: '#46c35f',
+                    position: position,
+                    afterHidden: afterHidden,
+                })
+            };
+            showWarningToast = function () {
+                'use strict';
+                resetToastPosition();
+                $.toast({
+                    heading: 'Warning',
+                    text: 'And these were just the basic demos! Scroll down to check further details on how to customize the output.',
+                    showHideTransition: 'slide',
+                    icon: 'warning',
+                    loaderBg: '#57c7d4',
+                    position: 'top-right'
+                })
+            };
+            showDangerToast = function () {
+                'use strict';
+                resetToastPosition();
+                $.toast({
+                    heading: 'Danger',
+                    text: 'And these were just the basic demos! Scroll down to check further details on how to customize the output.',
+                    showHideTransition: 'slide',
+                    icon: 'error',
+                    loaderBg: '#f2a654',
+                    position: 'top-right'
+                })
+            };
+            showToastPosition = function (position) {
+                'use strict';
+                resetToastPosition();
+                $.toast({
+                    heading: 'Positioning',
+                    text: 'Specify the custom position object or use one of the predefined ones',
+                    position: String(position),
+                    icon: 'info',
+                    stack: false,
+                    loaderBg: '#f96868'
+                })
+            }
+            showToastInCustomPosition = function () {
+                'use strict';
+                resetToastPosition();
+                $.toast({
+                    heading: 'Custom positioning',
+                    text: 'Specify the custom position object or use one of the predefined ones',
+                    icon: 'info',
+                    position: {
+                        left: 120,
+                        top: 120
+                    },
+                    stack: false,
+                    loaderBg: '#f96868'
+                })
+            }
+            resetToastPosition = function () {
+                $('.jq-toast-wrap').removeClass('bottom-left bottom-right top-left top-right mid-center'); // to remove previous position class
+                $(".jq-toast-wrap").css({
+                    "top": "",
+                    "left": "",
+                    "bottom": "",
+                    "right": ""
+                }); //to remove previous position style
+            }
+        })(jQuery);
+    </script>
+{% endblock plugin_javascripts %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+    <script>
+        $(function () {
+            const $form = $('#form_add_channel');
+            $form.submit(function (event) {
+                event.preventDefault();
+
+                const $formData = $(this).serialize();
+                {#console.log($form);#}
+                const $thisURL = $form.attr('data-url') || window.location.href; // or set your own url
+                $('.error-container').empty();
+                const $non_field_errors = $('#non_field_errors')
+                $non_field_errors.empty();
+                $.ajax({
+                    method: "POST",
+                    url: $thisURL,
+                    data: $formData,
+                    success: function (response, textStatus, jqXHR) {
+                        console.log(response)
+                        {#console.log(textStatus)#}
+                        {#console.log(jqXHR)#}
+                        $form.css('pointer-events', 'none');
+                        $form.fadeTo('normal', 0.5);
+                        showSuccessToast(
+                            text = response.message,
+                            afterhidden = function () {
+                                if (response.message === 'joined channel') {
+                                    showInfoToast(text = 'Channel added to your accounts, Please set our account as admin in order to use it.',
+                                        afterhidden = function () {
+                                            window.location = "{% url 'dashboard:accounts' %}"
+                                        })
+                                }
+                            }
+                        );
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        {#console.log(jqXHR);#}
+                        if (jqXHR.hasOwnProperty('responseJSON')) {
+                            console.log(jqXHR.responseJSON);
+                            for (const key of Object.keys(jqXHR.responseJSON)) {
+                                let $elem;
+                                if (key === '__all__') {
+                                    $elem = $non_field_errors;
+                                } else {
+                                    $elem = $("#" + key);
+                                }
+                                $elem.empty();
+                                $elem.hide();
+                                for (let msg of jqXHR.responseJSON[key]) {
+                                    const $error = $('<label>');
+                                    $error.text(msg);
+                                    $error.addClass('error text-danger px-2 mt-2 mb-0');
+                                    $elem.append($error);
+                                }
+                                $elem.fadeIn();
+                            }
+                        }
+
+
+                        {#console.log(textStatus)#}
+                        {#console.log(errorThrown)#}
+                    },
+                })
+            });
+        });
+    </script>
+
+{% endblock javascripts %}

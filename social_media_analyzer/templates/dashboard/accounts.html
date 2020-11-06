@@ -1,0 +1,171 @@
+{% extends "layouts/base_home.html" %}
+
+{% block title %}
+    Accounts
+{% endblock title %}
+
+<!-- Specific Plugin CSS goes HERE -->
+{% block plugin_stylesheets %}
+
+    <!-- Plugin css for this page -->
+    <link rel="stylesheet" href="/static/assets/vendors/jvectormap/jquery-jvectormap.css">
+    <link rel="stylesheet" href="/static/assets/vendors/flag-icon-css/css/flag-icon.min.css">
+    <link rel="stylesheet" href="/static/assets/vendors/owl-carousel-2/owl.carousel.min.css">
+    <link rel="stylesheet" href="/static/assets/vendors/owl-carousel-2/owl.theme.default.min.css">
+
+{% endblock plugin_stylesheets %}
+
+{% block content %}
+    {% include 'includes/sidebar.html' %}
+
+    <div class="container-fluid">
+
+        {% include "includes/navigation.html" %}
+
+
+        <div class="main-panel">
+
+            <div class="content-wrapper ">
+
+                <div class="row">
+
+                    <div class="card col-12 ">
+                        <div class="card-body ">
+
+                            <div class="row">
+                                <div class="col-auto">
+                                    <div class="dropdown">
+                                        <a class="nav-link btn btn-success"
+                                           id="createbuttonDropdown" data-toggle="dropdown"
+                                           aria-expanded="false" href="#">+ Add social account</a>
+
+                                        <div class="dropdown-menu dropdown-menu-right preview-list"
+                                             aria-labelledby="createbuttonDropdown">
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item preview-item"
+                                               href="{% url 'dashboard:add_telegram_channel' %}">
+                                                <div class="preview-thumbnail">
+                                                    <div class="preview-icon bg-dark rounded-circle">
+                                                        <i class="mdi mdi-telegram text-primary"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="preview-item-content text-white">
+                                                    <p class="preview-subject ellipsis mb-1">Telegram</p>
+                                                </div>
+                                            </a>
+                                            <div class="dropdown-divider m-0"></div>
+                                            <a class="dropdown-item preview-item">
+                                                <div class="preview-thumbnail">
+                                                    <div class="preview-icon bg-dark rounded-circle">
+                                                        <i class="mdi mdi-instagram text-info"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="preview-item-content">
+                                                    <p class="preview-subject ellipsis mb-1">Instagram</p>
+                                                </div>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item preview-item">
+                                                <div class="preview-thumbnail">
+                                                    <div class="preview-icon bg-dark rounded-circle">
+                                                        <i class="mdi mdi-facebook"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="preview-item-content">
+                                                    <p class="preview-subject ellipsis mb-1">Facebook</p>
+                                                </div>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item preview-item">
+                                                <div class="preview-thumbnail">
+                                                    <div class="preview-icon bg-dark rounded-circle">
+                                                        <i class="mdi mdi-twitter"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="preview-item-content">
+                                                    <p class="preview-subject ellipsis mb-1">Twitter</p>
+                                                </div>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item preview-item">
+                                                <p class="py-2 mb-0 text-center ">See all Social Media Apps</p>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="row flex-row   flex-wrap align-items-stretch   mt-2">
+                    {% for tg_channel in tg_channels %}
+                        <div class="card mr-2 my-2 col-2 p-0"
+                                {% if not tg_channel.is_account_admin %}
+                             style="opacity: 0.7;"
+                             title="You haven't made our account as admin yet."
+                             data-toggle="tooltip"
+                             data-placement="top"
+                                {% endif %}
+                        >
+                            <div class="card-header align-items-center d-flex justify-content-center">
+                                Telegram Channel
+                            </div>
+                            <div class="card-body">
+                                <h6 class="text-center" data-toggle="tooltip" data-placement="bottom"
+                                    title="Channel Title">{{ tg_channel.chat.title }}</h6>
+
+                                <p class="mt-4">
+                                    <a class="card-link" href="https://t.me/{{ tg_channel.chat.username }}"
+                                       data-toggle="tooltip" data-placement="bottom"
+                                       title="Channel username">@{{ tg_channel.chat.username }}
+                                    </a>
+                                    <br>
+                                    <span class="text-wrap" data-toggle="tooltip" data-placement="bottom"
+                                          title="Channel Description">
+                                        {{ tg_channel.chat.description | default:"" }}
+                                    </span>
+
+                                </p>
+                            </div>
+                            <div class="card-footer">
+                                <a class="btn btn-outline-primary btn-block" href="#"
+                                        {% if not tg_channel.is_account_admin %}
+                                   style="pointer-events: none"
+                                        {% endif %} >
+                                    Manage
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+        {#        {{ test }}#}
+    </div>
+{% endblock content %}
+
+
+<!-- Specific Plugin JS goes HERE  -->
+{% block plugin_javascripts %}
+
+
+{% endblock plugin_javascripts %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+
+{% endblock javascripts %}

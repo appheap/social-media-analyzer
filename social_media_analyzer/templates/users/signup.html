@@ -1,0 +1,133 @@
+{% extends 'layouts/base-fullscreen.html' %}
+
+{% load crispy_forms_tags %}
+
+
+{% block title %}Signup{% endblock title %}
+
+{% block content %}
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+        <div class="row w-100">
+            <div class="content-wrapper full-page-wrapper auth option-2 register-half-bg">
+                <div class="card col-lg-4">
+                    <div class="card-body px-5 py-5">
+                        <h3 class="card-title text-left mb-3">
+                            Sign Up
+                        </h3>
+
+                        <div class="d-flex">
+                            <br>
+                        </div>
+
+                        <form role="form" method="post">
+                            {% csrf_token %}
+
+                            {{ form.non_field_errors }}
+                            <div class="fieldWrapper">
+                                {{ form.username.label_tag }}
+                                <div class="form-group">
+                                    {{ form.username }}
+                                    <div>
+                                        {% for error in form.username.errors %}
+                                            <label class="error text-danger px-2 mt-2 mb-0">
+                                                {{ error }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="fieldWrapper">
+                                {{ form.email.label_tag }}
+                                <div class="form-group">
+                                    {{ form.email }}
+                                    <div>
+                                        {% for error in form.email.errors %}
+                                            <label class="error text-danger px-2 mt-2 mb-0">
+                                                {{ error }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fieldWrapper">
+                                {{ form.timezone.label_tag }}
+                                <div class="form-group">
+                                    {{ form.timezone }}
+                                    <div>
+                                        {% for error in form.timezone.errors %}
+                                            <label class="error text-danger px-2 mt-2 mb-0">
+                                                {{ error }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fieldWrapper">
+                                {{ form.password1.label_tag }}
+                                <div class="form-group">
+                                    {{ form.password1 }}
+                                    <div>
+                                        {% for error in form.password1.errors %}
+                                            <label class="error text-danger px-2 mt-2 mb-0">
+                                                {{ error }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fieldWrapper">
+                                {{ form.password2.label_tag }}
+                                <div class="form-group">
+                                    {{ form.password2 }}
+                                    <div>
+                                        {% for error in form.password2.errors %}
+                                            <label class="error text-danger px-2 mt-2 mb-0">
+                                                {{ error }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group d-flex align-items-center justify-content-between">
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" checked=""> Agree with terms
+                                        <i class="input-helper"></i></label>
+                                </div>
+                                <a href="{% url 'users:login' %}" class="forgot-pass">Use existing account</a>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" name="register" class="btn btn-primary btn-block enter-btn">
+                                    Register
+                                </button>
+                            </div>
+                            <div class="d-flex">
+                                <br>
+                            </div>
+                        </form>
+
+
+                        <p class="sign-up">
+                            ©<a target="_blank" rel="noreferrer noopener"
+                                href="{% url 'pages:home' %}">SocialHub</a>
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+            <!-- content-wrapper ends -->
+        </div>
+        <!-- row ends -->
+    </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+
+{% endblock javascripts %}
