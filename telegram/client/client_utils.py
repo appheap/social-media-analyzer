@@ -216,83 +216,93 @@ class Worker(ConsumerProducerMixin):
         return BaseResponse().done(message='client init successful')
 
     def handle_add_tg_channel(self, *args, **kwargs):
-        admin_userid = kwargs['admin_userid']
-        channel_username = kwargs['channel_username']
-        userid = kwargs['userid']
+        db_tg_account_admin_id = kwargs['db_tg_account_admin_id']
+        channel_username = str(kwargs['channel_username']).lower()
+        db_userid = kwargs['db_userid']
         response = BaseResponse()
         try:
-            db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=admin_userid, is_deleted=False)
-            for client in clients:
-                if client.session_name == db_tg_admin_account.session_name:
-                    client: Client = client
-                    if client.is_connected:
-                        try:
-                            db_tg_channel = \
-                                self.tg_models.TelegramChannel.objects.get(
-                                    username=channel_username,
-                                    is_deleted=False
-                                )
-                            response.fail('this channel is already added')
-                        except exceptions.ObjectDoesNotExist as e:
-                            logger.exception(e)
-                            try:
-                                tg_chat: Chat = client.get_chat(channel_username)
-                                logger.info(tg_chat)
-
-                            except tg_errors.BadRequest as e:
-                                logger.exception(e)
-                                if type(e) == tg_errors.ChannelsTooMuch:
-                                    response.fail('Admin has joined too many channels or supergroups')
-                                else:
-                                    response.fail(TG_BAD_REQUEST)
-                            else:
-                                if tg_chat.type == 'channel' and tg_chat.username:
-                                    try:
-                                        tg_full_chat: Chat = client.get_chat(tg_chat.id)
-                                        client.join_chat(channel_username)
-                                        logger.info(tg_full_chat)
-                                    except tg_errors.RPCError as e:
-                                        logger.exception(e)
-                                        response.fail(TG_BAD_REQUEST)
-                                    else:
-                                        try:
-                                            with transaction.atomic():
-                                                if tg_full_chat.linked_chat:
-                                                    linked_chat: Chat = client.get_chat(
-                                                        tg_full_chat.linked_chat.id)
-                                                    db_linked_chat = self.save_chat(linked_chat)
-                                                    db_chat = self.save_chat(tg_full_chat, db_linked_chat)
-                                                else:
-                                                    db_chat = self.save_chat(tg_full_chat)
-
-                                                db_tg_channel = self.save_tg_channel(
-                                                    db_tg_admin_account,
-                                                    db_chat,
-                                                    tg_full_chat,
-                                                    userid
-                                                )
-
-                                                db_add_request = self.update_add_channel_request_status(
-                                                    admin_userid, channel_username, db_tg_channel, tg_full_chat)
-
-                                                response.done('joined channel')
-
-                                        except DatabaseError as e:
-                                            logger.exception(e)
-                                            response.fail('DB_ERROR')
-                                else:
-                                    response.fail('Only public channels can be added')
-
-
-
-                    else:
-                        response.fail('Sorry, that Admin account is not connected now.')
-                    break
-            else:
-                response.fail('Sorry, that Admin account is not connected now.')
+            db_request_owner = self.users_models.CustomUser.objects.get(pk=db_userid)
         except exceptions.ObjectDoesNotExist as e:
             logger.exception(e)
-            response.fail('no such tg account')
+            response.fail('No such user')
+        else:
+            try:
+                db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=db_tg_account_admin_id,
+                                                                                 is_deleted=False)
+            except exceptions.ObjectDoesNotExist as e:
+                logger.exception(e)
+                response.fail('no such tg account')
+            else:
+                for client in clients:
+                    if client.session_name == db_tg_admin_account.session_name:
+                        client: Client = client
+                        if client.is_connected:
+                            try:
+                                db_tg_channel = \
+                                    self.tg_models.TelegramChannel.objects.get(
+                                        username=channel_username,
+                                        is_deleted=False
+                                    )
+                            except exceptions.ObjectDoesNotExist as e:
+                                logger.exception(e)
+                                try:
+                                    tg_chat: Chat = client.get_chat(channel_username)
+                                    logger.info(tg_chat)
+
+                                except tg_errors.BadRequest as e:
+                                    logger.exception(e)
+                                    if type(e) == tg_errors.ChannelsTooMuch:
+                                        response.fail('Admin has joined too many channels or supergroups')
+                                    else:
+                                        response.fail(TG_BAD_REQUEST)
+                                else:
+                                    if tg_chat.type == 'channel' and tg_chat.username:
+                                        try:
+                                            tg_full_chat: Chat = client.get_chat(tg_chat.id)
+                                            client.join_chat(channel_username)
+                                            logger.info(tg_full_chat)
+                                        except tg_errors.RPCError as e:
+                                            logger.exception(e)
+                                            response.fail(TG_BAD_REQUEST)
+                                        else:
+                                            try:
+                                                with transaction.atomic():
+                                                    if tg_full_chat.linked_chat:
+                                                        linked_chat: Chat = client.get_chat(
+                                                            tg_full_chat.linked_chat.id)
+                                                        db_linked_chat = self.save_chat(linked_chat)
+                                                        db_chat = self.save_chat(tg_full_chat, db_linked_chat)
+                                                    else:
+                                                        db_chat = self.save_chat(tg_full_chat)
+
+                                                    db_tg_channel = self.save_tg_channel(
+                                                        db_tg_admin_account,
+                                                        db_chat,
+                                                        tg_full_chat,
+                                                        db_request_owner,
+                                                    )
+
+                                                    db_add_request = self.update_add_channel_request_status(
+                                                        db_tg_admin_account, channel_username, db_tg_channel,
+                                                        tg_full_chat,
+                                                        db_request_owner)
+
+                                                    response.done('joined channel')
+
+                                            except DatabaseError as e:
+                                                logger.exception(e)
+                                                response.fail('DB_ERROR')
+                                    else:
+                                        response.fail('Only public channels can be added')
+                            else:
+                                response.fail('this channel is already added')
+
+
+                        else:
+                            response.fail('Sorry, that Admin account is not connected now.')
+                        break
+                else:
+                    response.fail('Sorry, that Admin account is not connected now.')
 
         return response
 
@@ -300,7 +310,7 @@ class Worker(ConsumerProducerMixin):
         with transaction.atomic():
             db_tg_user = self.tg_models.User(
                 user_id=tg_user.id,
-                username=tg_user.username,
+                username=tg_user.username.lower(),
                 first_name=tg_user.first_name,
                 last_name=tg_user.last_name,
                 is_bot=tg_user.is_bot,
@@ -317,7 +327,7 @@ class Worker(ConsumerProducerMixin):
 
             db_tg_admin_account = self.tg_models.TelegramAccount(
                 user_id=tg_user.id,
-                username=tg_user.username,
+                username=tg_user.username.lower(),
                 first_name=tg_user.first_name,
                 last_name=tg_user.last_name,
                 is_bot=tg_user.is_bot,
@@ -336,28 +346,30 @@ class Worker(ConsumerProducerMixin):
             )
             db_tg_admin_account.save()
 
-    def update_add_channel_request_status(self, db_admin_userid: int, channel_username: str, db_tg_channel,
-                                          tg_full_chat: Chat):
-        db_add_request = self.tg_models.AddChannelRequest.objects.get(
+    def update_add_channel_request_status(self, db_admin, channel_username: str, db_tg_channel,
+                                          tg_full_chat: Chat, db_request_owner):
+        db_add_request = self.tg_models.AddChannelRequest(
             done=False,
-            channel_username=channel_username,
-            telegram_account=db_admin_userid)
-        db_add_request.status = self.tg_models.AddChannelRequestStatusTypes.CHANNEL_MEMBER
-        db_add_request.telegram_channel = db_tg_channel
-        db_add_request.channel_id = tg_full_chat.id
+            custom_user=db_request_owner,
+            channel_username=channel_username.lower(),
+            telegram_account=db_admin,
+            status=self.tg_models.AddChannelRequestStatusTypes.CHANNEL_MEMBER,
+            telegram_channel=db_tg_channel,
+            channel_id=tg_full_chat.id,
+        )
         db_add_request.save()
 
         logger.info(db_add_request)
         return db_add_request
 
-    def save_tg_channel(self, db_admin_tg_account, db_chat, tg_full_chat, db_userid):
+    def save_tg_channel(self, db_admin_tg_account, db_chat, tg_full_chat, db_request_owner):
         db_channel = self.tg_models.TelegramChannel(
             channel_id=tg_full_chat.id,
             is_account_creator=tg_full_chat.is_creator,
             is_account_admin=False,
-            username=tg_full_chat.username,
+            username=tg_full_chat.username.lower(),
             is_public=True,
-            custom_user=self.users_models.CustomUser.objects.get(pk=db_userid),
+            custom_user=db_request_owner,
             telegram_account=db_admin_tg_account,
             chat=db_chat,
         )

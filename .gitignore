@@ -162,3 +162,4 @@ dmypy.json
 /celerybeat.pid
 /telegram/sessions/
 /.env
+/Pipfile.lock

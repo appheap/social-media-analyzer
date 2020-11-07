@@ -85,15 +85,13 @@ class TelegramChannelAddView(LoginRequiredMixin, JsonResponseFormMixin, FormView
                                                     custom_user=self.request.user, )
         except exceptions.ObjectDoesNotExist as e:
             logger.exception(e)
-            form.instance.save()
             response = json.loads(
                 tasks.request_add_tg_channel(
                     channel_username=form.instance.channel_username,
-                    admin_userid=form.instance.telegram_account.pk,
-                    userid=self.request.user.pk,
+                    db_tg_account_admin_id=form.instance.telegram_account.pk,
+                    db_userid=self.request.user.pk,
                 )
             )
-            # response: BaseResponse = response
             self.extra_data.update(response)
 
             if not response['success']:
@@ -103,7 +101,6 @@ class TelegramChannelAddView(LoginRequiredMixin, JsonResponseFormMixin, FormView
             form.add_error(None, 'You have made a request for this channel already.')
             return super().form_invalid(form)
 
-        # form.instance.channel_id = tg_models.TelegramChannel.objects.last().channel_id + 1
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
