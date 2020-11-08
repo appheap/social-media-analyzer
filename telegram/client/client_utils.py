@@ -2,6 +2,7 @@ import typing
 from pyrogram import Client
 from pyrogram.handlers import MessageHandler, RawUpdateHandler, UserStatusHandler, DisconnectHandler
 from pyrogram.raw.types import ChannelAdminLogEventsFilter
+from pyrogram.raw.types.channels import AdminLogResults
 from pyrogram.types import User as User
 from pyrogram.types import Dialog as Dialog
 from pyrogram.types import Message as Message
@@ -451,12 +452,13 @@ class TelegramClientManager(Thread):
             pass
         logger.info("*" * 30)
 
-    def handle_channel_update(self, client, update):
-        channel_raw_id = '-100' + str(update.channel_id)
+    # noinspection PyTypeChecker
+    def handle_channel_update(self, client: Client, update):
+        channel_id = int('-100' + str(update.channel_id))
         try:
-            admin_logs = client.send(
+            admin_logs: AdminLogResults = client.send(
                 functions.channels.GetAdminLog(
-                    channel=client.resolve_peer(peer_id=channel_raw_id),
+                    channel=client.resolve_peer(peer_id=channel_id),
                     q="",
                     min_id=0,
                     max_id=0,
@@ -469,23 +471,7 @@ class TelegramClientManager(Thread):
         except tg_errors.RPCError as e:
             logger.exception(e)
             # this tg_account was demoted to participant;
-            try:
-                tg_admin = self.tg_models.TelegramAccount.objects.get(
-                    session_name=client.session_name,
-                    is_deleted=False,
-                )
-            except exceptions.ObjectDoesNotExist as e:
-                logger.exception(e)
-            else:
-                tg_channels = self.tg_models.TelegramChannel.objects.filter(
-                    channel_id=channel_raw_id,
-                    is_deleted=False,
-                    telegram_account=tg_admin,
-                )
-                for tg_channel in tg_channels:
-                    tg_channel.is_account_admin = False
-                    tg_channel.is_active = False  # TODO what's the goal of having this ?
-                    tg_channel.save()
+            self.disable_tg_channel(channel_id, client)
         else:
             from pyrogram.raw.types import User as PGuser
             from pyrogram.raw.types import \
@@ -511,29 +497,7 @@ class TelegramClientManager(Thread):
                                 if get_class_name(action.prev_participant) in self.names and get_class_name(
                                         action.new_participant) == "ChannelParticipantAdmin":
                                     # this tg_account was promoted to admin;
-                                    requests = self.tg_models.AddChannelRequest.objects.filter(
-                                        done=False,
-                                        channel_id=channel_raw_id,
-                                        telegram_account=tg_admin,
-                                    )
-                                    tg_channel = self.tg_models.TelegramChannel.objects.get(
-                                        channel_id=channel_raw_id,
-                                        is_deleted=False,
-                                        telegram_account=tg_admin,
-                                    )
-                                    admin_rights = action.new_participant.admin_rights
-
-                                    with transaction.atomic():
-                                        for request in requests:
-                                            request.status = self.tg_models.AddChannelRequestStatusTypes.CHANNEL_ADMIN
-                                            request.done = True
-                                            request.save()
-
-                                        tg_channel.is_account_admin = True
-                                        tg_channel.is_active = True  # TODO what's the goal of having this ?
-                                        tg_channel.save()
-
-                                        self.save_admin_rights(admin_rights, tg_admin, tg_channel)
+                                    self.handle_tg_account_promotion(action, channel_id, tg_admin)
 
                                 elif get_class_name(action.new_participant) in self.names and get_class_name(
                                         action.prev_participant) == "ChannelParticipantAdmin":
@@ -543,20 +507,77 @@ class TelegramClientManager(Thread):
                                         action.new_participant) == "ChannelParticipantAdmin" and get_class_name(
                                     action.prev_participant) == "ChannelParticipantAdmin":
                                     # this tg_account's admin rights was changed
+                                    self.handle_admin_rights_update(action, channel_id, tg_admin)
 
-                                    admin_rights = action.new_participant.admin_rights
-                                    try:
-                                        tg_channel = self.tg_models.TelegramChannel.objects.get(
-                                            channel_id=channel_raw_id,
-                                            is_deleted=False,
-                                            telegram_account=tg_admin,
-                                        )
-                                    except exceptions.ObjectDoesNotExist as e:
-                                        logger.exception(e)
-                                    else:
-                                        with transaction.atomic():
-                                            self.update_old_admin_rights(tg_admin, tg_channel)
-                                            self.save_admin_rights(admin_rights, tg_admin, tg_channel)
+    def handle_admin_rights_update(self, action, channel_id: int, tg_admin):
+        admin_rights = action.new_participant.admin_rights
+        try:
+            tg_channel = self.tg_models.TelegramChannel.objects.get(
+                channel_id=channel_id,
+                is_deleted=False,
+                telegram_account=tg_admin,
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            logger.exception(e)
+        else:
+            with transaction.atomic():
+                self.update_old_admin_rights(tg_admin, tg_channel)
+                self.save_admin_rights(admin_rights, tg_admin, tg_channel)
+
+    def handle_tg_account_promotion(self, action, channel_id: int, tg_admin):
+        admin_rights = action.new_participant.admin_rights
+        with transaction.atomic():
+            self.complete_add_channel_request_status(channel_id, tg_admin)
+            tg_channel = self.enable_tg_channel(channel_id, tg_admin)
+            self.save_admin_rights(admin_rights, tg_admin, tg_channel)
+
+    def enable_tg_channel(self, channel_id: int, tg_admin):
+        tg_channel = self.tg_models.TelegramChannel.objects.get(
+            channel_id=channel_id,
+            is_deleted=False,
+            telegram_account=tg_admin,
+        )
+        tg_channel.is_account_admin = True
+        tg_channel.is_active = True  # TODO what's the goal of having this ?
+        tg_channel.save()
+        return tg_channel
+
+    def complete_add_channel_request_status(self, channel_id: int, tg_admin):
+        requests = self.tg_models.AddChannelRequest.objects.filter(
+            done=False,
+            channel_id=channel_id,
+            telegram_account=tg_admin,
+        )
+        for request in requests:
+            request.status = self.tg_models.AddChannelRequestStatusTypes.CHANNEL_ADMIN
+            request.done = True
+            request.save()
+
+    def disable_tg_channel(self, channel_id: int, client: Client):
+        """
+        Disable all channels related to this client because client was demoted to normal participant.
+
+        :param channel_id: ID of the telegram channel
+        :param client: Client that was admin of this channel
+        :return:
+        """
+        try:
+            tg_admin = self.tg_models.TelegramAccount.objects.get(
+                session_name=client.session_name,
+                is_deleted=False,
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            logger.exception(e)
+        else:
+            tg_channels = self.tg_models.TelegramChannel.objects.filter(
+                channel_id=channel_id,
+                is_deleted=False,
+                telegram_account=tg_admin,
+            )
+            for tg_channel in tg_channels:
+                tg_channel.is_account_admin = False
+                tg_channel.is_active = False  # TODO what's the goal of having this ?
+                tg_channel.save()
 
     def save_admin_rights(self, admin_rights, tg_admin, tg_channel, is_latest=True):
         tg_admin_rights_new = self.tg_models.AdminRights(
