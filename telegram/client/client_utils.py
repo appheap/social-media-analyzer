@@ -133,37 +133,38 @@ class Worker(ConsumerProducerMixin):
         args = body['args']
         kwargs = body['kwargs']
 
-        logger.info(f'Got task: {prettify(body)}')
+        # logger.info(f'Got task: {prettify(body)}')
         response = BaseResponse()
 
-        if func == 'init_clients':
+        if func == 'task_init_clients':
             response = self.acquire_clients(self.task_init_clients, *args, **kwargs)
 
-        elif func == 'get_me':
+        elif func == 'task_get_me':
             response = self.acquire_clients(self.task_get_me, *args, **kwargs)
 
-        elif func == 'request_add_tg_channel':
+        elif func == 'task_add_tg_channel':
             response = self.acquire_clients(self.task_add_tg_channel, *args, **kwargs)
 
-        elif func == 'iterate_dialogs':
+        elif func == 'task_iterate_dialogs':
             response = self.acquire_clients(self.task_iterate_dialogs, *args, **kwargs)
 
-        elif func == 'run_shared_media_analyzer':
-            response = self.acquire_clients(self.analyze_chat_shared_medias, *args, **kwargs)
+        elif func == 'task_analyze_chat_shared_medias':
+            response = self.acquire_clients(self.task_analyze_chat_shared_medias, *args, **kwargs)
 
-        elif func == 'run_member_count_analyzer':
-            response = self.acquire_clients(self.analyze_chat_member_count, *args, **kwargs)
+        elif func == 'task_analyze_chat_member_count':
+            response = self.acquire_clients(self.task_analyze_chat_member_count, *args, **kwargs)
 
-        elif func == 'run_message_view_analyzer':
-            response = self.acquire_clients(self.analyze_message_views, *args, **kwargs)
+        elif func == 'task_analyze_message_views':
+            response = self.acquire_clients(self.task_analyze_message_views, *args, **kwargs)
 
-        elif func == 'run_admin_logs_analyzer':
-            response = self.acquire_clients(self.analyze_admin_logs, *args, **kwargs)
+        elif func == 'task_analyze_admin_logs':
+            response = self.acquire_clients(self.task_analyze_admin_logs, *args, **kwargs)
 
-        elif func == 'run_chat_members_analyzer':
-            response = self.acquire_clients(self.analyze_chat_members, *args, **kwargs)
+        elif func == 'task_analyze_all_chat_members':
+            response = self.acquire_clients(self.task_analyze_all_chat_members, *args, **kwargs)
 
-        logger.info(prettify(response, include_class_name=False))
+        elif func == 'task_analyze_chat_members':
+            response = self.acquire_clients(self.task_analyze_chat_members, *args, **kwargs)
 
         self.producer.publish(
             body=prettify(response, include_class_name=False),
@@ -197,7 +198,12 @@ class Worker(ConsumerProducerMixin):
 
             # update chats table for each account
             tg_accounts_to_be_iterated.append(db_tg_admin_account.user_id)
-        tasks.iterate_dialogs.delay(tg_account_ids=tg_accounts_to_be_iterated)
+        tasks.iterate_dialogs.apply_async(
+            kwargs={
+                'tg_account_ids': tg_accounts_to_be_iterated,
+            },
+            countdown=0,
+        )
 
         return BaseResponse().done(message='client init successful')
 
@@ -250,49 +256,20 @@ class Worker(ConsumerProducerMixin):
                                     )
                                     try:
                                         admins = client.get_chat_members(db_chat.chat_id, filter=Filters.ADMINISTRATORS)
-                                        if admins:
-                                            for admin in admins:
-                                                admin: ChatMember = admin
-                                                if admin.user.id == db_tg_admin_account.user_id:
-                                                    try:
-                                                        admin_rights = db_tg_channel.admin_rights.get(
-                                                            is_latest=True
-                                                        )
-                                                    except exceptions.ObjectDoesNotExist as e:
-                                                        self.create_db_admin_rights(admin, db_tg_admin_account,
-                                                                                    db_tg_channel)
-                                                    except Exception as e:
-                                                        logger.exception(e)
-                                                    else:
-                                                        if admin_rights.has_changed(admin):
-                                                            db_tg_channel.admin_rights.filter(
-                                                                is_latest=True
-                                                            ).update(
-                                                                is_latest=False
-                                                            )
-                                                            self.create_db_admin_rights(admin, db_tg_admin_account,
-                                                                                        db_tg_channel)
                                     except tg_errors.ChatAdminRequired as e:
                                         # client is not admin of this channel, update telegram account related to this channel
-                                        db_tg_channel.is_active = False
-                                        db_tg_channel.is_account_admin = False
-                                        db_tg_channel.save()
-
-                                        if db_chat.admin_log_analyzer:
-                                            db_chat.admin_log_analyzer.enabled = False
-                                            db_chat.admin_log_analyzer.disabled_at = arrow.utcnow().timestamp
-                                            db_chat.admin_log_analyzer.disable_reason = 'admin demoted'
-                                            db_chat.admin_log_analyzer.save()
-
-                                        if db_chat.members_analyzer:
-                                            db_chat.members_analyzer.enabled = False
-                                            db_chat.members_analyzer.disabled_at = arrow.utcnow().timestamp
-                                            db_chat.members_analyzer.disable_reason = 'admin demoted'
-                                            db_chat.members_analyzer.save()
+                                        self.disable_channel_analyzers_with_admin_required(db_chat, db_tg_channel)
                                     except Exception as e:
                                         logger.exception(e)
                                     else:
-                                        pass
+                                        # update memberships for this channel
+                                        tasks.analyze_chat_members.apply_async(
+                                            kwargs={
+                                                'only_admins': False,
+                                                'chat_id': db_chat.chat_id,
+                                            },
+                                            countdown=0,
+                                        )
         response.done()
 
         return response
@@ -383,7 +360,7 @@ class Worker(ConsumerProducerMixin):
 
     ########################################
 
-    def analyze_message_views(self, *args, **kwargs):
+    def task_analyze_message_views(self, *args, **kwargs):
         response = BaseResponse()
 
         chats = self.tg_models.Chat.objects.filter(message_view_analyzer__isnull=False,
@@ -440,7 +417,7 @@ class Worker(ConsumerProducerMixin):
                 analyzer.save()
         return response
 
-    def analyze_chat_member_count(self, *args, **kwargs):
+    def task_analyze_chat_member_count(self, *args, **kwargs):
         response = BaseResponse()
 
         chats = self.tg_models.Chat.objects.filter(member_count_analyzer__isnull=False,
@@ -487,7 +464,7 @@ class Worker(ConsumerProducerMixin):
 
         return response
 
-    def analyze_chat_shared_medias(self, *args, **kwargs):
+    def task_analyze_chat_shared_medias(self, *args, **kwargs):
         response = BaseResponse()
 
         chats = self.tg_models.Chat.objects.filter(shared_media_analyzer__isnull=False,
@@ -546,7 +523,44 @@ class Worker(ConsumerProducerMixin):
 
         return response
 
-    def analyze_chat_members(self, *args, **kwargs):
+    def task_analyze_chat_members(self, *args, **kwargs):
+        response = BaseResponse()
+        only_admins = kwargs.get('only_admins', False)
+        chat_id = kwargs.get('chat_id', None)
+        if chat_id:
+            try:
+                db_chat = self.tg_models.Chat.objects.get(
+                    chat_id=chat_id,
+                )
+            except exceptions.ObjectDoesNotExist as e:
+                response.fail(f"Chat with `chat_id`:{chat_id} does not exists")
+            except Exception as e:
+                logger.exception(e)
+                response.fail('UNKNOWN_ERROR')
+            else:
+                if db_chat.members_analyzer and db_chat.members_analyzer.enabled:
+                    for client in clients:
+                        if client.session_name == db_chat.creator_account.session_name:
+                            client: Client = client
+                            if client.is_connected:
+                                response = self.analyze_chat_members(
+                                    client,
+                                    db_chat,
+                                    response,
+                                    Filters.ADMINISTRATORS if only_admins else None,
+                                )
+                            else:
+                                response.fail('client is not connected now')
+                            break
+                    else:
+                        response.fail('no client is ready')
+                else:
+                    response.fail(f'Chat with `chat_id`:{chat_id} does not have an enabled `member_analyzer`')
+        else:
+            response.fail('KeyError: No `chat_id` in kwargs')
+        return response
+
+    def task_analyze_all_chat_members(self, *args, **kwargs):
         response = BaseResponse()
 
         chats = self.tg_models.Chat.objects.filter(members_analyzer__isnull=False,
@@ -558,58 +572,7 @@ class Worker(ConsumerProducerMixin):
                 if client.session_name == db_chat.creator_account.session_name:
                     client: Client = client
                     if client.is_connected:
-                        try:
-                            for chat_member in client.iter_chat_members(db_chat.chat_id, filter=Filters.ALL):
-                                chat_member: ChatMember = chat_member
-                                new_status = chat_member.status
-                                try:
-                                    db_user = self.tg_models.User.objects.get(
-                                        user_id=chat_member.user.id
-                                    )
-                                except exceptions.ObjectDoesNotExist as e:
-                                    # user and membership does not exist, create them
-                                    tg_user = chat_member.user
-                                    db_user = self.get_or_create_db_tg_user(tg_user, client)
-                                    db_membership = self.get_or_create_membership(db_chat, db_user)
-                                    db_participant = self.create_channel_participant(
-                                        chat_member,
-                                        db_membership,
-                                        client,
-                                    )
-                                    self.update_membership_status(db_membership, db_participant)
-                                    response.done()
-                                else:
-                                    try:
-                                        db_membership = self.tg_models.Membership.objects.get(
-                                            user=db_user,
-                                            chat=db_chat,
-                                        )
-                                    except exceptions.ObjectDoesNotExist as e:
-                                        # membership does not exists, create it
-                                        db_membership = self.get_or_create_membership(db_chat, db_user)
-                                        db_participant = self.create_channel_participant(
-                                            chat_member,
-                                            db_membership,
-                                            client,
-                                        )
-                                        self.update_membership_status(db_membership, db_participant)
-                                        response.done()
-                                    else:
-                                        if db_membership.current_status.type != new_status:
-                                            db_participant = self.create_channel_participant(
-                                                chat_member,
-                                                db_membership,
-                                                client,
-                                            )
-                                            self.update_membership_status(db_membership, db_participant)
-
-                                        response.done()
-                        except tg_errors.RPCError as e:
-                            logger.exception(e)
-                            response.fail('TG_ERROR')
-                        except Exception as e:
-                            logger.exception(e)
-                            response.fail('UNKNOWN_ERROR')
+                        response = self.analyze_chat_members(client, db_chat, response)
                     else:
                         response.fail('client is not connected now')
                     break
@@ -625,26 +588,100 @@ class Worker(ConsumerProducerMixin):
 
         return response
 
-    def analyze_admin_logs(self, *args, **kwargs):
+    def analyze_chat_members(self, client: Client, db_chat, response: BaseResponse, filter=None):
+        try:
+            for chat_member in client.iter_chat_members(db_chat.chat_id, filter=filter if filter else Filters.ALL):
+                chat_member: ChatMember = chat_member
+                new_status = chat_member.status
+                try:
+                    db_user = self.tg_models.User.objects.get(
+                        user_id=chat_member.user.id
+                    )
+                except exceptions.ObjectDoesNotExist as e:
+                    # user and membership does not exist, create them
+                    tg_user = chat_member.user
+                    db_user = self.get_or_create_db_tg_user(tg_user, client)
+                    db_membership = self.get_or_create_membership(db_chat, db_user)
+                    db_participant = self.create_channel_participant(
+                        chat_member,
+                        db_membership,
+                        client,
+                    )
+                    self.update_membership_status(db_membership, db_participant)
+                    response.done()
+                else:
+                    try:
+                        db_membership = self.tg_models.Membership.objects.get(
+                            user=db_user,
+                            chat=db_chat,
+                        )
+                    except exceptions.ObjectDoesNotExist as e:
+                        # membership does not exists, create it
+                        db_membership = self.get_or_create_membership(db_chat, db_user)
+                        db_participant = self.create_channel_participant(
+                            chat_member,
+                            db_membership,
+                            client,
+                        )
+                        self.update_membership_status(db_membership, db_participant)
+                        response.done()
+                    else:
+                        logger.info(f"{db_membership} : {db_membership.current_status.type}, {new_status}")
+                        if db_membership.current_status and db_membership.current_status.type != new_status:
+                            db_participant = self.create_channel_participant(
+                                chat_member,
+                                db_membership,
+                                client,
+                            )
+                            self.update_membership_status(db_membership, db_participant)
+
+                        response.done()
+        except tg_errors.RPCError as e:
+            logger.exception(e)
+            response.fail('TG_ERROR')
+        except Exception as e:
+            logger.exception(e)
+            response.fail('UNKNOWN_ERROR')
+        return response
+
+    def task_analyze_admin_logs(self, *args, **kwargs):
         response = BaseResponse()
 
         return response
 
     ########################################
 
-    def create_db_admin_rights(self, admin, db_tg_admin_account, db_tg_channel):
-        self.tg_models.AdminRights.objects.create(
+    def disable_channel_analyzers_with_admin_required(self, db_chat, db_tg_channel):
+        if db_tg_channel.is_active or db_tg_channel.is_account_admin:
+            db_tg_channel.is_active = False
+            db_tg_channel.is_account_admin = False
+            db_tg_channel.save()
+
+        if db_chat.admin_log_analyzer:
+            db_chat.admin_log_analyzer.enabled = False
+            db_chat.admin_log_analyzer.disabled_at = arrow.utcnow().timestamp
+            db_chat.admin_log_analyzer.disable_reason = 'admin demoted'
+            db_chat.admin_log_analyzer.save()
+
+        if db_chat.members_analyzer:
+            db_chat.members_analyzer.enabled = False
+            db_chat.members_analyzer.disabled_at = arrow.utcnow().timestamp
+            db_chat.members_analyzer.disable_reason = 'admin demoted'
+            db_chat.members_analyzer.save()
+
+    def create_db_admin_rights(self, chat_member: ChatMember, db_tg_admin_account=None, db_tg_channel=None):
+        return self.tg_models.AdminRights.objects.create(
             is_latest=True,
             telegram_channel=db_tg_channel,
             admin=db_tg_admin_account,
-            change_info=admin.can_change_info,
-            post_messages=admin.can_post_messages,
-            edit_messages=admin.can_edit_messages,
-            delete_messages=admin.can_delete_messages,
-            ban_users=admin.can_restrict_members,
-            invite_users=admin.can_invite_users,
-            pin_messages=admin.can_pin_messages,
-            add_admins=admin.can_promote_members,
+            change_info=chat_member.can_change_info,
+            post_messages=chat_member.can_post_messages,
+            edit_messages=chat_member.can_edit_messages,
+            delete_messages=chat_member.can_delete_messages,
+            ban_users=chat_member.can_restrict_members,
+            invite_users=chat_member.can_invite_users,
+            pin_messages=chat_member.can_pin_messages,
+            add_admins=chat_member.can_promote_members,
         )
 
     @staticmethod
@@ -703,7 +740,7 @@ class Worker(ConsumerProducerMixin):
                 tg_user=chat_member.promoted_by,
                 client=client,
             )
-            db_participant.admin_rights = self.create_admin_rights(chat_member)
+            db_participant.admin_rights = self.create_db_admin_rights(chat_member)
 
         elif _type == 'kicked':
             db_participant.type = self.tg_models.ChannelParticipantTypes.kicked
@@ -743,18 +780,6 @@ class Worker(ConsumerProducerMixin):
             invite_users=chat_member.can_invite_users,
             pin_messages=chat_member.can_pin_messages,
             until_date=chat_member.until_date,
-        )
-
-    def create_admin_rights(self, chat_member: ChatMember):
-        return self.tg_models.AdminRights.objects.create(
-            change_info=chat_member.can_change_info,
-            post_messages=chat_member.can_post_messages,
-            edit_messages=chat_member.can_edit_messages,
-            delete_messages=chat_member.can_delete_messages,
-            ban_users=chat_member.can_restrict_members,
-            invite_users=chat_member.can_invite_users,
-            pin_messages=chat_member.can_pin_messages,
-            add_admins=chat_member.can_promote_members,
         )
 
     def get_or_create_membership(self, db_chat, db_user):
