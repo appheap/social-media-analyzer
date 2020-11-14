@@ -1,5 +1,6 @@
 from kombu import Connection, Exchange, Queue, uuid, Consumer
 from social_media_analyzer.globals import logger
+from utils.utils import prettify
 
 tg_exchange = Exchange('tg_exchange', 'direct', durable=True)
 info_queue = Queue('tg_info_queue', exchange=tg_exchange, routing_key='tg_info_queue')
@@ -9,7 +10,7 @@ info_queue = Queue('tg_info_queue', exchange=tg_exchange, routing_key='tg_info_q
 
 
 def tg_function(func_body):
-    logger.info(f"@tg_function_call: {func_body} ")
+    logger.info(f"@tg_function_call: {prettify(func_body)} ")
 
     response = None
     callback_queue = Queue(uuid(), exclusive=True, auto_delete=True)

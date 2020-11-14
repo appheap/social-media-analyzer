@@ -8,6 +8,10 @@ class TelegramChannelInline(admin.TabularInline):
     model = models.TelegramChannel
 
 
+class ChatsInline(admin.TabularInline):
+    model = models.Chat
+
+
 class AdminLogInline(admin.TabularInline):
     model = models.AdminLog
 
@@ -27,6 +31,7 @@ class SharedMediaHistoryInline(admin.TabularInline):
 class TelegramAccountAdmin(admin.ModelAdmin):
     inlines = [
         TelegramChannelInline,
+        ChatsInline,
         MemberCountHistoryInline,
         SharedMediaHistoryInline,
         MessageViewInline,
@@ -59,16 +64,28 @@ class ViaBotMessageInline(admin.TabularInline):
     verbose_name_plural = 'Inline Messages'
 
 
-class InvitedUserInline(admin.TabularInline):
-    model = models.Membership
+class InvitedParticipantInline(admin.TabularInline):
+    model = models.ChannelParticipant
     fk_name = 'invited_by'
     verbose_name_plural = 'Invited Users'
 
 
-class UserRoleInline(admin.TabularInline):
-    model = models.Membership
-    fk_name = 'role_changed_by'
-    verbose_name_plural = 'Modified User Roles'
+class PromotedParticipantInline(admin.TabularInline):
+    model = models.ChannelParticipant
+    fk_name = 'promoted_by'
+    verbose_name_plural = 'Promoted Users'
+
+
+class DemotedParticipantInline(admin.TabularInline):
+    model = models.ChannelParticipant
+    fk_name = 'demoted_by'
+    verbose_name_plural = 'Demoted Users'
+
+
+class KickedParticipantInline(admin.TabularInline):
+    model = models.ChannelParticipant
+    fk_name = 'kicked_by'
+    verbose_name_plural = 'Kicked Users'
 
 
 class MentionedInline(admin.TabularInline):
@@ -83,8 +100,10 @@ class UserAdmin(admin.ModelAdmin):
         ForwardedMessageInline,
         SentMessageInline,
         ViaBotMessageInline,
-        InvitedUserInline,
-        UserRoleInline,
+        InvitedParticipantInline,
+        PromotedParticipantInline,
+        DemotedParticipantInline,
+        KickedParticipantInline,
         MentionedInline,
     ]
     # list_display = ()
@@ -152,6 +171,16 @@ class AdminLogAdmin(admin.ModelAdmin):
     ]
 
 
+#################################################################################
+#################################################################################
+#################################################################################
+#################################################################################
+
+class SharedMediaAnalyzerMetaDataAdmin(admin.ModelAdmin):
+    list_display = ('enabled',)
+
+
+#################################################################################
 #################################################################################
 
 class EntityInline(admin.TabularInline):
@@ -242,10 +271,6 @@ admin.site.register(models.AdminLogEventActionChangeLinkedChat)
 admin.site.register(models.AdminLogEventActionChangeLocation)
 admin.site.register(models.AdminLogEventActionToggleSlowMode)
 admin.site.register(models.ChannelParticipant)
-admin.site.register(models.ChannelParticipantSelf)
-admin.site.register(models.ChannelParticipantCreator)
-admin.site.register(models.ChannelParticipantAdmin)
-admin.site.register(models.ChannelParticipantBanned)
 admin.site.register(models.ChatBannedRight)
 admin.site.register(models.ChatPermissions)
 admin.site.register(models.AdminRights)
