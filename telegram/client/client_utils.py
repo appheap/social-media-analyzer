@@ -1,4 +1,6 @@
 import typing
+from timeit import timeit
+
 from pyrogram import Client
 from pyrogram.handlers import MessageHandler, RawUpdateHandler, UserStatusHandler, DisconnectHandler
 from pyrogram.raw.types import ChannelAdminLogEventsFilter, InputMessagesFilterPhotos, InputMessagesFilterDocument, \
@@ -90,566 +92,20 @@ class BaseResponse(object):
         return self
 
 
-class Worker(ConsumerProducerMixin):
-    tg_exchange = tg_globals.tg_exchange
-    info_queue = tg_globals.info_queue
+class DataBaseManager(object):
+    tg_models = None
+    tg_users = None
+
     _media_types = ['audio', 'document', 'photo', 'sticker', 'video', 'animation', 'voice', 'video_note', 'contact',
                     'location', 'venue']
-    _search_filter_count = [InputMessagesFilterPhotos(), InputMessagesFilterVideo(),
-                            InputMessagesFilterDocument(), InputMessagesFilterMusic(),
-                            InputMessagesFilterUrl(), InputMessagesFilterVoice(),
-                            InputMessagesFilterRoundVideo(), InputMessagesFilterGif(),
-                            InputMessagesFilterGeo(), InputMessagesFilterContacts(), ]
-    _filter_names = {'InputMessagesFilterPhotos': 'photo', 'InputMessagesFilterVideo': 'video',
-                     'InputMessagesFilterDocument': 'document', 'InputMessagesFilterMusic': 'music',
-                     'InputMessagesFilterUrl': 'url', 'InputMessagesFilterVoice': 'voice',
-                     'InputMessagesFilterRoundVideo': 'video_note', 'InputMessagesFilterGif': 'animation',
-                     'InputMessagesFilterGeo': 'location', 'InputMessagesFilterContacts': 'contact'}
 
-    def __init__(self, connection, clients):
-        self.connection = connection
+    def __init__(self, clients: list):
         self.clients = clients
         from telegram import models
         self.tg_models = models
 
         from users import models
         self.users_models = models
-
-    def get_consumers(self, Consumer, channel):
-        return [Consumer(queues=[self.info_queue], callbacks=[self.on_task])]
-
-    def acquire_clients(self, func, *args, **kwargs):
-        response = BaseResponse()
-        with clients_lock as lock:
-            if len(self.clients) != 0:
-                return func(*args, **kwargs) if callable(func) else response.fail()
-            else:
-                return response.fail()
-
-    def on_task(self, body, message):
-        from utils.utils import prettify
-
-        func = body['func']
-        args = body['args']
-        kwargs = body['kwargs']
-
-        # logger.info(f'Got task: {prettify(body)}')
-        response = BaseResponse()
-
-        if func == 'task_init_clients':
-            response = self.acquire_clients(self.task_init_clients, *args, **kwargs)
-
-        elif func == 'task_get_me':
-            response = self.acquire_clients(self.task_get_me, *args, **kwargs)
-
-        elif func == 'task_add_tg_channel':
-            response = self.acquire_clients(self.task_add_tg_channel, *args, **kwargs)
-
-        elif func == 'task_iterate_dialogs':
-            response = self.acquire_clients(self.task_iterate_dialogs, *args, **kwargs)
-
-        elif func == 'task_analyze_chat_shared_medias':
-            response = self.acquire_clients(self.task_analyze_chat_shared_medias, *args, **kwargs)
-
-        elif func == 'task_analyze_chat_member_count':
-            response = self.acquire_clients(self.task_analyze_chat_member_count, *args, **kwargs)
-
-        elif func == 'task_analyze_message_views':
-            response = self.acquire_clients(self.task_analyze_message_views, *args, **kwargs)
-
-        elif func == 'task_analyze_admin_logs':
-            response = self.acquire_clients(self.task_analyze_admin_logs, *args, **kwargs)
-
-        elif func == 'task_analyze_all_chat_members':
-            response = self.acquire_clients(self.task_analyze_all_chat_members, *args, **kwargs)
-
-        elif func == 'task_analyze_chat_members':
-            response = self.acquire_clients(self.task_analyze_chat_members, *args, **kwargs)
-
-        self.producer.publish(
-            body=prettify(response, include_class_name=False),
-            exchange='', routing_key=message.properties['reply_to'],
-            correlation_id=message.properties['correlation_id'],
-            serializer='json',
-            retry=True,
-        )
-        message.ack()
-
-    def task_get_me(self, *args, **kwargs):
-        data = {}
-        for client in clients:
-            client: Client = client
-            data.update({
-                str(client.session_name): str(client.get_me())
-            })
-        return BaseResponse().done(data=data)
-
-    def task_init_clients(self, *args, **kwargs):
-        tg_accounts_to_be_iterated = []
-        for client in self.clients:
-            client: Client = client
-            custom_user = self.users_models.CustomUser.objects.get(username='sigma')
-            me: User = client.get_me()
-            try:
-                db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=me.id, is_deleted=False)
-            except exceptions.ObjectDoesNotExist as e:
-                logger.exception(e)
-                db_tg_admin_account = self.create_db_tg_account(client, custom_user, me)
-
-            # update chats table for each account
-            tg_accounts_to_be_iterated.append(db_tg_admin_account.user_id)
-        tasks.iterate_dialogs.apply_async(
-            kwargs={
-                'tg_account_ids': tg_accounts_to_be_iterated,
-            },
-            countdown=0,
-        )
-
-        return BaseResponse().done(message='client init successful')
-
-    def task_iterate_dialogs(self, *args, **kwargs):
-        response = BaseResponse()
-        try:
-            tg_account_ids = kwargs['tg_account_ids']
-            db_tg_accounts = self.tg_models.TelegramAccount.objects.filter(
-                user_id__in=tg_account_ids,
-                is_deleted=False,
-            )
-        except Exception as e:
-            logger.exception(e)
-            response.fail('missing `tg_account_ids` kwarg')
-        else:
-            if not db_tg_accounts or not len(db_tg_accounts):
-                return response.fail('no telegram account is available now')
-
-            session_names = [db_tg_account.session_name for db_tg_account in db_tg_accounts]
-            for client in self.clients:
-                client: Client = client
-                if client.session_name in session_names:
-                    db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(
-                        session_name=client.session_name,
-                        is_deleted=False,
-                    )
-                    for dialog in client.iter_dialogs():
-                        if dialog.chat.type == 'channel' and dialog.chat.username is not None:
-                            try:
-                                tg_full_chat: Chat = client.get_chat(dialog.chat.id)
-                                time.sleep(1)
-                            except tg_errors.RPCError as e:
-                                logger.exception(e)
-                            except Exception as e:
-                                logger.exception(e)
-                            else:
-                                db_chat = self.get_or_create_db_tg_chat(
-                                    tg_full_chat,
-                                    db_tg_admin_account,
-                                    client,
-                                    update_current=True,
-                                    is_tg_full_chat=True,
-                                )
-                                if db_chat:
-                                    db_tg_channel = self.get_or_create_db_tg_channel(
-                                        db_tg_admin_account,
-                                        db_chat,
-                                        tg_full_chat,
-                                        self.users_models.CustomUser.objects.get(username='sigma', is_superuser=True),
-                                    )
-                                    try:
-                                        admins = client.get_chat_members(db_chat.chat_id, filter=Filters.ADMINISTRATORS)
-                                    except tg_errors.ChatAdminRequired as e:
-                                        # client is not admin of this channel, update telegram account related to this channel
-                                        self.disable_channel_analyzers_with_admin_required(db_chat, db_tg_channel)
-                                    except Exception as e:
-                                        logger.exception(e)
-                                    else:
-                                        # update memberships for this channel
-                                        tasks.analyze_chat_members.apply_async(
-                                            kwargs={
-                                                'only_admins': False,
-                                                'chat_id': db_chat.chat_id,
-                                            },
-                                            countdown=0,
-                                        )
-        response.done()
-
-        return response
-
-    def task_add_tg_channel(self, *args, **kwargs):
-        db_tg_account_admin_id = kwargs['db_tg_account_admin_id']
-        channel_username = str(kwargs['channel_username']).lower()
-        db_userid = kwargs['db_userid']
-        response = BaseResponse()
-        try:
-            db_request_owner = self.users_models.CustomUser.objects.get(pk=db_userid)
-        except exceptions.ObjectDoesNotExist as e:
-            logger.exception(e)
-            response.fail('No such user')
-        else:
-            try:
-                db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=db_tg_account_admin_id,
-                                                                                 is_deleted=False)
-            except exceptions.ObjectDoesNotExist as e:
-                logger.exception(e)
-                response.fail('no such tg account')
-            else:
-                for client in clients:
-                    if client.session_name == db_tg_admin_account.session_name:
-                        client: Client = client
-                        if client.is_connected:
-                            try:
-                                db_tg_channel = \
-                                    self.tg_models.TelegramChannel.objects.get(
-                                        username=channel_username,
-                                        is_deleted=False
-                                    )
-                            except exceptions.ObjectDoesNotExist as e:
-                                logger.exception(e)
-                                try:
-                                    tg_chat: Chat = client.get_chat(channel_username)
-
-                                except tg_errors.BadRequest as e:
-                                    logger.exception(e)
-                                    if type(e) == tg_errors.ChannelsTooMuch:
-                                        response.fail('Admin has joined too many channels or supergroups')
-                                    else:
-                                        response.fail(TG_BAD_REQUEST)
-                                else:
-                                    if tg_chat.type == 'channel' and tg_chat.username:
-                                        try:
-                                            tg_full_chat: Chat = client.get_chat(tg_chat.id)
-                                            client.join_chat(channel_username)
-                                        except tg_errors.RPCError as e:
-                                            logger.exception(e)
-                                            response.fail(TG_BAD_REQUEST)
-                                        else:
-                                            try:
-                                                with transaction.atomic():
-                                                    db_chat = self.get_or_create_db_tg_chat(tg_full_chat,
-                                                                                            db_tg_admin_account,
-                                                                                            client)
-                                                    db_tg_channel = self.get_or_create_db_tg_channel(
-                                                        db_tg_admin_account,
-                                                        db_chat,
-                                                        tg_full_chat,
-                                                        db_request_owner,
-                                                    )
-
-                                                    db_add_request = self.update_add_channel_request_status(
-                                                        db_tg_admin_account, channel_username, db_tg_channel,
-                                                        tg_full_chat,
-                                                        db_request_owner)
-
-                                                    response.done('joined channel')
-
-                                            except DatabaseError as e:
-                                                logger.exception(e)
-                                                response.fail('DB_ERROR')
-                                    else:
-                                        response.fail('Only public channels can be added')
-                            else:
-                                response.fail('this channel is already added')
-
-
-                        else:
-                            response.fail('Sorry, that Admin account is not connected now.')
-                        break
-                else:
-                    response.fail('Sorry, that Admin account is not connected now.')
-
-        return response
-
-    ########################################
-
-    def task_analyze_message_views(self, *args, **kwargs):
-        response = BaseResponse()
-
-        chats = self.tg_models.Chat.objects.filter(message_view_analyzer__isnull=False,
-                                                   message_view_analyzer__enabled=True)
-        for db_chat in chats:
-            analyzer = db_chat.message_view_analyzer
-            now = arrow.utcnow().timestamp
-
-            for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
-                    client: Client = client
-                    if client.is_connected:
-                        try:
-                            # tg_chat: Chat = client.get_chat(chat_id=db_chat.chat_id)
-                            for message in client.iter_history(db_chat.chat_id):
-                                message: Message = message
-                                if not message.service:
-                                    try:
-                                        now = arrow.utcnow().timestamp
-                                        with transaction.atomic():
-                                            db_message = self.get_or_create_db_tg_message(message, db_chat, client, now)
-                                            db_message_view = self.tg_models.MessageView.objects.create(
-                                                id=f"{db_chat.chat_id}:{message.message_id}:{now}",
-                                                date=now,
-                                                views=message.views,
-                                                message=db_message,
-                                                logged_by=db_chat.creator_account,
-                                                chat=db_chat,
-                                            )
-                                            self.create_entities(client, db_chat, db_message, message)
-                                            self.create_entity_types(db_chat, db_message, message)
-
-                                    except Exception as e:
-                                        logger.exception(e)
-                                    else:
-                                        pass
-
-                        except Exception as e:
-                            logger.exception(e)
-                            response.fail('TG_ERROR')
-                        else:
-                            response.done('logged message views')
-                    else:
-                        response.fail('client is not connected now')
-                    break
-            else:
-                response.fail('no client is ready')
-                break
-
-            if response.success:
-                if not analyzer.first_analyzed_at:
-                    analyzer.first_analyzed_at = now
-                analyzer.last_analyzed_at = now
-                analyzer.save()
-        return response
-
-    def task_analyze_chat_member_count(self, *args, **kwargs):
-        response = BaseResponse()
-
-        chats = self.tg_models.Chat.objects.filter(member_count_analyzer__isnull=False,
-                                                   member_count_analyzer__enabled=True)
-        for db_chat in chats:
-            analyzer = db_chat.member_count_analyzer
-            now = arrow.utcnow().timestamp
-            for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
-                    client: Client = client
-                    if client.is_connected:
-                        try:
-                            tg_chat: Chat = client.get_chat(chat_id=db_chat.chat_id)
-                        except Exception as e:
-                            response.fail('TG_ERROR')
-                            logger.exception(e)
-                        else:
-                            try:
-                                now = arrow.utcnow().timestamp
-                                self.tg_models.ChatMemberCount.objects.create(
-                                    id=f"{db_chat.chat_id}:{db_chat.creator_account.user_id}:{now}",
-                                    count=tg_chat.members_count,
-                                    date=now,
-                                    chat=db_chat,
-                                    logged_by=db_chat.creator_account,
-                                )
-                            except Exception as e:
-                                logger.exception(e)
-                                response.fail('DB_ERROR')
-                            else:
-                                response.done('logged chat member count')
-                    else:
-                        response.fail('client is not connected now')
-                    break
-            else:
-                response.fail('no client is ready')
-                break
-
-            if response.success:
-                if not analyzer.first_analyzed_at:
-                    analyzer.first_analyzed_at = now
-                analyzer.last_analyzed_at = now
-                analyzer.save()
-
-        return response
-
-    def task_analyze_chat_shared_medias(self, *args, **kwargs):
-        response = BaseResponse()
-
-        chats = self.tg_models.Chat.objects.filter(shared_media_analyzer__isnull=False,
-                                                   shared_media_analyzer__enabled=True)
-        for db_chat in chats:
-            analyzer = db_chat.shared_media_analyzer
-            now = arrow.utcnow().timestamp
-            for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
-                    client: Client = client
-                    if client.is_connected:
-                        res = client.send(
-                            functions.messages.GetSearchCounters(peer=client.resolve_peer(db_chat.chat_id),
-                                                                 filters=self._search_filter_count)
-                        )
-                        if res:
-                            count_dict = {}
-                            for counter in res:
-                                count_dict[self._filter_names[counter.filter.__class__.__name__]] = counter.count
-                            if count_dict:
-                                try:
-                                    now = arrow.utcnow().timestamp
-                                    self.tg_models.ChatSharedMedia.objects.create(
-                                        id=f"{db_chat.chat_id}:{db_chat.creator_account.user_id}:{now}",
-                                        date=now,
-                                        photo=count_dict['photo'],
-                                        video=count_dict['video'],
-                                        document=count_dict['document'],
-                                        music=count_dict['music'],
-                                        url=count_dict['url'],
-                                        voice=count_dict['voice'],
-                                        video_note=count_dict['video_note'],
-                                        animation=count_dict['animation'],
-                                        location=count_dict['location'],
-                                        contact=count_dict['contact'],
-                                        chat=db_chat,
-                                        logged_by=db_chat.creator_account,
-                                    )
-                                except Exception as e:
-                                    logger.exception(e)
-                                    response.fail('DB_ERROR')
-                                else:
-                                    response.done('logged shared media counts')
-                    else:
-                        response.fail('client is not connected now')
-                    break
-            else:
-                response.fail('no client is ready')
-                break
-
-            if response.success:
-                if not analyzer.first_analyzed_at:
-                    analyzer.first_analyzed_at = now
-                analyzer.last_analyzed_at = now
-                analyzer.save()
-
-        return response
-
-    def task_analyze_chat_members(self, *args, **kwargs):
-        response = BaseResponse()
-        only_admins = kwargs.get('only_admins', False)
-        chat_id = kwargs.get('chat_id', None)
-        if chat_id:
-            try:
-                db_chat = self.tg_models.Chat.objects.get(
-                    chat_id=chat_id,
-                )
-            except exceptions.ObjectDoesNotExist as e:
-                response.fail(f"Chat with `chat_id`:{chat_id} does not exists")
-            except Exception as e:
-                logger.exception(e)
-                response.fail('UNKNOWN_ERROR')
-            else:
-                if db_chat.members_analyzer and db_chat.members_analyzer.enabled:
-                    for client in clients:
-                        if client.session_name == db_chat.creator_account.session_name:
-                            client: Client = client
-                            if client.is_connected:
-                                response = self.analyze_chat_members(
-                                    client,
-                                    db_chat,
-                                    response,
-                                    Filters.ADMINISTRATORS if only_admins else None,
-                                )
-                            else:
-                                response.fail('client is not connected now')
-                            break
-                    else:
-                        response.fail('no client is ready')
-                else:
-                    response.fail(f'Chat with `chat_id`:{chat_id} does not have an enabled `member_analyzer`')
-        else:
-            response.fail('KeyError: No `chat_id` in kwargs')
-        return response
-
-    def task_analyze_all_chat_members(self, *args, **kwargs):
-        response = BaseResponse()
-
-        chats = self.tg_models.Chat.objects.filter(members_analyzer__isnull=False,
-                                                   members_analyzer__enabled=True)
-        for db_chat in chats:
-            analyzer = db_chat.members_analyzer
-            now = arrow.utcnow().timestamp
-            for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
-                    client: Client = client
-                    if client.is_connected:
-                        response = self.analyze_chat_members(client, db_chat, response)
-                    else:
-                        response.fail('client is not connected now')
-                    break
-            else:
-                response.fail('no client is ready')
-                break
-
-            if response.success:
-                if not analyzer.first_analyzed_at:
-                    analyzer.first_analyzed_at = now
-                analyzer.last_analyzed_at = now
-                analyzer.save()
-
-        return response
-
-    def analyze_chat_members(self, client: Client, db_chat, response: BaseResponse, filter=None):
-        try:
-            for chat_member in client.iter_chat_members(db_chat.chat_id, filter=filter if filter else Filters.ALL):
-                chat_member: ChatMember = chat_member
-                new_status = chat_member.status
-                try:
-                    db_user = self.tg_models.User.objects.get(
-                        user_id=chat_member.user.id
-                    )
-                except exceptions.ObjectDoesNotExist as e:
-                    # user and membership does not exist, create them
-                    tg_user = chat_member.user
-                    db_user = self.get_or_create_db_tg_user(tg_user, client)
-                    db_membership = self.get_or_create_membership(db_chat, db_user)
-                    db_participant = self.create_channel_participant(
-                        chat_member,
-                        db_membership,
-                        client,
-                    )
-                    self.update_membership_status(db_membership, db_participant)
-                    response.done()
-                else:
-                    try:
-                        db_membership = self.tg_models.Membership.objects.get(
-                            user=db_user,
-                            chat=db_chat,
-                        )
-                    except exceptions.ObjectDoesNotExist as e:
-                        # membership does not exists, create it
-                        db_membership = self.get_or_create_membership(db_chat, db_user)
-                        db_participant = self.create_channel_participant(
-                            chat_member,
-                            db_membership,
-                            client,
-                        )
-                        self.update_membership_status(db_membership, db_participant)
-                        response.done()
-                    else:
-                        logger.info(f"{db_membership} : {db_membership.current_status.type}, {new_status}")
-                        if db_membership.current_status and db_membership.current_status.type != new_status:
-                            db_participant = self.create_channel_participant(
-                                chat_member,
-                                db_membership,
-                                client,
-                            )
-                            self.update_membership_status(db_membership, db_participant)
-
-                        response.done()
-        except tg_errors.RPCError as e:
-            logger.exception(e)
-            response.fail('TG_ERROR')
-        except Exception as e:
-            logger.exception(e)
-            response.fail('UNKNOWN_ERROR')
-        return response
-
-    def task_analyze_admin_logs(self, *args, **kwargs):
-        response = BaseResponse()
-
-        return response
-
-    ########################################
 
     def disable_channel_analyzers_with_admin_required(self, db_chat, db_tg_channel):
         if db_tg_channel.is_active or db_tg_channel.is_account_admin:
@@ -867,6 +323,8 @@ class Worker(ConsumerProducerMixin):
         return db_channel
 
     def create_entity_types(self, db_chat, db_message, message: Message):
+        if not message:
+            return None
         entities = message.entities if message.entities else message.caption_entities
         if not entities:
             return
@@ -884,6 +342,8 @@ class Worker(ConsumerProducerMixin):
                 logger.exception(e)
 
     def create_entities(self, client: Client, db_chat, db_message, message: Message):
+        if not message:
+            return None
         entities = message.entities if message.entities else message.caption_entities
         if not entities:
             return
@@ -1010,7 +470,7 @@ class Worker(ConsumerProducerMixin):
         return db_tg_chat
 
     def get_message_media_type(self, message: Message):
-        if message.media:
+        if getattr(message, 'media', False):
             for media_type in self._media_types:
                 if hasattr(message, media_type):
                     return media_type
@@ -1028,6 +488,38 @@ class Worker(ConsumerProducerMixin):
                 entity_types.add(entity.type)
         return list(entity_types)
 
+    def fill_db_tg_message_attrs(self, db_message, message, db_chat, client: Client, now: int):
+        db_message.message_id = getattr(message, 'message_id', None)
+        db_message.date = getattr(message, 'date', None)
+        db_message.from_user = self.get_or_create_db_tg_user(getattr(message, 'from_user', None), client)
+        db_message.forward_from = self.get_or_create_db_tg_user(getattr(message, 'forward_from', None), client)
+        db_message.forward_sender_name = getattr(message, 'forward_sender_name', None)
+        db_message.forward_from_chat = self.get_or_create_db_tg_chat(
+            getattr(message, 'forward_from_chat', None),
+            db_chat.creator_account,
+            client,
+        )
+        db_message.forward_from_message_id = getattr(message, 'forward_from_message_id', None)
+        db_message.forward_signature = getattr(message, 'forward_signature', None)
+        db_message.forward_date = getattr(message, 'forward_date', None)
+        db_message.reply_to_message = self.get_or_create_db_tg_message(
+            getattr(message, 'reply_to_message', None), db_chat, client, now
+        )
+        db_message.mentioned = getattr(message, 'mentioned', False)
+        db_message.empty = message.empty if message.empty else False
+        db_message.emptied_at = now if db_message.empty else None
+        db_message.edit_date = getattr(message, 'edit_date', None)
+        db_message.media_group_id = getattr(message, 'media_group_id', None)
+        db_message.author_signature = getattr(message, 'author_signature', None)
+        db_message.text = getattr(message, 'text', None)
+        db_message.caption = getattr(message, 'caption', None)
+        db_message.via_bot = self.get_or_create_db_tg_user(getattr(message, 'via_bot', None), client)
+        db_message.outgoing = getattr(message, 'outgoing', None)
+        db_message.has_media = message.media if message.media else False
+        db_message.media_type = self.get_message_media_type(message)
+        db_message.chat = db_chat
+        db_message.logged_by = db_chat.creator_account
+
     def get_or_create_db_tg_message(self, message: Message, db_chat, client: Client, now: int):
         if message is None:
             return None
@@ -1035,69 +527,23 @@ class Worker(ConsumerProducerMixin):
 
         try:
             db_message = self.tg_models.Message.objects.get(id=_id)
-            if message.edit_date and message.edit_date > db_message.modified_at:
+            if message.edit_date and getattr(message, 'edit_date', 0) > getattr(message, 'modified_at', 0):
                 # message needs to be updated in the db
-                db_message.message_id = message.message_id
-                db_message.date = message.date
-                db_message.from_user = self.get_or_create_db_tg_user(message.from_user, client)
-                db_message.forward_from = self.get_or_create_db_tg_user(message.forward_from, client)
-                db_message.forward_sender_name = message.forward_sender_name
-                db_message.forward_from_chat = self.get_or_create_db_tg_chat(message.forward_from_chat,
-                                                                             db_chat.creator_account,
-                                                                             client,
-                                                                             )
-                db_message.forward_from_message_id = message.forward_from_message_id
-                db_message.forward_signature = message.forward_signature
-                db_message.forward_date = message.forward_date
-                db_message.reply_to_message = self.get_or_create_db_tg_message(
-                    message.reply_to_message, db_chat, client, now
-                )
-                db_message.mentioned = message.mentioned
-                db_message.empty = message.empty if message.empty else False
-                db_message.emptied_at = now if message.empty else None
-                db_message.edit_date = message.edit_date
-                db_message.media_group_id = message.media_group_id
-                db_message.author_signature = message.author_signature
-                db_message.text = message.text
-                db_message.caption = message.caption
-                db_message.via_bot = self.get_or_create_db_tg_user(message.via_bot, client)
-                db_message.outgoing = message.outgoing
-                db_message.has_media = message.media
-                db_message.media_type = self.get_message_media_type(message)
-                db_message.chat = db_chat
-                db_message.logged_by = db_chat.creator_account
+                self.fill_db_tg_message_attrs(db_message, message, db_chat, client, now)
                 db_message.save()
         except exceptions.ObjectDoesNotExist as e:
-            db_message = self.tg_models.Message.objects.create(
-                id=_id,
-                message_id=message.message_id,
-                date=message.date,
-                from_user=self.get_or_create_db_tg_user(message.from_user, client),
-                forward_from=self.get_or_create_db_tg_user(message.forward_from, client),
-                forward_sender_name=message.forward_sender_name,
-                forward_from_chat=self.get_or_create_db_tg_chat(message.forward_from_chat,
-                                                                db_chat.creator_account,
-                                                                client, ),
-                forward_from_message_id=message.forward_from_message_id,
-                forward_signature=message.forward_signature,
-                forward_date=message.forward_date,
-                reply_to_message=self.get_or_create_db_tg_message(
-                    message.reply_to_message, db_chat, client, now),
-                mentioned=message.mentioned,
-                empty=message.empty if message.empty else False,
-                emptied_at=now if message.empty else None,
-                edit_date=message.edit_date,
-                media_group_id=message.media_group_id,
-                author_signature=message.author_signature,
-                text=message.text,
-                caption=message.caption,
-                via_bot=self.get_or_create_db_tg_user(message.via_bot, client),
-                outgoing=message.outgoing,
-                has_media=message.media if message.media else False,
-                media_type=self.tg_models.ChatMediaTypes.get_type(message),
-                chat=db_chat,
-                logged_by=db_chat.creator_account,
-            )
+            try:
+                db_message = self.tg_models.Message(
+                    id=_id,
+                )
+                self.fill_db_tg_message_attrs(db_message, message, db_chat, client, now)
+                db_message.save()
+            except Exception as e:
+                logger.exception(e)
+                db_message = None
+        except Exception as e:
+            logger.exception(e)
+            db_message = None
 
         return db_message
 
@@ -1138,9 +584,560 @@ class Worker(ConsumerProducerMixin):
                     logger.exception(e)
 
 
+class Worker(ConsumerProducerMixin, DataBaseManager):
+    tg_exchange = tg_globals.tg_exchange
+    info_queue = tg_globals.info_queue
+
+    _search_filter_count = [InputMessagesFilterPhotos(), InputMessagesFilterVideo(),
+                            InputMessagesFilterDocument(), InputMessagesFilterMusic(),
+                            InputMessagesFilterUrl(), InputMessagesFilterVoice(),
+                            InputMessagesFilterRoundVideo(), InputMessagesFilterGif(),
+                            InputMessagesFilterGeo(), InputMessagesFilterContacts(), ]
+    _filter_names = {'InputMessagesFilterPhotos': 'photo', 'InputMessagesFilterVideo': 'video',
+                     'InputMessagesFilterDocument': 'document', 'InputMessagesFilterMusic': 'music',
+                     'InputMessagesFilterUrl': 'url', 'InputMessagesFilterVoice': 'voice',
+                     'InputMessagesFilterRoundVideo': 'video_note', 'InputMessagesFilterGif': 'animation',
+                     'InputMessagesFilterGeo': 'location', 'InputMessagesFilterContacts': 'contact'}
+
+    def __init__(self, connection, clients):
+        self.connection = connection
+        super().__init__(clients)
+
+    def get_consumers(self, Consumer, channel):
+        return [Consumer(queues=[self.info_queue], callbacks=[self.on_task])]
+
+    def acquire_clients(self, func, *args, **kwargs):
+        response = BaseResponse()
+        with clients_lock as lock:
+            if len(self.clients) != 0:
+                return func(*args, **kwargs) if callable(func) else response.fail()
+            else:
+                return response.fail()
+
+    def on_task(self, body, message):
+        from utils.utils import prettify
+
+        func = body['func']
+        args = body['args']
+        kwargs = body['kwargs']
+
+        # logger.info(f'Got task: {prettify(body)}')
+        response = BaseResponse()
+
+        if func == 'task_init_clients':
+            response = self.acquire_clients(self.task_init_clients, *args, **kwargs)
+
+        elif func == 'task_get_me':
+            response = self.acquire_clients(self.task_get_me, *args, **kwargs)
+
+        elif func == 'task_add_tg_channel':
+            response = self.acquire_clients(self.task_add_tg_channel, *args, **kwargs)
+
+        elif func == 'task_iterate_dialogs':
+            response = self.acquire_clients(self.task_iterate_dialogs, *args, **kwargs)
+
+        elif func == 'task_analyze_chat_shared_medias':
+            response = self.acquire_clients(self.task_analyze_chat_shared_medias, *args, **kwargs)
+
+        elif func == 'task_analyze_chat_member_count':
+            response = self.acquire_clients(self.task_analyze_chat_member_count, *args, **kwargs)
+
+        elif func == 'task_analyze_message_views':
+            response = self.acquire_clients(self.task_analyze_message_views, *args, **kwargs)
+
+        elif func == 'task_analyze_admin_logs':
+            response = self.acquire_clients(self.task_analyze_admin_logs, *args, **kwargs)
+
+        elif func == 'task_analyze_all_chat_members':
+            response = self.acquire_clients(self.task_analyze_all_chat_members, *args, **kwargs)
+
+        elif func == 'task_analyze_chat_members':
+            response = self.acquire_clients(self.task_analyze_chat_members, *args, **kwargs)
+
+        self.producer.publish(
+            body=prettify(response, include_class_name=False),
+            exchange='', routing_key=message.properties['reply_to'],
+            correlation_id=message.properties['correlation_id'],
+            serializer='json',
+            retry=True,
+        )
+        message.ack()
+
+    def task_get_me(self, *args, **kwargs):
+        data = {}
+        for client in clients:
+            client: Client = client
+            data.update({
+                str(client.session_name): str(client.get_me())
+            })
+        return BaseResponse().done(data=data)
+
+    def task_init_clients(self, *args, **kwargs):
+        tg_accounts_to_be_iterated = []
+        for client in self.clients:
+            client: Client = client
+            custom_user = self.users_models.CustomUser.objects.get(username='sigma')
+            me: User = client.get_me()
+            try:
+                db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=me.id, is_deleted=False)
+            except exceptions.ObjectDoesNotExist as e:
+                logger.exception(e)
+                db_tg_admin_account = self.create_db_tg_account(client, custom_user, me)
+
+            # update chats table for each account
+            tg_accounts_to_be_iterated.append(db_tg_admin_account.user_id)
+        tasks.iterate_dialogs.apply_async(
+            kwargs={
+                'tg_account_ids': tg_accounts_to_be_iterated,
+            },
+            countdown=0,
+        )
+
+        return BaseResponse().done(message='client init successful')
+
+    def task_iterate_dialogs(self, *args, **kwargs):
+        response = BaseResponse()
+        ids = []
+        try:
+            tg_account_ids = kwargs['tg_account_ids']
+            db_tg_accounts = self.tg_models.TelegramAccount.objects.filter(
+                user_id__in=tg_account_ids,
+                is_deleted=False,
+            )
+        except Exception as e:
+            logger.exception(e)
+            response.fail('missing `tg_account_ids` kwarg')
+        else:
+            if not db_tg_accounts or not len(db_tg_accounts):
+                return response.fail('no telegram account is available now')
+
+            session_names = [db_tg_account.session_name for db_tg_account in db_tg_accounts]
+            for client in self.clients:
+                client: Client = client
+                if client.session_name in session_names:
+                    db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(
+                        session_name=client.session_name,
+                        is_deleted=False,
+                    )
+                    for dialog in client.get_dialogs():
+                        if dialog.chat.type == 'channel' and dialog.chat.username is not None:
+                            db_chat = self.get_or_create_db_tg_chat(
+                                dialog.chat,
+                                db_tg_admin_account,
+                                client,
+                                update_current=True,
+                                is_tg_full_chat=False,
+                            )
+                            if db_chat:
+                                db_tg_channel = self.get_or_create_db_tg_channel(
+                                    db_tg_admin_account,
+                                    db_chat,
+                                    dialog.chat,
+                                    self.users_models.CustomUser.objects.get(username='sigma', is_superuser=True),
+                                )
+                                try:
+                                    admins = client.get_chat_members(db_chat.chat_id, filter=Filters.ADMINISTRATORS)
+                                except tg_errors.ChatAdminRequired as e:
+                                    # client is not admin of this channel, update telegram account related to this channel
+                                    self.disable_channel_analyzers_with_admin_required(db_chat, db_tg_channel)
+                                except Exception as e:
+                                    logger.exception(e)
+                                else:
+                                    # update memberships for this channel
+                                    ids.append(db_chat.chat_id)
+        response.done()
+        if len(ids):
+            tasks.analyze_chat_members.apply_async(
+                kwargs={
+                    'only_admins': False,
+                    'chat_ids': ids,
+                },
+                countdown=0,
+            )
+        return response
+
+    def task_add_tg_channel(self, *args, **kwargs):
+        db_tg_account_admin_id = kwargs['db_tg_account_admin_id']
+        channel_username = str(kwargs['channel_username']).lower()
+        db_userid = kwargs['db_userid']
+        response = BaseResponse()
+        try:
+            db_request_owner = self.users_models.CustomUser.objects.get(pk=db_userid)
+        except exceptions.ObjectDoesNotExist as e:
+            logger.exception(e)
+            response.fail('No such user')
+        else:
+            try:
+                db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=db_tg_account_admin_id,
+                                                                                 is_deleted=False)
+            except exceptions.ObjectDoesNotExist as e:
+                logger.exception(e)
+                response.fail('no such tg account')
+            else:
+                for client in clients:
+                    if client.session_name == db_tg_admin_account.session_name:
+                        client: Client = client
+                        if client.is_connected:
+                            try:
+                                db_tg_channel = \
+                                    self.tg_models.TelegramChannel.objects.get(
+                                        username=channel_username,
+                                        is_deleted=False
+                                    )
+                            except exceptions.ObjectDoesNotExist as e:
+                                logger.exception(e)
+                                try:
+                                    tg_chat: Chat = client.get_chat(channel_username)
+
+                                except tg_errors.BadRequest as e:
+                                    logger.exception(e)
+                                    if type(e) == tg_errors.ChannelsTooMuch:
+                                        response.fail('Admin has joined too many channels or supergroups')
+                                    else:
+                                        response.fail(TG_BAD_REQUEST)
+                                else:
+                                    if tg_chat.type == 'channel' and tg_chat.username:
+                                        try:
+                                            tg_full_chat: Chat = client.get_chat(tg_chat.id)
+                                            client.join_chat(channel_username)
+                                        except tg_errors.RPCError as e:
+                                            logger.exception(e)
+                                            response.fail(TG_BAD_REQUEST)
+                                        else:
+                                            try:
+                                                with transaction.atomic():
+                                                    db_chat = self.get_or_create_db_tg_chat(tg_full_chat,
+                                                                                            db_tg_admin_account,
+                                                                                            client)
+                                                    db_tg_channel = self.get_or_create_db_tg_channel(
+                                                        db_tg_admin_account,
+                                                        db_chat,
+                                                        tg_full_chat,
+                                                        db_request_owner,
+                                                    )
+
+                                                    db_add_request = self.update_add_channel_request_status(
+                                                        db_tg_admin_account, channel_username, db_tg_channel,
+                                                        tg_full_chat,
+                                                        db_request_owner)
+
+                                                    response.done('joined channel')
+
+                                            except DatabaseError as e:
+                                                logger.exception(e)
+                                                response.fail('DB_ERROR')
+                                    else:
+                                        response.fail('Only public channels can be added')
+                            else:
+                                response.fail('this channel is already added')
+
+
+                        else:
+                            response.fail('Sorry, that Admin account is not connected now.')
+                        break
+                else:
+                    response.fail('Sorry, that Admin account is not connected now.')
+
+        return response
+
+    ########################################
+
+    def task_analyze_message_views(self, *args, **kwargs):
+        response = BaseResponse()
+
+        chats = self.tg_models.Chat.objects.filter(message_view_analyzer__isnull=False,
+                                                   message_view_analyzer__enabled=True)
+        for db_chat in chats:
+            analyzer = db_chat.message_view_analyzer
+            now = arrow.utcnow().timestamp
+
+            for client in clients:
+                if client.session_name == db_chat.creator_account.session_name:
+                    client: Client = client
+                    if client.is_connected:
+                        try:
+                            for message in client.iter_history(db_chat.chat_id):
+                                message: Message = message
+                                if not message.service:
+                                    try:
+                                        now = arrow.utcnow().timestamp
+                                        with transaction.atomic():
+                                            db_message = self.get_or_create_db_tg_message(message, db_chat, client, now)
+                                            db_message_view = self.tg_models.MessageView.objects.create(
+                                                id=f"{db_chat.chat_id}:{message.message_id}:{now}",
+                                                date=now,
+                                                views=message.views,
+                                                message=db_message,
+                                                logged_by=db_chat.creator_account,
+                                                chat=db_chat,
+                                            )
+                                            self.create_entities(client, db_chat, db_message, message)
+                                            self.create_entity_types(db_chat, db_message, message)
+
+                                    except Exception as e:
+                                        logger.exception(e)
+                                    else:
+                                        pass
+
+                        except Exception as e:
+                            logger.exception(e)
+                            response.fail('TG_ERROR')
+                        else:
+                            response.done('logged message views')
+                    else:
+                        response.fail('client is not connected now')
+                    break
+            else:
+                response.fail('no client is ready')
+                break
+
+            if response.success:
+                if not analyzer.first_analyzed_at:
+                    analyzer.first_analyzed_at = now
+                analyzer.last_analyzed_at = now
+                analyzer.save()
+        return response
+
+    def task_analyze_chat_member_count(self, *args, **kwargs):
+        response = BaseResponse()
+
+        chats = self.tg_models.Chat.objects.filter(member_count_analyzer__isnull=False,
+                                                   member_count_analyzer__enabled=True)
+        for db_chat in chats:
+            analyzer = db_chat.member_count_analyzer
+            now = arrow.utcnow().timestamp
+            for client in clients:
+                if client.session_name == db_chat.creator_account.session_name:
+                    client: Client = client
+                    if client.is_connected:
+                        try:
+                            tg_chat: Chat = client.get_chat(chat_id=db_chat.chat_id)
+                        except Exception as e:
+                            response.fail('TG_ERROR')
+                            logger.exception(e)
+                        else:
+                            try:
+                                now = arrow.utcnow().timestamp
+                                self.tg_models.ChatMemberCount.objects.create(
+                                    id=f"{db_chat.chat_id}:{db_chat.creator_account.user_id}:{now}",
+                                    count=tg_chat.members_count,
+                                    date=now,
+                                    chat=db_chat,
+                                    logged_by=db_chat.creator_account,
+                                )
+                            except Exception as e:
+                                logger.exception(e)
+                                response.fail('DB_ERROR')
+                            else:
+                                response.done('logged chat member count')
+                    else:
+                        response.fail('client is not connected now')
+                    break
+            else:
+                response.fail('no client is ready')
+                break
+
+            if response.success:
+                if not analyzer.first_analyzed_at:
+                    analyzer.first_analyzed_at = now
+                analyzer.last_analyzed_at = now
+                analyzer.save()
+
+        return response
+
+    def task_analyze_chat_shared_medias(self, *args, **kwargs):
+        response = BaseResponse()
+
+        chats = self.tg_models.Chat.objects.filter(shared_media_analyzer__isnull=False,
+                                                   shared_media_analyzer__enabled=True)
+        for db_chat in chats:
+            analyzer = db_chat.shared_media_analyzer
+            now = arrow.utcnow().timestamp
+            for client in clients:
+                if client.session_name == db_chat.creator_account.session_name:
+                    client: Client = client
+                    if client.is_connected:
+                        res = client.send(
+                            functions.messages.GetSearchCounters(peer=client.resolve_peer(db_chat.chat_id),
+                                                                 filters=self._search_filter_count)
+                        )
+                        if res:
+                            count_dict = {}
+                            for counter in res:
+                                count_dict[self._filter_names[counter.filter.__class__.__name__]] = counter.count
+                            if count_dict:
+                                try:
+                                    now = arrow.utcnow().timestamp
+                                    self.tg_models.ChatSharedMedia.objects.create(
+                                        id=f"{db_chat.chat_id}:{db_chat.creator_account.user_id}:{now}",
+                                        date=now,
+                                        photo=count_dict['photo'],
+                                        video=count_dict['video'],
+                                        document=count_dict['document'],
+                                        music=count_dict['music'],
+                                        url=count_dict['url'],
+                                        voice=count_dict['voice'],
+                                        video_note=count_dict['video_note'],
+                                        animation=count_dict['animation'],
+                                        location=count_dict['location'],
+                                        contact=count_dict['contact'],
+                                        chat=db_chat,
+                                        logged_by=db_chat.creator_account,
+                                    )
+                                except Exception as e:
+                                    logger.exception(e)
+                                    response.fail('DB_ERROR')
+                                else:
+                                    response.done('logged shared media counts')
+                    else:
+                        response.fail('client is not connected now')
+                    break
+            else:
+                response.fail('no client is ready')
+                break
+
+            if response.success:
+                if not analyzer.first_analyzed_at:
+                    analyzer.first_analyzed_at = now
+                analyzer.last_analyzed_at = now
+                analyzer.save()
+
+        return response
+
+    def task_analyze_chat_members(self, *args, **kwargs):
+        response = BaseResponse()
+        only_admins = kwargs.get('only_admins', False)
+        chat_ids = kwargs.get('chat_ids', None)
+        if chat_ids:
+            for chat_id in chat_ids:
+                try:
+                    db_chat = self.tg_models.Chat.objects.get(
+                        chat_id=chat_id,
+                    )
+                except exceptions.ObjectDoesNotExist as e:
+                    response.fail(f"Chat with `chat_id`:{chat_id} does not exists")
+                except Exception as e:
+                    logger.exception(e)
+                    response.fail('UNKNOWN_ERROR')
+                else:
+                    if db_chat.members_analyzer and db_chat.members_analyzer.enabled:
+                        for client in clients:
+                            if client.session_name == db_chat.creator_account.session_name:
+                                client: Client = client
+                                if client.is_connected:
+                                    response = self.analyze_chat_members(
+                                        client,
+                                        db_chat,
+                                        response,
+                                        Filters.ADMINISTRATORS if only_admins else None,
+                                    )
+                                else:
+                                    response.fail('client is not connected now')
+                                break
+                        else:
+                            response.fail('no client is ready')
+                    else:
+                        response.fail(f'Chat with `chat_id`:{chat_id} does not have an enabled `member_analyzer`')
+        else:
+            response.fail('KeyError: No `chat_ids` in kwargs')
+
+        return response
+
+    def task_analyze_all_chat_members(self, *args, **kwargs):
+        response = BaseResponse()
+        chats = self.tg_models.Chat.objects.filter(members_analyzer__isnull=False,
+                                                   members_analyzer__enabled=True)
+        for db_chat in chats:
+            analyzer = db_chat.members_analyzer
+            now = arrow.utcnow().timestamp
+            for client in clients:
+                if client.session_name == db_chat.creator_account.session_name:
+                    client: Client = client
+                    if client.is_connected:
+                        response = self.analyze_chat_members(client, db_chat, response)
+                    else:
+                        response.fail('client is not connected now')
+                    break
+            else:
+                response.fail('no client is ready')
+                break
+
+            if response.success:
+                if not analyzer.first_analyzed_at:
+                    analyzer.first_analyzed_at = now
+                analyzer.last_analyzed_at = now
+                analyzer.save()
+
+        return response
+
+    def task_analyze_admin_logs(self, *args, **kwargs):
+        response = BaseResponse()
+
+        return response
+
+    def analyze_chat_members(self, client: Client, db_chat, response: BaseResponse, _filter=None):
+        try:
+            for chat_member in client.iter_chat_members(db_chat.chat_id, filter=_filter if _filter else Filters.ALL):
+                chat_member: ChatMember = chat_member
+                new_status = chat_member.status
+                try:
+                    db_user = self.tg_models.User.objects.get(
+                        user_id=chat_member.user.id
+                    )
+                except exceptions.ObjectDoesNotExist as e:
+                    # user and membership does not exist, create them
+                    tg_user = chat_member.user
+                    db_user = self.get_or_create_db_tg_user(tg_user, client)
+                    db_membership = self.get_or_create_membership(db_chat, db_user)
+                    db_participant = self.create_channel_participant(
+                        chat_member,
+                        db_membership,
+                        client,
+                    )
+                    self.update_membership_status(db_membership, db_participant)
+                    response.done()
+                else:
+                    try:
+                        db_membership = self.tg_models.Membership.objects.get(
+                            user=db_user,
+                            chat=db_chat,
+                        )
+                    except exceptions.ObjectDoesNotExist as e:
+                        # membership does not exists, create it
+                        db_membership = self.get_or_create_membership(db_chat, db_user)
+                        db_participant = self.create_channel_participant(
+                            chat_member,
+                            db_membership,
+                            client,
+                        )
+                        self.update_membership_status(db_membership, db_participant)
+                        response.done()
+                    else:
+                        # logger.info(f"{db_membership} : {db_membership.current_status.type}, {new_status}")
+                        if db_membership.current_status and db_membership.current_status.type != new_status:
+                            db_participant = self.create_channel_participant(
+                                chat_member,
+                                db_membership,
+                                client,
+                            )
+                            self.update_membership_status(db_membership, db_participant)
+
+                        response.done()
+        except tg_errors.RPCError as e:
+            logger.exception(e)
+            response.fail('TG_ERROR')
+        except Exception as e:
+            logger.exception(e)
+            response.fail('UNKNOWN_ERROR')
+
+        return response
+
+    ########################################
+
+
 class TelegramConsumerManager(Thread):
     def __init__(self, clients):
-        threading.Thread.__init__(self)
+        Thread.__init__(self)
         self.clients = clients
         self.daemon = True
         self.name = 'Telegram_Consumer_Manager_Thread'
@@ -1150,11 +1147,11 @@ class TelegramConsumerManager(Thread):
         logger.info(f"Telegram Consumer started ....")
 
 
-class TelegramClientManager(Thread):
+class TelegramClientManager():
     tg_models = None
 
     def __init__(self, clients: list):
-        threading.Thread.__init__(self)
+        # threading.Thread.__init__(self)
         self.clients = clients
         self.name = 'telegram_client_thread'
         self.names = [

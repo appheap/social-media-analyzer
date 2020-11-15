@@ -21,6 +21,10 @@ eventlet = "*"
 whitenoise = "*"
 celery = "~=5.0"
 redis = "*"
+watchdog = "*"
+pyyaml = "*"
+argh = "*"
+asgiref = "*"
 
 [requires]
 python_version = "3.6"

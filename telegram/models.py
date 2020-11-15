@@ -250,7 +250,7 @@ class ChatMediaTypes(models.TextChoices):
     def get_type(message: PGMessage):
         for choice in ChatMediaTypes.choices:
             if hasattr(message, choice[0]):
-                return getattr(ChatMediaTypes, str(choice[1]).lower())
+                return getattr(ChatMediaTypes, str(choice[0]).lower())
         else:
             return ChatMediaTypes.undefined
 
@@ -299,7 +299,7 @@ class EntityTypes(models.TextChoices):
     def get_type(entity: MessageEntity):
         for choice in EntityTypes.choices:
             if choice[0] == entity.type:
-                return getattr(EntityTypes, str(choice[1]).lower())
+                return getattr(EntityTypes, str(choice[0]).lower())
         else:
             return EntityTypes.undefined
 
@@ -637,7 +637,7 @@ class Message(MyBaseModel):
         on_delete=models.CASCADE,
     )
     mentioned = models.BooleanField(null=True, blank=True)
-    empty = models.BooleanField(default=False, )
+    empty = models.BooleanField(default=False, null=False, )
     edit_date = models.BigIntegerField(null=True, blank=True)
     media_group_id = models.BigIntegerField(null=True, blank=True)
     author_signature = models.CharField(max_length=256, null=True, blank=True)
@@ -653,7 +653,7 @@ class Message(MyBaseModel):
     outgoing = models.BooleanField(null=True, blank=True)
 
     emptied_at = models.BigIntegerField(null=True, blank=True)
-    has_media = models.BooleanField(default=False, )
+    has_media = models.BooleanField(default=False, null=False)
     media_type = models.CharField(
         ChatMediaTypes.choices,
         max_length=20,
@@ -677,6 +677,10 @@ class Message(MyBaseModel):
         null=True, blank=True,
         related_name='logged_messages',
     )
+
+    class Meta:
+        ordering = ['chat', '-date', ]
+        pass
 
     def __str__(self):
         return f"message {self.message_id} from {self.chat}"
@@ -711,6 +715,10 @@ class MessageView(MyBaseModel):
         null=True, blank=True,
         related_name='message_views',
     )
+
+    class Meta:
+        ordering = ['message', '-date', ]
+        pass
 
     def __str__(self):
         return f"{self.views} @ ({arrow.get(self.date, tzinfo='utc').format('YYYY-MM-DD HH:mm:ss')}) of {self.message}"
