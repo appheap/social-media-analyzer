@@ -77,7 +77,7 @@ class TelegramAccount(MyBaseModel):
     # `telegram_channels` : telegram channels added by this account
     # `chats` : chats added by this account
     # `telegram_channel_add_requests` : requests for adding telegram channel this account is requested to be admin of
-    # `admin_logs` : admin logs logged by this account
+    # `admin_log_events` : admin log events logged by this account
     # `logged_messages` : messages logged by this account
     # `message_views` : message views logged by this account
     # `member_count_history` : member counts logged by this account
@@ -431,7 +431,7 @@ class Chat(MyBaseModel):
     # `restrictions` : restrictions of this chat
     # `telegram_channels` : telegram channels connected to this chat
     # `admin_log_mentions` : admin logs this chat is mentioned in
-    # `admin_logs` : admin logs belonging to this chat
+    # `admin_log_events` : admin log events belonging to this chat
     # `linked_chats_reverse` : Chats this chat is linked to
     # `messages` : messages of this channel
     # `forwarded_messages` : forwarded messages from this channel
@@ -893,49 +893,6 @@ class Restriction(MyBaseModel):
         return self.reason
 
 
-class AdminLog(MyBaseModel):
-    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:logged_by_id:query_date`
-
-    # Chats mentioned in events
-    chats = models.ManyToManyField(
-        'telegram.Chat',
-        related_name='admin_log_mentions',
-    )
-
-    # Users mentioned in events
-    users = models.ManyToManyField(
-        'telegram.User',
-        related_name='admin_log_mentions',
-    )
-
-    ##################################
-    query_date = models.BigIntegerField()
-
-    # Chat this AdminLog belongs to
-    chat = models.ForeignKey(
-        'telegram.Chat',
-        null=True, blank=True,
-        on_delete=models.CASCADE,
-        related_name='admin_logs',
-    )
-
-    # Telegram account this AdminLog belongs to
-    logged_by = models.ForeignKey(
-        'telegram.TelegramAccount',
-        null=False,
-        on_delete=models.CASCADE,
-        related_name="admin_logs",
-    )
-
-    ####################################
-    # `events` : events of this admin log
-
-    class Meta:
-        verbose_name_plural = 'Admin Logs'
-
-    def __str__(self):
-        return f"{self.chat} @ {self.query_date} by {self.logged_by}"
-
 
 class AdminLogEvent(MyBaseModel):
     id = models.CharField(max_length=256, primary_key=True)  # `chat_id:event_id`
@@ -944,12 +901,20 @@ class AdminLogEvent(MyBaseModel):
     date = models.BigIntegerField()
     user_id = models.BigIntegerField()
 
-    # AdminLog this event belongs to
-    admin_log = models.ForeignKey(
-        'telegram.AdminLog',
-        null=False,
-        related_name='events',
+    # Chat this Event belongs to
+    chat = models.ForeignKey(
+        'telegram.Chat',
+        null=True, blank=True,
         on_delete=models.CASCADE,
+        related_name='admin_log_events',
+    )
+
+    # Telegram account that logged this event
+    logged_by = models.ForeignKey(
+        'telegram.TelegramAccount',
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="admin_log_events",
     )
 
     # Channel/supergroup title was changed

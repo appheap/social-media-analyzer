@@ -12,8 +12,8 @@ class ChatsInline(admin.TabularInline):
     model = models.Chat
 
 
-class AdminLogInline(admin.TabularInline):
-    model = models.AdminLog
+class AdminLogEventInline(admin.TabularInline):
+    model = models.AdminLogEvent
 
 
 class MessageViewInline(admin.TabularInline):
@@ -35,7 +35,7 @@ class TelegramAccountAdmin(admin.ModelAdmin):
         MemberCountHistoryInline,
         SharedMediaHistoryInline,
         MessageViewInline,
-        AdminLogInline,
+        AdminLogEventInline,
     ]
     list_display = ['first_name', 'username', 'created_at', 'modified_at']
 
@@ -140,7 +140,7 @@ class ChatAdmin(admin.ModelAdmin):
         ForwardedMessageChannelInline,
         ChatMemberInline,
         LinkedChatInline,
-        AdminLogInline,
+        AdminLogEventInline,
         MemberCountHistoryInline,
         SharedMediaHistoryInline,
         MessageViewInline,
@@ -148,27 +148,6 @@ class ChatAdmin(admin.ModelAdmin):
 
 
 #################################################################################
-
-class ChatsInline(admin.TabularInline):
-    model = models.Chat.admin_log_mentions.through
-    verbose_name_plural = 'Mentioned Chats'
-
-
-class UsersInline(admin.TabularInline):
-    model = models.User.admin_log_mentions.through
-    verbose_name_plural = 'Mentioned Users'
-
-
-class AdminLogEventInline(admin.TabularInline):
-    model = models.AdminLogEvent
-
-
-class AdminLogAdmin(admin.ModelAdmin):
-    inlines = [
-        UsersInline,
-        ChatsInline,
-        AdminLogEventInline,
-    ]
 
 
 #################################################################################
@@ -247,7 +226,6 @@ admin.site.register(models.EntityType)
 admin.site.register(models.ChatMemberCount)
 admin.site.register(models.ChatSharedMedia)
 admin.site.register(models.Restriction)
-admin.site.register(models.AdminLog, AdminLogAdmin)
 admin.site.register(models.AdminLogEvent)
 admin.site.register(models.AdminLogEventActionChangeTitle)
 admin.site.register(models.AdminLogEventActionChangeAbout)
