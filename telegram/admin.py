@@ -67,25 +67,25 @@ class ViaBotMessageInline(admin.TabularInline):
 class InvitedParticipantInline(admin.TabularInline):
     model = models.ChannelParticipant
     fk_name = 'invited_by'
-    verbose_name_plural = 'Invited Users'
+    verbose_name_plural = 'Invited Participants'
 
 
 class PromotedParticipantInline(admin.TabularInline):
     model = models.ChannelParticipant
     fk_name = 'promoted_by'
-    verbose_name_plural = 'Promoted Users'
+    verbose_name_plural = 'Promoted Participants'
 
 
 class DemotedParticipantInline(admin.TabularInline):
     model = models.ChannelParticipant
     fk_name = 'demoted_by'
-    verbose_name_plural = 'Demoted Users'
+    verbose_name_plural = 'Demoted Participants'
 
 
 class KickedParticipantInline(admin.TabularInline):
     model = models.ChannelParticipant
     fk_name = 'kicked_by'
-    verbose_name_plural = 'Kicked Users'
+    verbose_name_plural = 'Kicked Participants'
 
 
 class MentionedInline(admin.TabularInline):
@@ -94,19 +94,23 @@ class MentionedInline(admin.TabularInline):
     verbose_name_plural = 'Mentions'
 
 
+class MembershipInline(admin.TabularInline):
+    model = models.Membership
+
+
 class UserAdmin(admin.ModelAdmin):
     inlines = [
         TelegramAccountInline,
-        ForwardedMessageInline,
-        SentMessageInline,
-        ViaBotMessageInline,
+        MembershipInline,
+        # ForwardedMessageInline,
+        # SentMessageInline,
+        # ViaBotMessageInline,
         InvitedParticipantInline,
         PromotedParticipantInline,
         DemotedParticipantInline,
         KickedParticipantInline,
-        MentionedInline,
+        # MentionedInline,
     ]
-    # list_display = ()
 
 
 #################################################################################
@@ -136,14 +140,15 @@ class ForwardedMessageChannelInline(admin.TabularInline):
 class ChatAdmin(admin.ModelAdmin):
     inlines = [
         TelegramChannelInline,
-        MessageInline,
-        ForwardedMessageChannelInline,
         ChatMemberInline,
-        LinkedChatInline,
         AdminLogEventInline,
-        MemberCountHistoryInline,
-        SharedMediaHistoryInline,
-        MessageViewInline,
+
+        # MessageInline,
+        # ForwardedMessageChannelInline,
+        # LinkedChatInline,
+        # MemberCountHistoryInline,
+        # SharedMediaHistoryInline,
+        # MessageViewInline,
     ]
 
 
@@ -211,6 +216,25 @@ class MessageAdmin(admin.ModelAdmin):
 
 
 #################################################################################
+class ChannelParticipantInline(admin.TabularInline):
+    model = models.ChannelParticipant
+    fk_name = 'membership'
+    verbose_name_plural = 'participant history'
+    fields = (
+        'user', 'type', 'join_date', 'promoted_by',
+        'invited_by', 'demoted_by', 'kicked_by',
+        'admin_rights', 'banned_rights', 'can_edit',
+    )
+
+
+class MembershipAdmin(admin.ModelAdmin):
+    inlines = [
+        ChannelParticipantInline,
+    ]
+
+
+#################################################################################
+#################################################################################
 
 admin.site.register(models.TelegramAccount, TelegramAccountAdmin)
 admin.site.register(models.TelegramChannel)
@@ -218,7 +242,7 @@ admin.site.register(models.AddChannelRequest)
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Chat, ChatAdmin)
-admin.site.register(models.Membership)
+admin.site.register(models.Membership, MembershipAdmin)
 admin.site.register(models.Message, MessageAdmin)
 admin.site.register(models.MessageView)
 admin.site.register(models.Entity)

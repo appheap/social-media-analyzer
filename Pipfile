@@ -25,6 +25,7 @@ watchdog = "*"
 pyyaml = "*"
 argh = "*"
 asgiref = "*"
+trio = "*"
 
 [requires]
 python_version = "3.6"

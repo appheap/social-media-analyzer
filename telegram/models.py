@@ -20,6 +20,7 @@ class MyBaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('-created_at',)
 
     def save(self, *args, **kwargs):
         if not self.created_at:
@@ -256,6 +257,7 @@ class ChatMediaTypes(models.TextChoices):
 
 
 class ChannelParticipantTypes(models.TextChoices):
+    user = 'user'  # not member yet, only a telegram user (when banned/promoted before joining the channel)
     member = 'member'
     self = 'self'
     administrator = 'administrator'
@@ -336,8 +338,12 @@ class User(MyBaseModel):
     # `invited_participants` : channel participants invited by this user
     # `kicked_participants` : channel participants kicked by this user
 
+    class Meta:
+        ordering = ('created_at',)
+
     def __str__(self):
-        return str(self.first_name if self.first_name else "") + str(self.last_name if self.last_name else "")
+        # return str(self.first_name if self.first_name else "") + str(self.last_name if self.last_name else "")
+        return f"{self.first_name if self.first_name else self.last_name if self.last_name else ''} `@{self.username if self.username else self.user_id}`"
 
 
 class Chat(MyBaseModel):
@@ -466,10 +472,11 @@ class Membership(MyBaseModel):
     )
 
     class Meta:
-        order_with_respect_to = 'chat'
+        # order_with_respect_to = 'chat'
         unique_together = [
             ('chat', 'user'),
         ]
+        ordering = ['chat', 'user']
 
     current_status = models.OneToOneField(
         'telegram.ChannelParticipant',
@@ -533,7 +540,6 @@ class ChannelParticipant(MyBaseModel):
     rank = models.CharField(
         max_length=256,
         null=True, blank=True,
-        default='admin',
     )  # only for creator and admin
 
     #### participantBanned (user_id, join_date, inviter_id, left, kicked_by, banned_rights, )
@@ -588,6 +594,13 @@ class ChannelParticipant(MyBaseModel):
         null=True, blank=True,
         related_name='kicked_participants',
     )
+
+    # the time of event happened to this participant (from adminLogs)
+    event_date = models.BigIntegerField(null=True, blank=True, )
+    is_previous = models.BooleanField(null=True, blank=True, )
+
+    class Meta:
+        ordering = ['-event_date', 'is_previous']
 
     def __str__(self):
         return f"participant {self.id} of type :{self.type}"
@@ -653,7 +666,9 @@ class Message(MyBaseModel):
     )
     outgoing = models.BooleanField(null=True, blank=True)
 
-    emptied_at = models.BigIntegerField(null=True, blank=True)
+    delete_date = models.BigIntegerField(null=True, blank=True)
+    is_deleted = models.BooleanField(default=False, null=False, )
+
     has_media = models.BooleanField(default=False, null=False)
     media_type = models.CharField(
         ChatMediaTypes.choices,
@@ -670,6 +685,16 @@ class Message(MyBaseModel):
     # `actions_edit_message_new` : actions were this message was new message of the action
     # `action_delete_message` : action were this message was deleted
     # `actions_stop_poll` : actions were this poll message was stopped
+    # `new_message` : the new edited message if this message id an edited one
+
+    # whether this message is an old (original of edited msg)
+    # is_old_message = models.BooleanField(null=False, default=False, )
+    # old_message = models.ForeignKey(
+    #     'telegram.Message',
+    #     null=True, blank=True,
+    #     on_delete=models.SET_NULL,
+    #     related_name='new_message'
+    # )
 
     # Telegram account who logged this message
     logged_by = models.ForeignKey(
@@ -680,7 +705,7 @@ class Message(MyBaseModel):
     )
 
     class Meta:
-        ordering = ['chat', '-date', ]
+        ordering = ('-date', 'chat',)
         pass
 
     def __str__(self):
@@ -718,8 +743,7 @@ class MessageView(MyBaseModel):
     )
 
     class Meta:
-        ordering = ['message', '-date', ]
-        pass
+        ordering = ['-date', 'message', ]
 
     def __str__(self):
         return f"{self.views} @ ({arrow.get(self.date, tzinfo='utc').format('YYYY-MM-DD HH:mm:ss')}) of {self.message}"
@@ -1017,21 +1041,110 @@ class AdminLogEvent(MyBaseModel):
         null=True, blank=True,
     )
 
-    #############################################
-    # user = models.ForeignKey(
-    #     'telegram.User',
-    #     null=True, blank=True,
-    #     on_delete=models.SET_NULL,
-    #     related_name='admin_log_events',
-    #     verbose_name='User this event is about'
-    # )
+    # The banned rights of a user were changed
+    action_participant_toggle_ban = models.OneToOneField(
+        'telegram.AdminLogEventActionToggleBan',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
 
-    # chat = models.ForeignKey(
-    #     'telegram.Chat',
-    #     on_delete=models.DO_NOTHING,
-    #     related_name='admin_log_events',
-    #     null=False,
-    # )
+    # The admin rights of a user were changed
+    action_participant_toggle_admin = models.OneToOneField(
+        'telegram.AdminLogEventActionToggleAdmin',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    # The supergroup's stickerset was changed
+    action_change_sticker_set = models.OneToOneField(
+        'telegram.AdminLogEventActionChangeStickerSet',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    # The hidden prehistory setting was changed
+    action_toggle_prehistory_hidden = models.OneToOneField(
+        'telegram.AdminLogEventActionTogglePreHistoryHidden',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    # The default banned rights were modified
+    action_default_banned_rights = models.OneToOneField(
+        'telegram.AdminLogEventActionDefaultBannedRights',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    # A poll was stopped
+    action_stop_poll = models.OneToOneField(
+        'telegram.AdminLogEventActionStopPoll',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    # The linked chat was changed
+    action_change_linked_chat = models.OneToOneField(
+        'telegram.AdminLogEventActionChangeLinkedChat',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    # The geogroup location was changed
+    action_change_location = models.OneToOneField(
+        'telegram.AdminLogEventActionChangeLocation',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    # Slow mode setting for supergroups was changed
+    action_toggle_slow_mode = models.OneToOneField(
+        'telegram.AdminLogEventActionToggleSlowMode',
+        on_delete=models.CASCADE,
+        related_name='admin_log_event',
+        null=True, blank=True,
+    )
+
+    #############################################
+    def get_event_description(self):
+        desc = ""
+        if self.action_change_title:
+            desc = f"changed title of {self.chat} from {self.action_change_title.prev_value} to {self.action_change_title.new_value}"
+        elif self.action_change_about:
+            desc = f"changed description of {self.chat} from {self.action_change_about.prev_value} to {self.action_change_about.new_value}"
+        elif self.action_change_username:
+            desc = f"changed username of {self.chat} from {self.action_change_username.prev_value} to {self.action_change_username.new_value}"
+        elif self.action_change_photo:
+            desc = f"changed photo of {self.chat}"
+        elif self.action_toggle_invites:
+            desc = f"changed invites of {self.chat} to {self.action_toggle_invites.new_value}"
+        elif self.action_toggle_signatures:
+            desc = f"changed signature of {self.chat} to {self.action_toggle_signatures.new_value}"
+        elif self.action_update_pinned:
+            desc = f"pinned {self.action_update_pinned.message} on {self.chat}"
+        elif self.action_edit_message:
+            desc = f"edited a message from {self.action_edit_message.prev_message} to {self.action_edit_message.new_message}"
+        elif self.action_delete_message:
+            desc = f"deleted {self.action_delete_message.message}"
+        elif self.action_participant_join:
+            desc = f"joined chat {self.chat}"
+        elif self.action_participant_invite:
+            desc = f"invited {self.action_participant_invite.participant.user} to chat {self.chat}"
+        elif self.action_participant_toggle_ban:
+            desc = f"banned {self.action_participant_toggle_ban.new_participant.user} in chat {self.chat}"
+        elif self.action_participant_toggle_admin:
+            desc = f"promoted/demoted {self.action_participant_toggle_admin.new_participant.user} in chat {self.chat}"
+
+        return desc
+
     #############################################
 
     class Meta:
@@ -1040,7 +1153,7 @@ class AdminLogEvent(MyBaseModel):
         get_latest_by = ['chat', '-date']
 
     def __str__(self):
-        return f"{self.user} @ {self.date}"
+        return f"{self.user} @ {self.date} {self.get_event_description()}"
 
 
 class AdminLogEventActionChangeTitle(MyBaseModel):
@@ -1412,6 +1525,7 @@ class AdminLogEventActionToggleSlowMode(MyBaseModel):
         verbose_name_plural = 'Events (toggle slow mode)'
 
 
+# todo: relation with chat?
 class ChatBannedRight(MyBaseModel):
     """
     Represents the rights of a normal user in a supergroup/channel/chat.

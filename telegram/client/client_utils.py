@@ -3,10 +3,11 @@ from timeit import timeit
 
 from pyrogram import Client
 from pyrogram.handlers import MessageHandler, RawUpdateHandler, UserStatusHandler, DisconnectHandler
+from pyrogram.raw.base import ChannelAdminLogEventAction
 from pyrogram.raw.types import ChannelAdminLogEventsFilter, InputMessagesFilterPhotos, InputMessagesFilterDocument, \
     InputMessagesFilterUrl, InputMessagesFilterRoundVideo, InputMessagesFilterGeo, InputMessagesFilterContacts, \
     InputMessagesFilterGif, InputMessagesFilterVoice, InputMessagesFilterMusic, InputMessagesFilterVideo, \
-    ChannelParticipantsSearch
+    ChannelParticipantsSearch, ChannelAdminLogEvent, ChatBannedRights
 from pyrogram.raw.types.channels import AdminLogResults, ChannelParticipants, ChannelParticipantsNotModified
 from pyrogram.types import User as User, Restriction as PGRestricion
 from pyrogram.types import Dialog as Dialog
@@ -21,6 +22,20 @@ from pyrogram.methods.utilities.idle import idle
 from pyrogram import errors as tg_errors
 from pyrogram.methods.chats.get_chat_members import Filters
 from pyrogram.types.user_and_chats.chat_member import ChatMember
+
+from pyrogram.raw.types import (
+    ChannelAdminLogEventActionChangeAbout, ChannelAdminLogEventActionChangeLinkedChat,
+    ChannelAdminLogEventActionChangeLocation, ChannelAdminLogEventActionChangePhoto,
+    ChannelAdminLogEventActionChangeStickerSet, ChannelAdminLogEventActionChangeTitle,
+    ChannelAdminLogEventActionChangeUsername, ChannelAdminLogEventActionDefaultBannedRights,
+    ChannelAdminLogEventActionDeleteMessage, ChannelAdminLogEventActionEditMessage,
+    ChannelAdminLogEventActionParticipantInvite, ChannelAdminLogEventActionParticipantJoin,
+    ChannelAdminLogEventActionParticipantLeave, ChannelAdminLogEventActionParticipantToggleAdmin,
+    ChannelAdminLogEventActionParticipantToggleBan, ChannelAdminLogEventActionStopPoll,
+    ChannelAdminLogEventActionToggleInvites, ChannelAdminLogEventActionTogglePreHistoryHidden,
+    ChannelAdminLogEventActionToggleSignatures, ChannelAdminLogEventActionToggleSlowMode,
+    ChannelAdminLogEventActionUpdatePinned
+)
 #############################################################
 import asyncio
 
@@ -36,6 +51,7 @@ from termcolor import colored
 import re
 
 #############################################
+import trio
 
 #############################################
 from kombu import Connection, Exchange, Queue, Consumer, Producer
@@ -125,6 +141,54 @@ class DataBaseManager(object):
             db_chat.members_analyzer.disable_reason = 'admin demoted'
             db_chat.members_analyzer.save()
 
+    def enable_or_create_channel_analyzers_with_admin_required(self, db_chat, db_tg_channel):
+        if db_tg_channel.is_active or db_tg_channel.is_account_admin:
+            db_tg_channel.is_active = True
+            db_tg_channel.is_account_admin = True
+            db_tg_channel.save()
+
+        if not db_chat.admin_log_analyzer:
+            db_chat.admin_log_analyzer = self.tg_models.AdminLogAnalyzerMetaData.objects.create(
+                id=str(db_chat.chat_id),
+                telegram_channel=db_tg_channel,
+                enabled=True,
+            )
+        if not db_chat.admin_log_analyzer.enabled:
+            db_chat.admin_log_analyzer.enabled = True
+            db_chat.admin_log_analyzer.save()
+
+        if not db_chat.members_analyzer:
+            db_chat.members_analyzer = self.tg_models.ChatMembersAnalyzerMetaData.objects.create(
+                id=str(db_chat.chat_id),
+                telegram_channel=db_tg_channel,
+                enabled=True,
+            )
+        if not db_chat.members_analyzer.enabled:
+            db_chat.members_analyzer.enabled = True
+            db_chat.members_analyzer.save()
+
+        db_chat.save()
+
+    def create_general_channel_analyzers(self, db_chat):
+        if not db_chat.shared_media_analyzer:
+            db_chat.shared_media_analyzer = self.tg_models.SharedMediaAnalyzerMetaData.objects.create(
+                id=str(db_chat.chat_id),
+                enabled=True,
+            )
+
+        if not db_chat.member_count_analyzer:
+            db_chat.member_count_analyzer = self.tg_models.ChatMemberCountAnalyzerMetaData.objects.create(
+                id=str(db_chat.chat_id),
+                enabled=True,
+            )
+
+        if not db_chat.message_view_analyzer:
+            db_chat.message_view_analyzer = self.tg_models.ChatMessageViewsAnalyzerMetaData.objects.create(
+                id=str(db_chat.chat_id),
+                enabled=True,
+            )
+        db_chat.save()
+
     def create_db_admin_rights(self, chat_member: ChatMember, db_tg_admin_account=None, db_tg_channel=None):
         return self.tg_models.AdminRights.objects.create(
             is_latest=True,
@@ -140,21 +204,17 @@ class DataBaseManager(object):
             add_admins=chat_member.can_promote_members,
         )
 
-    @staticmethod
-    def update_membership_status(db_membership, db_participant):
-        if not db_membership.current_status and not db_membership.previous_status:
-            db_membership.current_status = db_participant
-            db_membership.status_change_date = arrow.utcnow().timestamp
-        elif (not db_membership.previous_status and db_membership.current_status) or \
-                (db_membership.current_status and db_membership.previous_status):
-            db_membership.previous_status = db_membership.current_status
-            db_membership.current_status = db_participant
-            db_membership.status_change_date = arrow.utcnow().timestamp
-        db_membership.save()
-
-    def create_channel_participant(self, chat_member: ChatMember, db_membership, client: Client):
-        if not chat_member or not db_membership or not client:
-            return
+    def create_channel_participant_from_chat_member(
+            self,
+            *,
+            chat_member: ChatMember,
+            db_membership,
+            client: Client,
+            event_date: int,
+            is_previous_participant: bool = None,
+    ):
+        if not chat_member or not db_membership or not client or not event_date:
+            return None
         _type = chat_member.status
         db_participant = self.tg_models.ChannelParticipant(
             user=self.get_or_create_db_tg_user(
@@ -162,13 +222,24 @@ class DataBaseManager(object):
                 client=client,
             ),
             membership=db_membership,
-        )
-        if _type == 'member':
-            db_participant.type = self.tg_models.ChannelParticipantTypes.member
-            db_participant.user = self.get_or_create_db_tg_user(
-                tg_user=chat_member.user,
+            invited_by=self.get_or_create_db_tg_user(
+                tg_user=chat_member.invited_by,
                 client=client,
-            )
+            ) if chat_member.invited_by else None,
+            event_date=event_date,
+            is_previous=is_previous_participant,
+        )
+
+        if _type == 'user':
+            db_participant.type = self.tg_models.ChannelParticipantTypes.user
+            db_participant.join_date = chat_member.joined_date
+
+        elif _type == 'member':
+            db_participant.type = self.tg_models.ChannelParticipantTypes.member
+            # db_participant.user = self.get_or_create_db_tg_user(
+            #     tg_user=chat_member.user,
+            #     client=client,
+            # )
             db_participant.join_date = chat_member.joined_date
 
         elif _type == 'self':
@@ -221,6 +292,88 @@ class DataBaseManager(object):
         db_participant.save()
         return db_participant
 
+    def update_membership_status(
+            self,
+            *,
+            db_participant=None,
+
+            db_membership=None,
+
+            chat_member: ChatMember = None,
+            client: Client = None,
+
+            event_date: int,
+    ):
+        def is_same_type():
+            # return db_membership.current_status and db_membership.current_status.type == chat_member.status and db_membership.current_status.join_date and chat_member.joined_date and db_membership.current_status.join_date == chat_member.joined_date
+            return db_membership.current_status and db_membership.current_status.type == chat_member.status
+
+        if chat_member and client and event_date and db_membership:  # the data comes from `get_members` so it's up to date
+            if not is_same_type():
+                # create participant and update membership
+                db_participant = self.create_channel_participant_from_chat_member(
+                    chat_member=chat_member,
+                    db_membership=db_membership,
+                    client=client,
+                    event_date=event_date,
+                )
+                db_membership.previous_status, db_membership.current_status = db_membership.current_status, db_participant
+                db_membership.status_change_date = event_date
+                db_membership.save()
+
+        elif event_date and db_membership and db_participant:
+            if not db_membership.current_status and not db_membership.previous_status:
+                db_membership.current_status = db_participant
+                db_membership.status_change_date = event_date
+                db_membership.save()
+
+            elif not db_membership.previous_status and db_membership.current_status:
+                if event_date < db_membership.status_change_date:
+                    db_membership.previous_status = db_participant
+                    db_membership.save()
+                elif event_date > db_membership.status_change_date:
+                    db_membership.previous_status, db_membership.current_status = db_membership.current_status, db_participant
+                    db_membership.status_change_date = event_date
+                    db_membership.save()
+                elif event_date == db_membership.status_change_date:
+                    if not db_participant.is_previous and db_membership.current_status.is_previous:
+                        db_membership.previous_status, db_membership.current_status = db_membership.current_status, db_participant
+                        db_membership.save()
+                    elif db_participant.is_previous and not db_membership.current_status.is_previous:
+                        db_membership.previous_status = db_participant
+                        db_membership.save()
+                    else:
+                        raise Exception("Oops!, why?")
+
+            elif db_membership.current_status and db_membership.previous_status:
+                if event_date < db_membership.status_change_date:
+                    if event_date < db_membership.previous_status.event_date:
+                        pass
+                    elif event_date > db_membership.previous_status.event_date:
+                        db_membership.previous_status = db_participant
+                        db_membership.save()
+                    elif event_date == db_membership.previous_status.event_date:
+                        if not db_participant.is_previous and db_membership.previous_status.is_previous:
+                            db_membership.previous_status = db_participant
+                            db_membership.save()
+                        elif db_participant.is_previous and not db_membership.previous_status.is_previous:
+                            pass
+                        else:
+                            raise Exception("Oops!, why?")
+                elif event_date > db_membership.status_change_date:
+                    db_membership.previous_status, db_membership.current_status = db_membership.current_status, db_participant
+                    db_membership.status_change_date = event_date
+                    db_membership.save()
+                elif event_date == db_membership.status_change_date:
+                    if not db_participant.is_previous and db_membership.current_status.is_previous:
+                        db_membership.previous_status, db_membership.current_status = db_membership.current_status, db_participant
+                        db_membership.save()
+                    elif db_participant.is_previous and not db_membership.current_status.is_previous:
+                        db_membership.previous_status = db_participant
+                        db_membership.save()
+                    else:
+                        raise Exception("Oops!, why?")
+
     def create_chat_banned_rights(self, chat_member: ChatMember):
         return self.tg_models.ChatBannedRight.objects.create(
             view_messages=chat_member.status == 'restricted',
@@ -236,6 +389,23 @@ class DataBaseManager(object):
             invite_users=chat_member.can_invite_users,
             pin_messages=chat_member.can_pin_messages,
             until_date=chat_member.until_date,
+        )
+
+    def create_chat_banned_rights_from_raw_rights(self, banned_rights: ChatBannedRights):
+        return self.tg_models.ChatBannedRight.objects.create(
+            view_messages=banned_rights.view_messages,
+            send_messages=banned_rights.send_messages,
+            send_media=banned_rights.send_media,
+            send_stickers=banned_rights.send_stickers,
+            send_gifs=banned_rights.send_gifs,
+            send_games=banned_rights.send_games,
+            send_inline=banned_rights.send_inline,
+            embed_links=banned_rights.embed_links,
+            send_polls=banned_rights.send_polls,
+            change_info=banned_rights.change_info,
+            invite_users=banned_rights.invite_users,
+            pin_messages=banned_rights.pin_messages,
+            until_date=banned_rights.until_date,
         )
 
     def get_or_create_membership(self, db_chat, db_user):
@@ -255,6 +425,129 @@ class DataBaseManager(object):
             logger.exception(e)
             membership = None
         return membership
+
+    def get_or_create_participant_by_event(
+            self,
+            *,
+            client: Client,
+            db_membership,
+            event_type,
+            event_date,
+            by=None,
+            is_previous_participant: bool = None,
+            tg_raw_users: dict = None,
+            tg_raw_participant=None
+            # db_participant1=None,
+            # db_participant2=None
+    ):
+        db_participant = None
+        if event_type == 'join':
+            try:
+                db_participant = db_membership.participant_history.get(
+                    event_date=event_date,
+                    type__in=(
+                        [self.tg_models.ChannelParticipantTypes.member,
+                         self.tg_models.ChannelParticipantTypes.self, ]
+                    )
+                )
+            except exceptions.ObjectDoesNotExist as e:
+                db_participant = self.tg_models.ChannelParticipant.objects.create(
+                    user=db_membership.user,
+                    membership=db_membership,
+                    type=self.tg_models.ChannelParticipantTypes.member,
+                    join_date=event_date,
+                    event_date=event_date,
+                )
+            except Exception as e:
+                logger.exception(e)
+
+        elif event_type == 'left':
+            try:
+                db_participant = db_membership.participant_history.get(
+                    event_date=event_date,
+                    type__in=(
+                        [self.tg_models.ChannelParticipantTypes.left, ]
+                    )
+                )
+            except exceptions.ObjectDoesNotExist as e:
+                db_participant = self.tg_models.ChannelParticipant.objects.create(
+                    user=db_membership.user,
+                    membership=db_membership,
+                    type=self.tg_models.ChannelParticipantTypes.left,
+                    left_date=event_date,
+                    event_date=event_date,
+                    left=True,
+                )
+            except Exception as e:
+                logger.exception(e)
+
+        elif event_type == 'invite':
+            try:
+                db_participant = db_membership.participant_history.get(
+                    event_date=event_date,
+                    type__in=(
+                        [self.tg_models.ChannelParticipantTypes.member,
+                         self.tg_models.ChannelParticipantTypes.self, ]
+                    ),
+                )
+            except exceptions.ObjectDoesNotExist as e:
+                chat_member = ChatMember._parse(client, tg_raw_participant, tg_raw_users)
+                if by:
+                    chat_member.invited_by = User._parse(client, tg_raw_users[by.user_id])
+                db_participant = self.create_channel_participant_from_chat_member(
+                    chat_member=chat_member,
+                    db_membership=db_membership,
+                    client=client,
+                    event_date=event_date,
+                )
+            except Exception as e:
+                logger.exception(e)
+
+        elif event_type == 'toggle_ban':
+            try:
+                db_participant = db_membership.participant_history.get(
+                    event_date=event_date,
+                    is_previous=is_previous_participant,
+                )
+            except exceptions.ObjectDoesNotExist as e:
+                chat_member = ChatMember._parse(client, tg_raw_participant, tg_raw_users)
+                if by:
+                    chat_member.invited_by = User._parse(client, tg_raw_users[by.user_id])
+                if chat_member.joined_date == 0:
+                    chat_member.status = 'user'
+                db_participant = self.create_channel_participant_from_chat_member(
+                    chat_member=chat_member,
+                    db_membership=db_membership,
+                    client=client,
+                    event_date=event_date,
+                    is_previous_participant=is_previous_participant,
+                )
+            except Exception as e:
+                logger.exception(e)
+
+        elif event_type == 'toggle_admin':
+            try:
+                db_participant = db_membership.participant_history.get(
+                    event_date=event_date,
+                    is_previous=is_previous_participant,
+                )
+            except exceptions.ObjectDoesNotExist as e:
+                chat_member = ChatMember._parse(client, tg_raw_participant, tg_raw_users)
+                if by:
+                    chat_member.invited_by = User._parse(client, tg_raw_users[by.user_id])
+                if chat_member.joined_date == 0:
+                    chat_member.status = 'user'
+                db_participant = self.create_channel_participant_from_chat_member(
+                    chat_member=chat_member,
+                    db_membership=db_membership,
+                    client=client,
+                    event_date=event_date,
+                    is_previous_participant=is_previous_participant,
+                )
+            except Exception as e:
+                logger.exception(e)
+
+        return db_participant
 
     def create_db_tg_account(self, client: Client, db_owner_user, tg_user: User):
         with transaction.atomic():
@@ -456,7 +749,7 @@ class DataBaseManager(object):
                 # get the full chat info from telegram client
                 tg_chat: Chat = client.get_chat(_id)
             try:
-                db_tg_chat = self.tg_models.Chat.objects.create(
+                db_tg_chat = self.tg_models.Chat(
                     chat_id=_id,
                 )
                 self.fill_db_tg_chat_attrs(db_tg_chat, tg_chat, db_creator_account, client, check_chat_type)
@@ -507,7 +800,7 @@ class DataBaseManager(object):
         )
         db_message.mentioned = getattr(message, 'mentioned', False)
         db_message.empty = message.empty if message.empty else False
-        db_message.emptied_at = now if db_message.empty else None
+        db_message.delete_date = now if db_message.empty else None
         db_message.edit_date = getattr(message, 'edit_date', None)
         db_message.media_group_id = getattr(message, 'media_group_id', None)
         db_message.author_signature = getattr(message, 'author_signature', None)
@@ -520,17 +813,14 @@ class DataBaseManager(object):
         db_message.chat = db_chat
         db_message.logged_by = db_chat.creator_account
 
-    def get_or_create_db_tg_message(self, message: Message, db_chat, client: Client, now: int):
+    def get_or_create_db_tg_message(self, message: Message, db_chat, client: Client, now: int, deletion_date: int = 0):
         if message is None:
             return None
-        _id = f"{db_chat.chat_id}:{message.message_id}"
+        _id = f"{db_chat.chat_id}:{message.message_id}:{message.edit_date if message.edit_date else 0}"
+        _id_prefix = f"{db_chat.chat_id}:{message.message_id}:"  # todo: delete?
 
         try:
             db_message = self.tg_models.Message.objects.get(id=_id)
-            if message.edit_date and getattr(message, 'edit_date', 0) > getattr(message, 'modified_at', 0):
-                # message needs to be updated in the db
-                self.fill_db_tg_message_attrs(db_message, message, db_chat, client, now)
-                db_message.save()
         except exceptions.ObjectDoesNotExist as e:
             try:
                 db_message = self.tg_models.Message(
@@ -541,11 +831,32 @@ class DataBaseManager(object):
             except Exception as e:
                 logger.exception(e)
                 db_message = None
+            else:
+                pass
         except Exception as e:
             logger.exception(e)
             db_message = None
+        else:
+            if message.edit_date and message.edit_date > db_message.modified_at:
+                # message needs to be updated in the db
+                self.fill_db_tg_message_attrs(db_message, message, db_chat, client, now)
+                db_message.save()
+            if deletion_date:
+                db_message.is_deleted = True
+                db_message.delete_date = deletion_date
+                db_message.save()
 
         return db_message
+
+    def create_db_message_view(self, db_chat, db_message, message: Message, now):
+        return self.tg_models.MessageView.objects.create(
+            id=f"{db_chat.chat_id}:{message.message_id}:{now}",
+            date=now,
+            views=message.views,
+            message=db_message,
+            logged_by=db_chat.creator_account,
+            chat=db_chat,
+        )
 
     def create_db_restrictions(self, tg_restrictions, db_tg_chat=None, db_tg_user=None):
         now = arrow.utcnow().timestamp
@@ -681,7 +992,6 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             try:
                 db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=me.id, is_deleted=False)
             except exceptions.ObjectDoesNotExist as e:
-                logger.exception(e)
                 db_tg_admin_account = self.create_db_tg_account(client, custom_user, me)
 
             # update chats table for each account
@@ -735,6 +1045,10 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                     dialog.chat,
                                     self.users_models.CustomUser.objects.get(username='sigma', is_superuser=True),
                                 )
+
+                                # create general channel analyzers
+                                self.create_general_channel_analyzers(db_chat)
+
                                 try:
                                     admins = client.get_chat_members(db_chat.chat_id, filter=Filters.ADMINISTRATORS)
                                 except tg_errors.ChatAdminRequired as e:
@@ -743,6 +1057,8 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                 except Exception as e:
                                     logger.exception(e)
                                 else:
+                                    # enable/create admin required analyzers for this channel
+                                    self.enable_or_create_channel_analyzers_with_admin_required(db_chat, db_tg_channel)
                                     # update memberships for this channel
                                     ids.append(db_chat.chat_id)
         response.done()
@@ -863,13 +1179,11 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                         now = arrow.utcnow().timestamp
                                         with transaction.atomic():
                                             db_message = self.get_or_create_db_tg_message(message, db_chat, client, now)
-                                            db_message_view = self.tg_models.MessageView.objects.create(
-                                                id=f"{db_chat.chat_id}:{message.message_id}:{now}",
-                                                date=now,
-                                                views=message.views,
-                                                message=db_message,
-                                                logged_by=db_chat.creator_account,
-                                                chat=db_chat,
+                                            db_message_view = self.create_db_message_view(
+                                                db_chat,
+                                                db_message,
+                                                message,
+                                                now,
                                             )
                                             self.create_entities(client, db_chat, db_message, message)
                                             self.create_entity_types(db_chat, db_message, message)
@@ -1072,6 +1386,453 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
     def task_analyze_admin_logs(self, *args, **kwargs):
         response = BaseResponse()
+        chats = self.tg_models.Chat.objects.filter(admin_log_analyzer__isnull=False,
+                                                   admin_log_analyzer__enabled=True)
+        for db_chat in chats:
+            analyzer = db_chat.admin_log_analyzer
+            now = arrow.utcnow().timestamp
+            for client in clients:
+                if client.session_name == db_chat.creator_account.session_name:
+                    client: Client = client
+                    if client.is_connected:
+                        response = self.analyze_chat_admin_logs(db_chat, db_chat.creator_account, client, response)
+                    else:
+                        response.fail('client is not connected now')
+                    break
+            else:
+                response.fail('no client is ready')
+                break
+
+            if response.success:
+                if not analyzer.first_analyzed_at:
+                    analyzer.first_analyzed_at = now
+                analyzer.last_analyzed_at = now
+                analyzer.save()
+
+        return response
+
+    def analyze_chat_admin_logs(self, db_chat, tg_admin_account, client: Client, response: BaseResponse):
+        try:
+            admin_log: AdminLogResults = client.send(
+                functions.channels.GetAdminLog(
+                    channel=client.resolve_peer(peer_id=db_chat.chat_id),
+                    q="",
+                    min_id=0,
+                    max_id=0,
+                    events_filter=None,
+                    admins=None,
+                    limit=0
+                )
+            )
+        except tg_errors.ChatAdminRequired:
+            response.fail(f'chat admin required for chat {db_chat}')
+        except Exception as e:
+            logger.exception(e)
+            response.fail('UNKNOWN_ERROR')
+        else:
+            # logger.info(admin_log)
+            logger.info("\n" * 5)
+            if admin_log.events:
+                now = client, arrow.utcnow().timestamp
+                tg_raw_users = {user.id: user for user in admin_log.users} if admin_log.users else {}
+                tg_raw_chats = {chat.id: chat for chat in admin_log.chats} if admin_log.chats else {}
+
+                with transaction.atomic():
+                    for event in reversed(admin_log.events):
+                        event: ChannelAdminLogEvent = event
+                        logger.info(event)
+                        _id = f"{db_chat.chat_id}:{event.id}"
+                        try:
+                            self.tg_models.AdminLogEvent.objects.get(
+                                id=_id,
+                            )
+                        except exceptions.ObjectDoesNotExist as e:
+                            action_type = type(event.action)
+                            try:
+                                db_user = self.get_or_create_db_tg_user(
+                                    client.get_users(event.user_id),
+                                    client,
+                                    update_current=True,
+                                )
+                            except Exception as e:
+                                logger.exception(e)
+                            else:
+                                db_event = self.tg_models.AdminLogEvent(
+                                    id=_id,
+                                    event_id=event.id,
+                                    user=db_user,
+                                    chat=db_chat,
+                                    logged_by=tg_admin_account,
+                                    date=event.date,
+                                )
+                                if action_type == ChannelAdminLogEventActionChangeTitle:
+                                    db_event.action_change_title = self.tg_models.AdminLogEventActionChangeTitle.objects.create(
+                                        prev_value=event.action.prev_value,
+                                        new_value=event.action.new_value
+                                    )
+                                    db_event.save()
+                                    # todo: update chat and channel title
+
+                                elif action_type == ChannelAdminLogEventActionChangeAbout:
+                                    db_event.action_change_about = self.tg_models.AdminLogEventActionChangeAbout.objects.create(
+                                        prev_value=event.action.prev_value,
+                                        new_value=event.action.new_value
+                                    )
+                                    db_event.save()
+                                    # todo: update chat and channel description
+
+                                elif action_type == ChannelAdminLogEventActionChangeUsername:
+                                    db_event.action_change_username = self.tg_models.AdminLogEventActionChangeUsername.objects.create(
+                                        prev_value=event.action.prev_value,
+                                        new_value=event.action.new_value
+                                    )
+                                    db_event.save()
+                                    # todo: update channel/chat username
+
+                                elif action_type == ChannelAdminLogEventActionChangePhoto:
+                                    db_event.action_change_photo = self.tg_models.AdminLogEventActionChangePhoto.objects.create(
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionToggleInvites:
+                                    db_event.action_toggle_invites = self.tg_models.AdminLogEventActionToggleInvites.objects.create(
+                                        new_value=event.action.new_value
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionToggleSignatures:
+                                    db_event.action_toggle_signatures = self.tg_models.AdminLogEventActionToggleSignatures.objects.create(
+                                        new_value=event.action.new_value
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionUpdatePinned:
+                                    tg_message = trio.run(
+                                        Message._parse,
+                                        client,
+                                        event.action.message,
+                                        tg_raw_users,
+                                        tg_raw_chats,
+                                        False,
+                                    )
+                                    db_event.action_update_pinned = self.tg_models.AdminLogEventActionUpdatePinned.objects.create(
+                                        message=self.get_or_create_db_tg_message(
+                                            tg_message,
+                                            db_chat,
+                                            client,
+                                            now,
+                                        )
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionEditMessage:
+                                    tg_message_prev = trio.run(
+                                        Message._parse,
+                                        client,
+                                        event.action.prev_message,
+                                        tg_raw_users,
+                                        tg_raw_chats,
+                                    )
+                                    tg_message_new = trio.run(
+                                        Message._parse,
+                                        client,
+                                        event.action.new_message,
+                                        tg_raw_users,
+                                        tg_raw_chats,
+                                    )
+                                    db_event.action_edit_message = self.tg_models.AdminLogEventActionEditMessage.objects.create(
+                                        prev_message=self.get_or_create_db_tg_message(
+                                            tg_message_prev,
+                                            db_chat,
+                                            client,
+                                            now,
+                                        ),
+                                        new_message=self.get_or_create_db_tg_message(
+                                            tg_message_new,
+                                            db_chat,
+                                            client,
+                                            now,
+                                        ),
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionDeleteMessage:
+                                    tg_message = trio.run(
+                                        Message._parse,
+                                        client,
+                                        event.action.message,
+                                        tg_raw_users,
+                                        tg_raw_chats,
+                                    )
+                                    db_event.action_delete_message = self.tg_models.AdminLogEventActionDeleteMessage.objects.create(
+                                        message=self.get_or_create_db_tg_message(
+                                            tg_message,
+                                            db_chat,
+                                            client,
+                                            now,
+                                            deletion_date=event.date,
+                                        )
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionParticipantJoin:
+                                    db_event.action_participant_join = self.tg_models.AdminLogEventActionParticipantJoin.objects.create()
+                                    db_event.save()
+                                    db_membership = self.get_or_create_membership(db_chat, db_user)
+                                    db_participant = self.get_or_create_participant_by_event(
+                                        client=db_membership,
+                                        db_membership=db_membership,
+                                        event_type='join',
+                                        event_date=event.date,
+                                    )
+                                    self.update_membership_status(
+                                        db_membership=db_membership,
+                                        db_participant=db_participant,
+                                        event_date=event.date,
+                                    )
+
+                                elif action_type == ChannelAdminLogEventActionParticipantLeave:
+                                    db_event.action_participant_leave = self.tg_models.AdminLogEventActionParticipantLeave.objects.create()
+                                    db_event.save()
+                                    db_membership = self.get_or_create_membership(db_chat, db_user)
+                                    db_participant = self.get_or_create_participant_by_event(
+                                        client=client,
+                                        db_membership=db_membership,
+                                        event_type='left',
+                                        event_date=event.date,
+                                    )
+                                    self.update_membership_status(
+                                        db_membership=db_membership,
+                                        db_participant=db_participant,
+                                        event_date=event.date,
+                                    )
+
+                                elif action_type == ChannelAdminLogEventActionParticipantInvite:
+                                    tg_invited_user = User._parse(
+                                        client,
+                                        tg_raw_users[event.action.participant.user_id]
+                                    )
+                                    db_invited_user = self.get_or_create_db_tg_user(
+                                        tg_invited_user,
+                                        client,
+                                        update_current=True,
+                                    )
+                                    db_invited_user_membership = self.get_or_create_membership(
+                                        db_chat,
+                                        db_invited_user
+                                    )
+                                    db_participant = self.get_or_create_participant_by_event(
+                                        client=client,
+                                        db_membership=db_invited_user_membership,
+                                        event_type='invite',
+                                        event_date=event.date,
+                                        by=db_user,
+                                        tg_raw_participant=event.action.participant,
+                                        tg_raw_users=tg_raw_users,
+                                    )
+                                    db_event.action_participant_invite = self.tg_models.AdminLogEventActionParticipantInvite.objects.create(
+                                        participant=db_participant,
+                                    )
+                                    db_event.save()
+                                    self.update_membership_status(
+                                        db_membership=db_invited_user_membership,
+                                        db_participant=db_participant,
+                                        event_date=event.date,
+                                    )
+
+                                elif action_type == ChannelAdminLogEventActionParticipantToggleBan:
+                                    prev_tg_user = User._parse(
+                                        client,
+                                        tg_raw_users[event.action.prev_participant.user_id]
+                                    )
+                                    db_membership = self.get_or_create_membership(
+                                        db_chat,
+                                        db_user=self.get_or_create_db_tg_user(
+                                            prev_tg_user,
+                                            client,
+                                            update_current=True,
+                                        )
+                                    )
+
+                                    prev_participant = self.get_or_create_participant_by_event(
+                                        client=client,
+                                        db_membership=db_membership,
+                                        event_type='toggle_ban',
+                                        event_date=event.date,
+                                        is_previous_participant=True,
+                                        tg_raw_participant=event.action.prev_participant,
+                                        tg_raw_users=tg_raw_users,
+                                    )
+                                    new_participant = self.get_or_create_participant_by_event(
+                                        client=client,
+                                        db_membership=db_membership,
+                                        event_type='toggle_ban',
+                                        event_date=event.date,
+                                        by=db_user,
+                                        is_previous_participant=False,
+                                        tg_raw_participant=event.action.new_participant,
+                                        tg_raw_users=tg_raw_users,
+                                    )
+
+                                    db_event.action_participant_toggle_ban = self.tg_models.AdminLogEventActionToggleBan.objects.create(
+                                        prev_participant=prev_participant,
+                                        new_participant=new_participant,
+                                    )
+                                    db_event.save()
+
+                                    self.update_membership_status(
+                                        db_membership=db_membership,
+                                        db_participant=prev_participant,
+                                        event_date=event.date,
+                                    )
+                                    self.update_membership_status(
+                                        db_membership=db_membership,
+                                        db_participant=new_participant,
+                                        event_date=event.date,
+                                    )
+
+                                elif action_type == ChannelAdminLogEventActionParticipantToggleAdmin:
+                                    prev_tg_user = User._parse(
+                                        client,
+                                        tg_raw_users[event.action.prev_participant.user_id]
+                                    )
+                                    db_membership = self.get_or_create_membership(
+                                        db_chat,
+                                        db_user=self.get_or_create_db_tg_user(
+                                            prev_tg_user,
+                                            client,
+                                            update_current=True,
+                                        )
+                                    )
+
+                                    prev_participant = self.get_or_create_participant_by_event(
+                                        client=client,
+                                        db_membership=db_membership,
+                                        event_type='toggle_admin',
+                                        event_date=event.date,
+                                        is_previous_participant=True,
+                                        tg_raw_participant=event.action.prev_participant,
+                                        tg_raw_users=tg_raw_users,
+                                    )
+
+                                    new_participant = self.get_or_create_participant_by_event(
+                                        client=client,
+                                        db_membership=db_membership,
+                                        event_type='toggle_admin',
+                                        event_date=event.date,
+                                        by=db_user,
+                                        is_previous_participant=False,
+                                        tg_raw_participant=event.action.new_participant,
+                                        tg_raw_users=tg_raw_users,
+                                    )
+
+                                    db_event.action_participant_toggle_admin = self.tg_models.AdminLogEventActionToggleAdmin.objects.create(
+                                        prev_participant=prev_participant,
+                                        new_participant=new_participant
+                                    )
+                                    db_event.save()
+
+                                    self.update_membership_status(
+                                        db_membership=db_membership,
+                                        db_participant=prev_participant,
+                                        event_date=event.date,
+                                    )
+                                    self.update_membership_status(
+                                        db_membership=db_membership,
+                                        db_participant=new_participant,
+                                        event_date=event.date,
+                                    )
+
+                                elif action_type == ChannelAdminLogEventActionChangeStickerSet:
+                                    db_event.action_change_sticker_set = self.tg_models.AdminLogEventActionChangeStickerSet.objects.create()
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionTogglePreHistoryHidden:
+                                    db_event.action_toggle_prehistory_hidden = self.tg_models.AdminLogEventActionTogglePreHistoryHidden.objects.create(
+                                        new_value=event.action.new_value
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionDefaultBannedRights:
+                                    db_event.action_default_banned_rights = self.tg_models.AdminLogEventActionDefaultBannedRights.objects.create(
+                                        prev_banned_rights=self.create_chat_banned_rights_from_raw_rights(
+                                            event.action.prev_banned_rights
+                                        ),
+                                        new_banned_rights=self.create_chat_banned_rights_from_raw_rights(
+                                            event.action.new_banned_rights
+                                        ),
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionStopPoll:
+                                    db_event.action_stop_poll = self.tg_models.AdminLogEventActionStopPoll.objects.create(
+                                        message=self.get_or_create_db_tg_message(
+                                            trio.run(
+                                                Message._parse,
+                                                event.action.message,
+                                                tg_raw_users,
+                                                tg_raw_chats,
+                                            ),
+                                            db_chat,
+                                            client,
+                                            now,
+                                        )
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionChangeLinkedChat:
+                                    db_event.action_change_linked_chat = self.tg_models.AdminLogEventActionChangeLinkedChat.objects.create(
+                                        prev_value=event.action.prev_value,
+                                        new_value=event.action.new_value,
+                                    )
+                                    db_event.save()
+                                    # todo: update model?
+
+                                elif action_type == ChannelAdminLogEventActionChangeLocation:
+                                    prev_location = event.action.prev_value
+                                    new_location = event.action.new_value
+
+                                    prev_address = getattr(prev_location, 'address', None)
+                                    new_address = getattr(new_location, 'address', None)
+
+                                    prev_geo = getattr(prev_location, 'geo_point', None)
+                                    if prev_geo:
+                                        prev_lat = getattr(prev_geo, 'lat', None)
+                                        prev_long = getattr(prev_geo, 'long', None)
+                                        prev_access_hash = getattr(prev_geo, 'access_hash', None)
+
+                                    new_geo = getattr(prev_location, 'geo_point', None)
+                                    if new_geo:
+                                        new_lat = getattr(new_geo, 'lat', None)
+                                        new_long = getattr(new_geo, 'long', None)
+                                        new_access_hash = getattr(new_geo, 'access_hash', None)
+                                    db_event.action_participant_invite = self.tg_models.AdminLogEventActionChangeLocation.objects.create(
+                                        prev_address=prev_address,
+                                        prev_lat=prev_lat,
+                                        prev_long=prev_long,
+                                        prev_access_hash=prev_access_hash,
+
+                                        new_address=new_address,
+                                        new_lat=new_lat,
+                                        new_long=new_long,
+                                        new_access_hash=new_access_hash,
+                                    )
+                                    db_event.save()
+
+                                elif action_type == ChannelAdminLogEventActionToggleSlowMode:
+                                    db_event.action_toggle_slow_mode = self.tg_models.AdminLogEventActionToggleSlowMode.objects.create(
+                                        prev_value=event.action.prev_value,
+                                        new_value=event.action.new_value,
+                                    )
+                                    db_event.save()
+                                    # todo: update model?
+                        except Exception as e:
+                            logger.exception(e)
+                        else:
+                            # event exits in the db
+                            pass
+
+            response.done()
 
         return response
 
@@ -1080,6 +1841,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             for chat_member in client.iter_chat_members(db_chat.chat_id, filter=_filter if _filter else Filters.ALL):
                 chat_member: ChatMember = chat_member
                 new_status = chat_member.status
+                now = arrow.utcnow().timestamp
                 try:
                     db_user = self.tg_models.User.objects.get(
                         user_id=chat_member.user.id
@@ -1089,12 +1851,17 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                     tg_user = chat_member.user
                     db_user = self.get_or_create_db_tg_user(tg_user, client)
                     db_membership = self.get_or_create_membership(db_chat, db_user)
-                    db_participant = self.create_channel_participant(
-                        chat_member,
-                        db_membership,
-                        client,
+                    db_participant = self.create_channel_participant_from_chat_member(
+                        chat_member=chat_member,
+                        db_membership=db_membership,
+                        client=client,
+                        event_date=now,
                     )
-                    self.update_membership_status(db_membership, db_participant)
+                    self.update_membership_status(
+                        db_membership=db_membership,
+                        db_participant=db_participant,
+                        event_date=now
+                    )
                     response.done()
                 else:
                     try:
@@ -1105,22 +1872,25 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                     except exceptions.ObjectDoesNotExist as e:
                         # membership does not exists, create it
                         db_membership = self.get_or_create_membership(db_chat, db_user)
-                        db_participant = self.create_channel_participant(
-                            chat_member,
-                            db_membership,
-                            client,
+                        db_participant = self.create_channel_participant_from_chat_member(
+                            chat_member=chat_member,
+                            db_membership=db_membership,
+                            client=client,
+                            event_date=now,
                         )
-                        self.update_membership_status(db_membership, db_participant)
+                        self.update_membership_status(
+                            db_membership=db_membership,
+                            db_participant=db_participant,
+                            event_date=now
+                        )
                         response.done()
                     else:
-                        # logger.info(f"{db_membership} : {db_membership.current_status.type}, {new_status}")
-                        if db_membership.current_status and db_membership.current_status.type != new_status:
-                            db_participant = self.create_channel_participant(
-                                chat_member,
-                                db_membership,
-                                client,
-                            )
-                            self.update_membership_status(db_membership, db_participant)
+                        self.update_membership_status(
+                            db_membership=db_membership,
+                            chat_member=chat_member,
+                            client=client,
+                            event_date=now,
+                        )
 
                         response.done()
         except tg_errors.RPCError as e:
