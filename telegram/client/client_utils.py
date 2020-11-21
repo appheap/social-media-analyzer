@@ -747,7 +747,14 @@ class DataBaseManager(object):
         except exceptions.ObjectDoesNotExist as e:
             if not is_tg_full_chat:
                 # get the full chat info from telegram client
-                tg_chat: Chat = client.get_chat(_id)
+                try:
+                    temp: Chat = client.get_chat(_id)
+                except tg_errors.ChannelPrivate as e:
+                    logger.info(f"channel {tg_chat} is private")
+                except tg_errors.RPCError as e:
+                    logger.exception(e)
+                else:
+                    tg_chat: Chat = temp
             try:
                 db_tg_chat = self.tg_models.Chat(
                     chat_id=_id,
@@ -813,6 +820,20 @@ class DataBaseManager(object):
         db_message.chat = db_chat
         db_message.logged_by = db_chat.creator_account
 
+    def get_message_by_message_id(self, db_chat, message_id: int):
+        if not db_chat and not message_id:
+            return None
+        _id = f"{db_chat.chat_id}:{message_id}:"
+        try:
+            db_message = self.tg_models.Message.objects.filter(
+                chat__chat_id=db_chat.chat_id,
+                message_id=message_id
+            ).order_by('-created_at').first()
+        except Exception as e:
+            logger.exception(e)
+            db_message = None
+        return db_message
+
     def get_or_create_db_tg_message(self, message: Message, db_chat, client: Client, now: int, deletion_date: int = 0):
         if message is None:
             return None
@@ -823,11 +844,14 @@ class DataBaseManager(object):
             db_message = self.tg_models.Message.objects.get(id=_id)
         except exceptions.ObjectDoesNotExist as e:
             try:
-                db_message = self.tg_models.Message(
-                    id=_id,
-                )
-                self.fill_db_tg_message_attrs(db_message, message, db_chat, client, now)
-                db_message.save()
+                if not message.empty:
+                    db_message = self.tg_models.Message(
+                        id=_id,
+                    )
+                    self.fill_db_tg_message_attrs(db_message, message, db_chat, client, now)
+                    db_message.save()
+                else:
+                    db_message = None
             except Exception as e:
                 logger.exception(e)
                 db_message = None
@@ -837,7 +861,7 @@ class DataBaseManager(object):
             logger.exception(e)
             db_message = None
         else:
-            if message.edit_date and message.edit_date > db_message.modified_at:
+            if message and message.edit_date and message.edit_date > db_message.modified_at:
                 # message needs to be updated in the db
                 self.fill_db_tg_message_attrs(db_message, message, db_chat, client, now)
                 db_message.save()
@@ -848,8 +872,18 @@ class DataBaseManager(object):
 
         return db_message
 
-    def create_db_message_view(self, db_chat, db_message, message: Message, now):
+    def create_db_message_view_without_message(self, db_chat, db_message, message_id: int, views: int, now: int):
         return self.tg_models.MessageView.objects.create(
+            id=f"{db_chat.chat_id}:{message_id}:{now}",
+            date=now,
+            views=views,
+            message=db_message,
+            logged_by=db_chat.creator_account,
+            chat=db_chat,
+        )
+
+    def create_db_message_view(self, db_chat, db_message, message: Message, now):
+        return self.tg_models.MessageView.objects.update_or_create(
             id=f"{db_chat.chat_id}:{message.message_id}:{now}",
             date=now,
             views=message.views,
@@ -955,6 +989,9 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
         elif func == 'task_analyze_message_views':
             response = self.acquire_clients(self.task_analyze_message_views, *args, **kwargs)
+
+        elif func == 'task_iterate_chat_history':
+            response = self.acquire_clients(self.task_iterate_chat_history, *args, **kwargs)
 
         elif func == 'task_analyze_admin_logs':
             response = self.acquire_clients(self.task_analyze_admin_logs, *args, **kwargs)
@@ -1157,8 +1194,161 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
         return response
 
     ########################################
+    async def update_db(self, view_chunks: dict, db_chat, client: Client):
+        message_ids_to_fetch = []
+        for k in view_chunks:
+            views = view_chunks[k]
+            for i, view in enumerate(views):
+                message_id = k + i
+                if view == 0:
+                    # message no longer exists and it's deleted
+                    pass
+                else:
+                    try:
+                        now = arrow.utcnow().timestamp
+                        with transaction.atomic():
+                            db_message = self.get_message_by_message_id(
+                                db_chat,
+                                message_id=message_id,
+                            )
+                            if db_message:
+                                db_message_view = self.create_db_message_view_without_message(
+                                    db_chat,
+                                    db_message,
+                                    message_id,
+                                    view,
+                                    now,
+                                )
+                            else:
+                                # message is not in the db
+                                message_ids_to_fetch.append(message_id)
+
+                    except Exception as e:
+                        logger.exception(e)
+                    else:
+                        pass
+
+        if len(message_ids_to_fetch):
+            length = len(message_ids_to_fetch)
+            index = 0
+            increment = 100
+            while index < length:
+                if index > 0:
+                    await trio.sleep(1)
+                for message in client.get_messages(
+                        chat_id=db_chat.chat_id,
+                        message_ids=message_ids_to_fetch[index:index + increment]
+                ):
+                    try:
+                        now = arrow.utcnow().timestamp
+                        with transaction.atomic():
+                            db_message = self.get_or_create_db_tg_message(
+                                message,
+                                db_chat,
+                                client,
+                                now,
+                                now if message.empty else None
+                            )
+                            if db_message:
+                                db_message_view = self.create_db_message_view(
+                                    db_chat,
+                                    db_message,
+                                    message,
+                                    now,
+                                )
+                                self.create_entities(client, db_chat, db_message, message)
+                                self.create_entity_types(db_chat, db_message, message)
+
+                    except Exception as e:
+                        logger.exception(e)
+                    else:
+                        pass
+                index += increment
+
+    async def tg_get_message_views(self, client: Client, chat_id, ids: list):
+        return client.send(
+            functions.messages.GetMessagesViews(peer=client.resolve_peer(chat_id), id=ids, increment=True)
+        )
+
+    async def get_views_chunk(self, client: Client, db_chat, i: int, all_views: dict):
+        started = time.perf_counter()
+        temp_r = await self.tg_get_message_views(client, db_chat.chat_id, list(range(i, i + 100)))
+
+        all_views[i] = temp_r
+        logger.info(f"{db_chat} messages {i} - {i + 100}: {time.perf_counter() - started:.3f}s")
+
+    async def update_message_views(self, client: Client, db_chat):
+        message = None
+        for message in client.get_history(db_chat.chat_id, limit=10):
+            message: Message = message
+            if not message.service:
+                break
+        else:
+            # need to get more messages
+            async for message in client.get_history(db_chat.chat_id, limit=20):
+                message: Message = message
+                if not message.service:
+                    break
+        if message:
+            last_message_id = message.message_id
+            total_views = {}
+            async with trio.open_nursery() as nursery:
+                start = int((last_message_id - 10000) / 100)
+                if start < 0:
+                    start = 0
+                for i in range(start, int(last_message_id / 100) + 1):
+                    nursery.start_soon(self.get_views_chunk, client, db_chat, i * 100, total_views)
+            return total_views
 
     def task_analyze_message_views(self, *args, **kwargs):
+        response = BaseResponse()
+
+        chats = self.tg_models.Chat.objects.filter(message_view_analyzer__isnull=False,
+                                                   message_view_analyzer__enabled=True)
+        update_db_dict = {}
+        for db_chat in chats:
+            analyzer = db_chat.message_view_analyzer
+            now = arrow.utcnow().timestamp
+
+            for client in clients:
+                if client.session_name == db_chat.creator_account.session_name:
+                    client: Client = client
+                    if client.is_connected:
+                        try:
+                            started = time.perf_counter()
+                            total_views = trio.run(self.update_message_views, client, db_chat)
+                            logger.info(f"total iterations: {len(total_views)}")
+                            logger.info(f"finished fetch views after: {time.perf_counter() - started:.3f}s")
+                            update_db_dict[db_chat.chat_id] = (total_views, db_chat, client)
+                        except Exception as e:
+                            logger.exception(e)
+                            response.fail('TG_ERROR')
+                        else:
+                            response.done('logged message views')
+                    else:
+                        response.fail('client is not connected now')
+                    break
+            else:
+                response.fail('no client is ready')
+                break
+
+            if response.success:
+                if not analyzer.first_analyzed_at:
+                    analyzer.first_analyzed_at = now
+                analyzer.last_analyzed_at = now
+                analyzer.save()
+
+        if len(update_db_dict):
+            for key, value in update_db_dict.items():
+                total_views, db_chat, client = value
+                started = time.perf_counter()
+                trio.run(self.update_db, total_views, db_chat, client)
+                logger.info(
+                    f"finished update views in db after: {time.perf_counter() - started:.3f}s for chat :{db_chat}")
+
+        return response
+
+    def task_iterate_chat_history(self, *args, **kwargs):
         response = BaseResponse()
 
         chats = self.tg_models.Chat.objects.filter(message_view_analyzer__isnull=False,
@@ -1172,27 +1362,55 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                     client: Client = client
                     if client.is_connected:
                         try:
-                            for message in client.iter_history(db_chat.chat_id):
-                                message: Message = message
-                                if not message.service:
-                                    try:
-                                        now = arrow.utcnow().timestamp
-                                        with transaction.atomic():
-                                            db_message = self.get_or_create_db_tg_message(message, db_chat, client, now)
-                                            db_message_view = self.create_db_message_view(
-                                                db_chat,
-                                                db_message,
-                                                message,
-                                                now,
-                                            )
-                                            self.create_entities(client, db_chat, db_message, message)
-                                            self.create_entity_types(db_chat, db_message, message)
+                            started = time.perf_counter()
+                            message = client.get_history(db_chat.chat_id, limit=1)[0]
+                            offset_id = message.message_id
+                            row = 0
+                            sleep_counter = 0
+                            sleep_time = 1
+                            total_msgs = 0
+                            while True:
+                                if not row % 5:
+                                    sleep_counter += 1
+                                    time.sleep(sleep_time)
+                                messages = client.get_history(db_chat.chat_id, offset=-1, offset_id=offset_id)
+                                if not messages:
+                                    break
+                                row += 1
+                                total_msgs += len(messages)
+                                logger.info(
+                                    f"got {total_msgs} messages in {time.perf_counter() - started - sleep_counter * sleep_time:.3f} of chat: {db_chat}")
+                                for message in messages:
+                                    message: Message = message
+                                    offset_id = message.message_id
+                                    if not message.service:
+                                        try:
+                                            now = arrow.utcnow().timestamp
+                                            with transaction.atomic():
+                                                db_message = self.get_or_create_db_tg_message(
+                                                    message,
+                                                    db_chat,
+                                                    client,
+                                                    now,
+                                                    now if message.empty else None,
+                                                )
+                                                if db_message:
+                                                    db_message_view = self.create_db_message_view(
+                                                        db_chat,
+                                                        db_message,
+                                                        message,
+                                                        now,
+                                                    )
+                                                    self.create_entities(client, db_chat, db_message, message)
+                                                    self.create_entity_types(db_chat, db_message, message)
 
-                                    except Exception as e:
-                                        logger.exception(e)
-                                    else:
-                                        pass
+                                        except Exception as e:
+                                            logger.exception(e)
+                                        else:
+                                            pass
 
+                            logger.info(
+                                f"finished iterate history in {time.perf_counter() - started - sleep_counter * sleep_time:.3f} of chat: {db_chat}")
                         except Exception as e:
                             logger.exception(e)
                             response.fail('TG_ERROR')

@@ -74,6 +74,15 @@ def message_view_analyzer(*args, **kwargs):
 
 
 @shared_task(queue='default', timeout=60)
+def iterate_chats_history(*args, **kwargs):
+    tg_function({
+        'func': 'task_iterate_chat_history',
+        'args': args,
+        'kwargs': kwargs
+    })
+
+
+@shared_task(queue='default', timeout=60)
 def admin_logs_analyzer(*args, **kwargs):
     tg_function({
         'func': 'task_analyze_admin_logs',

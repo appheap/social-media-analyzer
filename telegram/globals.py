@@ -4,6 +4,7 @@ from utils.utils import prettify
 
 tg_exchange = Exchange('tg_exchange', 'direct', durable=True)
 info_queue = Queue('tg_info_queue', exchange=tg_exchange, routing_key='tg_info_queue')
+callback_queue = Queue(uuid(), exclusive=True, auto_delete=True)
 
 
 # reply_queue = Queue('tg_reply_queue', exchange=tg_exchange, routing_key='tg_reply_queue')
@@ -13,7 +14,6 @@ def tg_function(func_body):
     logger.info(f"@tg_function_call: {prettify(func_body)} ")
 
     response = None
-    callback_queue = Queue(uuid(), exclusive=True, auto_delete=True)
 
     def callback(body, message):
         nonlocal response
