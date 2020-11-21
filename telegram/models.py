@@ -186,7 +186,7 @@ class TelegramChannel(MyBaseModel):
     deleted_at = models.BigIntegerField(null=True, blank=True)
 
     # User who added this telegram channel
-    custom_user = models.ForeignKey(
+    user = models.ForeignKey(
         'users.CustomUser',
         on_delete=models.CASCADE,
         related_name='telegram_channels',
@@ -380,12 +380,12 @@ class Chat(MyBaseModel):
 
     #################################################
     # telegram account which added this chat
-    creator_account = models.ForeignKey(
+    logger_account = models.ForeignKey(
         'telegram.TelegramAccount',
         on_delete=models.CASCADE,
         related_name='chats',
         null=False,
-        verbose_name='admin',
+        verbose_name='logger account',
     )
 
     shared_media_analyzer = models.OneToOneField(
@@ -433,6 +433,8 @@ class Chat(MyBaseModel):
 
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.BigIntegerField(null=True, blank=True)
+
+    is_public = models.BooleanField(default=False)
 
     #################################################
     # `restrictions` : restrictions of this chat

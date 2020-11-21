@@ -54,7 +54,7 @@ class AccountsView(LoginRequiredMixin, ListView):
     login_url = 'login'
 
     def get_queryset(self):
-        self.queryset = tg_models.TelegramChannel.objects.filter(custom_user=self.request.user)
+        self.queryset = tg_models.TelegramChannel.objects.filter(user=self.request.user)
         return super().get_queryset()
 
     def get_context_data(self, **kwargs):
@@ -77,7 +77,7 @@ class TelegramChannelAddView(LoginRequiredMixin, JsonResponseFormMixin, FormView
 
     def form_valid(self, form):
         # logger.info(form.instance.__dict__)
-        form.instance.custom_user = self.request.user
+        form.instance.user = self.request.user
 
         try:
             tg_models.AddChannelRequest.objects.get(done=False,

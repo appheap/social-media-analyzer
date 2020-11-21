@@ -595,7 +595,7 @@ class DataBaseManager(object):
         try:
             db_channel = self.tg_models.TelegramChannel.objects.get(
                 channel_id=db_chat.chat_id,
-                custom_user=db_user,
+                user=db_user,
                 telegram_account=db_admin_tg_account,
             )
         except exceptions.ObjectDoesNotExist as e:
@@ -604,8 +604,8 @@ class DataBaseManager(object):
                 is_account_creator=tg_full_chat.is_creator,
                 is_account_admin=False,
                 username=db_chat.username.lower(),
-                is_public=True,
-                custom_user=db_user,
+                is_public=db_chat.is_public,
+                user=db_user,
                 telegram_account=db_admin_tg_account,
                 chat=db_chat,
             )
@@ -723,7 +723,7 @@ class DataBaseManager(object):
                 db_tg_chat.linked_chat = None
 
         db_tg_chat.invite_link = getattr(tg_chat, 'invite_link', None)
-        db_tg_chat.creator_account = db_creator_account
+        db_tg_chat.logger_account = db_creator_account
 
     def get_or_create_db_tg_chat(self, tg_chat: Chat, db_creator_account, client: Client, update_current=False,
                                  is_tg_full_chat=False, check_chat_type=False):
@@ -745,19 +745,23 @@ class DataBaseManager(object):
                     self.create_db_restrictions(tg_chat.restrictions, db_tg_chat)
 
         except exceptions.ObjectDoesNotExist as e:
+            is_public = True
             if not is_tg_full_chat:
                 # get the full chat info from telegram client
                 try:
                     temp: Chat = client.get_chat(_id)
                 except tg_errors.ChannelPrivate as e:
                     logger.info(f"channel {tg_chat} is private")
+                    is_public = False
                 except tg_errors.RPCError as e:
                     logger.exception(e)
                 else:
                     tg_chat: Chat = temp
+                    is_public = True
             try:
                 db_tg_chat = self.tg_models.Chat(
                     chat_id=_id,
+                    is_public=True if tg_chat.username else is_public,
                 )
                 self.fill_db_tg_chat_attrs(db_tg_chat, tg_chat, db_creator_account, client, check_chat_type)
                 db_tg_chat.save()
@@ -796,7 +800,7 @@ class DataBaseManager(object):
         db_message.forward_sender_name = getattr(message, 'forward_sender_name', None)
         db_message.forward_from_chat = self.get_or_create_db_tg_chat(
             getattr(message, 'forward_from_chat', None),
-            db_chat.creator_account,
+            db_chat.logger_account,
             client,
         )
         db_message.forward_from_message_id = getattr(message, 'forward_from_message_id', None)
@@ -818,7 +822,7 @@ class DataBaseManager(object):
         db_message.has_media = message.media if message.media else False
         db_message.media_type = self.get_message_media_type(message)
         db_message.chat = db_chat
-        db_message.logged_by = db_chat.creator_account
+        db_message.logged_by = db_chat.logger_account
 
     def get_message_by_message_id(self, db_chat, message_id: int):
         if not db_chat and not message_id:
@@ -878,7 +882,7 @@ class DataBaseManager(object):
             date=now,
             views=views,
             message=db_message,
-            logged_by=db_chat.creator_account,
+            logged_by=db_chat.logger_account,
             chat=db_chat,
         )
 
@@ -888,7 +892,7 @@ class DataBaseManager(object):
             date=now,
             views=message.views,
             message=db_message,
-            logged_by=db_chat.creator_account,
+            logged_by=db_chat.logger_account,
             chat=db_chat,
         )
 
@@ -1311,7 +1315,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             now = arrow.utcnow().timestamp
 
             for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
+                if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
                         try:
@@ -1358,7 +1362,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             now = arrow.utcnow().timestamp
 
             for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
+                if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
                         try:
@@ -1439,7 +1443,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             analyzer = db_chat.member_count_analyzer
             now = arrow.utcnow().timestamp
             for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
+                if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
                         try:
@@ -1451,11 +1455,11 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                             try:
                                 now = arrow.utcnow().timestamp
                                 self.tg_models.ChatMemberCount.objects.create(
-                                    id=f"{db_chat.chat_id}:{db_chat.creator_account.user_id}:{now}",
+                                    id=f"{db_chat.chat_id}:{db_chat.logger_account.user_id}:{now}",
                                     count=tg_chat.members_count,
                                     date=now,
                                     chat=db_chat,
-                                    logged_by=db_chat.creator_account,
+                                    logged_by=db_chat.logger_account,
                                 )
                             except Exception as e:
                                 logger.exception(e)
@@ -1486,7 +1490,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             analyzer = db_chat.shared_media_analyzer
             now = arrow.utcnow().timestamp
             for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
+                if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
                         res = client.send(
@@ -1501,7 +1505,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                 try:
                                     now = arrow.utcnow().timestamp
                                     self.tg_models.ChatSharedMedia.objects.create(
-                                        id=f"{db_chat.chat_id}:{db_chat.creator_account.user_id}:{now}",
+                                        id=f"{db_chat.chat_id}:{db_chat.logger_account.user_id}:{now}",
                                         date=now,
                                         photo=count_dict['photo'],
                                         video=count_dict['video'],
@@ -1514,7 +1518,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                         location=count_dict['location'],
                                         contact=count_dict['contact'],
                                         chat=db_chat,
-                                        logged_by=db_chat.creator_account,
+                                        logged_by=db_chat.logger_account,
                                     )
                                 except Exception as e:
                                     logger.exception(e)
@@ -1554,7 +1558,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                 else:
                     if db_chat.members_analyzer and db_chat.members_analyzer.enabled:
                         for client in clients:
-                            if client.session_name == db_chat.creator_account.session_name:
+                            if client.session_name == db_chat.logger_account.session_name:
                                 client: Client = client
                                 if client.is_connected:
                                     response = self.analyze_chat_members(
@@ -1583,7 +1587,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             analyzer = db_chat.members_analyzer
             now = arrow.utcnow().timestamp
             for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
+                if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
                         response = self.analyze_chat_members(client, db_chat, response)
@@ -1610,10 +1614,10 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             analyzer = db_chat.admin_log_analyzer
             now = arrow.utcnow().timestamp
             for client in clients:
-                if client.session_name == db_chat.creator_account.session_name:
+                if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
-                        response = self.analyze_chat_admin_logs(db_chat, db_chat.creator_account, client, response)
+                        response = self.analyze_chat_admin_logs(db_chat, db_chat.logger_account, client, response)
                     else:
                         response.fail('client is not connected now')
                     break
