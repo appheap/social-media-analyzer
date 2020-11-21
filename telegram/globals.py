@@ -4,7 +4,9 @@ from utils.utils import prettify
 
 tg_exchange = Exchange('tg_exchange', 'direct', durable=True)
 info_queue = Queue('tg_info_queue', exchange=tg_exchange, routing_key='tg_info_queue')
-callback_queue = Queue(uuid(), exclusive=True, auto_delete=True)
+callback_queue = Queue(uuid(), auto_delete=True)
+
+number_of_telegram_workers = 5
 
 
 # reply_queue = Queue('tg_reply_queue', exchange=tg_exchange, routing_key='tg_reply_queue')

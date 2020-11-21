@@ -948,8 +948,9 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                      'InputMessagesFilterRoundVideo': 'video_note', 'InputMessagesFilterGif': 'animation',
                      'InputMessagesFilterGeo': 'location', 'InputMessagesFilterContacts': 'contact'}
 
-    def __init__(self, connection, clients):
+    def __init__(self, connection, clients, index: int):
         self.connection = connection
+        self.index = index
         super().__init__(clients)
 
     def get_consumers(self, Consumer, channel):
@@ -970,7 +971,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
         args = body['args']
         kwargs = body['kwargs']
 
-        # logger.info(f'Got task: {prettify(body)}')
+        logger.info(f'on consumer {self.index} Got task: {prettify(body)}')
         response = BaseResponse()
 
         if func == 'task_init_clients':
@@ -2145,15 +2146,16 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
 
 class TelegramConsumerManager(Thread):
-    def __init__(self, clients):
+    def __init__(self, clients, i):
         Thread.__init__(self)
         self.clients = clients
         self.daemon = True
         self.name = 'Telegram_Consumer_Manager_Thread'
+        self.index = i
 
     def run(self) -> None:
-        Worker(connection=Connection('amqp://localhost'), clients=clients).run()
-        logger.info(f"Telegram Consumer started ....")
+        logger.info(f"Telegram Consumer {self.index} started ....")
+        Worker(connection=Connection('amqp://localhost'), clients=clients, index=self.index).run()
 
 
 class TelegramClientManager():
@@ -2373,6 +2375,7 @@ class TelegramClientManager():
 
 def init_consumer():
     global clients
-    TelegramConsumerManager(clients).start()
+    for i in range(tg_globals.number_of_telegram_workers):
+        TelegramConsumerManager(clients, i + 1).start()
 
     TelegramClientManager(clients).run()
