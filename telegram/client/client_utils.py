@@ -142,7 +142,7 @@ class DataBaseManager(object):
             db_chat.members_analyzer.save()
 
     def enable_or_create_channel_analyzers_with_admin_required(self, db_chat, db_tg_channel):
-        if db_tg_channel.is_active or db_tg_channel.is_account_admin:
+        if db_tg_channel:
             db_tg_channel.is_active = True
             db_tg_channel.is_account_admin = True
             db_tg_channel.save()
@@ -1202,6 +1202,8 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
         message_ids_to_fetch = []
         for k in view_chunks:
             views = view_chunks[k]
+            if not len(views):
+                continue
             for i, view in enumerate(views):
                 message_id = k + i
                 if view == 0:
@@ -1276,33 +1278,28 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
     async def get_views_chunk(self, client: Client, db_chat, i: int, all_views: dict):
         started = time.perf_counter()
-        temp_r = await self.tg_get_message_views(client, db_chat.chat_id, list(range(i, i + 100)))
-
-        all_views[i] = temp_r
+        try:
+            views = await self.tg_get_message_views(client, db_chat.chat_id, list(range(i, i + 100)))
+        except tg_errors.RPCError as e:
+            logger.exception(e)  # todo: other exceptions?
+        except Exception as e:
+            logger.exception(e)
+        else:
+            all_views[i] = views
         logger.info(f"{db_chat} messages {i} - {i + 100}: {time.perf_counter() - started:.3f}s")
 
     async def update_message_views(self, client: Client, db_chat):
-        message = None
-        for message in client.get_history(db_chat.chat_id, limit=10):
-            message: Message = message
-            if not message.service:
-                break
-        else:
-            # need to get more messages
-            async for message in client.get_history(db_chat.chat_id, limit=20):
-                message: Message = message
-                if not message.service:
-                    break
+        message = self.get_last_valid_message(client, db_chat)
+        total_views = {}
         if message:
             last_message_id = message.message_id
-            total_views = {}
             async with trio.open_nursery() as nursery:
                 start = int((last_message_id - 10000) / 100)
                 if start < 0:
                     start = 0
                 for i in range(start, int(last_message_id / 100) + 1):
                     nursery.start_soon(self.get_views_chunk, client, db_chat, i * 100, total_views)
-            return total_views
+        return total_views
 
     def task_analyze_message_views(self, *args, **kwargs):
         response = BaseResponse()
@@ -1321,9 +1318,10 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                         try:
                             started = time.perf_counter()
                             total_views = trio.run(self.update_message_views, client, db_chat)
-                            logger.info(f"total iterations: {len(total_views)}")
-                            logger.info(f"finished fetch views after: {time.perf_counter() - started:.3f}s")
-                            update_db_dict[db_chat.chat_id] = (total_views, db_chat, client)
+                            logger.info(
+                                f"finished fetch views in: {time.perf_counter() - started:.3f}s for chat: {db_chat}")
+                            if len(total_views):
+                                update_db_dict[db_chat.chat_id] = (total_views, db_chat, client)
                         except Exception as e:
                             logger.exception(e)
                             response.fail('TG_ERROR')
@@ -1342,15 +1340,29 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                 analyzer.last_analyzed_at = now
                 analyzer.save()
 
-        if len(update_db_dict):
+        if len(update_db_dict):  # todo: put the db update in another task?
             for key, value in update_db_dict.items():
                 total_views, db_chat, client = value
                 started = time.perf_counter()
                 trio.run(self.update_db, total_views, db_chat, client)
                 logger.info(
-                    f"finished update views in db after: {time.perf_counter() - started:.3f}s for chat :{db_chat}")
+                    f"finished db update views in: {time.perf_counter() - started:.3f}s for chat :{db_chat}")
 
         return response
+
+    def get_last_valid_message(self, client, db_chat, limit: int = 20, is_first=True):
+        if not client or not db_chat:
+            return None
+        messages = client.get_history(db_chat.chat_id, limit=limit)
+        message = None
+        if not messages:
+            return None
+        for msg in messages:
+            if not msg.service:
+                message = msg
+        if is_first and not message:
+            return self.get_last_valid_message(client, db_chat, limit=100, is_first=False)
+        return message
 
     def task_iterate_chat_history(self, *args, **kwargs):
         response = BaseResponse()
@@ -1367,7 +1379,12 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                     if client.is_connected:
                         try:
                             started = time.perf_counter()
-                            message = client.get_history(db_chat.chat_id, limit=1)[0]
+                            message = self.get_last_valid_message(
+                                client,
+                                db_chat,
+                            )
+                            if not message:
+                                break
                             offset_id = message.message_id
                             row = 0
                             sleep_counter = 0
