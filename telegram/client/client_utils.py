@@ -7,7 +7,7 @@ from pyrogram.raw.base import ChannelAdminLogEventAction
 from pyrogram.raw.types import ChannelAdminLogEventsFilter, InputMessagesFilterPhotos, InputMessagesFilterDocument, \
     InputMessagesFilterUrl, InputMessagesFilterRoundVideo, InputMessagesFilterGeo, InputMessagesFilterContacts, \
     InputMessagesFilterGif, InputMessagesFilterVoice, InputMessagesFilterMusic, InputMessagesFilterVideo, \
-    ChannelParticipantsSearch, ChannelAdminLogEvent, ChatBannedRights
+    ChannelParticipantsSearch, ChannelAdminLogEvent, ChatBannedRights, UpdateDeleteChannelMessages
 from pyrogram.raw.types.channels import AdminLogResults, ChannelParticipants, ChannelParticipantsNotModified
 from pyrogram.types import User as User, Restriction as PGRestricion
 from pyrogram.types import Dialog as Dialog
@@ -727,7 +727,7 @@ class DataBaseManager(object):
 
     def get_or_create_db_tg_chat(self, tg_chat: Chat, db_creator_account, client: Client, update_current=False,
                                  is_tg_full_chat=False, check_chat_type=False):
-        if tg_chat is None:
+        if tg_chat is None or not db_creator_account or not client:
             return None
         _id = int(tg_chat.id)
 
@@ -839,7 +839,7 @@ class DataBaseManager(object):
         return db_message
 
     def get_or_create_db_tg_message(self, message: Message, db_chat, client: Client, now: int, deletion_date: int = 0):
-        if message is None:
+        if message is None or not db_chat or not client:
             return None
         _id = f"{db_chat.chat_id}:{message.message_id}:{message.edit_date if message.edit_date else 0}"
         _id_prefix = f"{db_chat.chat_id}:{message.message_id}:"  # todo: delete?
@@ -875,6 +875,22 @@ class DataBaseManager(object):
                 db_message.save()
 
         return db_message
+
+    def update_db_message_to_deleted(self, update: UpdateDeleteChannelMessages):
+        now = arrow.utcnow().timestamp
+        db_chat = self.tg_models.Chat.objects.get(
+            chat_id=int(f"-100{update.channel_id}"),
+            is_deleted=False,
+        )
+        if db_chat:
+            logger.info(db_chat)
+            self.tg_models.Message.objects.filter(
+                message_id__in=update.messages,
+                chat=db_chat,
+            ).update(
+                is_deleted=True,
+                delete_date=now
+            )
 
     def create_db_message_view_without_message(self, db_chat, db_message, message_id: int, views: int, now: int):
         return self.tg_models.MessageView.objects.create(
@@ -2158,11 +2174,10 @@ class TelegramConsumerManager(Thread):
         Worker(connection=Connection('amqp://localhost'), clients=clients, index=self.index).run()
 
 
-class TelegramClientManager():
-    tg_models = None
+class TelegramClientManager(DataBaseManager):
 
     def __init__(self, clients: list):
-        # threading.Thread.__init__(self)
+        super().__init__(clients)
         self.clients = clients
         self.name = 'telegram_client_thread'
         self.names = [
@@ -2180,6 +2195,7 @@ class TelegramClientManager():
         # logger.info('on_message:: %s : %s' % (mp.current_process().name, threading.current_thread().name))
         logger.info(f"in on_message : {threading.current_thread()}")
         logger.info(message)
+        self.handle_new_message(client, message)
 
     def on_raw_update(self, client: Client, update, users, chats):
         logger.info(f"in on_raw_update : {threading.current_thread()}")
@@ -2196,6 +2212,8 @@ class TelegramClientManager():
         logger.info("\n")
         if get_class_name(update) == 'UpdateChannel':
             self.handle_channel_update(client, update)
+        elif get_class_name(update) == 'UpdateDeleteChannelMessages':
+            self.update_db_message_to_deleted(update)
         else:
             pass
         logger.info("*" * 30)
@@ -2256,6 +2274,40 @@ class TelegramClientManager():
                                     action.prev_participant) == "ChannelParticipantAdmin":
                                     # this tg_account's admin rights was changed
                                     self.handle_admin_rights_update(action, channel_id, tg_admin)
+
+    def handle_new_message(self, client: Client, message: Message):
+        if message.chat:
+            now = arrow.utcnow().timestamp
+            db_chat = self.tg_models.Chat.objects.get(
+                chat_id=message.chat.id,
+                is_deleted=False,
+            )
+            if db_chat:
+                self.get_or_create_db_tg_message(
+                    message,
+                    db_chat,
+                    client,
+                    now,
+                )
+                client.read_history(db_chat.chat_id, max_id=message.message_id)
+            else:
+                db_telegram_account = self.tg_models.TelegramAccount.objects.get(
+                    is_deleted=False,
+                    session_name=client.session_name,
+                )
+                db_chat = self.get_or_create_db_tg_chat(
+                    message.chat,
+                    db_telegram_account,
+                    client,
+                    update_current=True,
+                    is_tg_full_chat=False,
+                )
+                self.get_or_create_db_tg_message(
+                    message,
+                    db_chat,
+                    client,
+                    now,
+                )
 
     def handle_admin_rights_update(self, action, channel_id: int, tg_admin):
         admin_rights = action.new_participant.admin_rights
