@@ -160,6 +160,6 @@ dmypy.json
 .pyre/
 /celerybeat-schedule.db
 /celerybeat.pid
-/telegram/sessions/
+/telegram/tg_sessions/
 /.env
 /Pipfile.lock
