@@ -8,23 +8,23 @@ yarn.lock
 node_modules/*
 node_modules/
 
-social_media_analyzer/__pycache__/
+backend/core/__pycache__/
 
-users/__pycache__/
-users/migrations/__pycache__/
+backend/users/__pycache__/
+backend/users/migrations/__pycache__/
 
-telegram/__pycache__/
-telegram/migrations/__pycache__/
+backend/telegram/__pycache__/
+backend/telegram/migrations/__pycache__/
 
 
-pages/__pycache__/
-pages/migrations/__pycache__/
+backend/pages/__pycache__/
+backend/pages/migrations/__pycache__/
 
 /authentication/__pycache__/
 /authentication/migrations/__pycache__/
 
-/dashboard/__pycache__/
-/dashboard/migrations/__pycache__/
+/backend/dashboard/__pycache__/
+/backend/dashboard/migrations/__pycache__/
 
 
 # Byte-compiled / optimized / DLL files
@@ -89,7 +89,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
+backend/db.sqlite3
 db.sqlite3-journal
 
 # Flask stuff:
@@ -127,13 +127,13 @@ __pypackages__/
 
 # Celery stuff
 celerybeat-schedule
-celerybeat.pid
+backend/celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
 
 # Environments
-.env
+backend/.env
 .venv
 env/
 venv/
@@ -158,8 +158,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/celerybeat-schedule.db
-/celerybeat.pid
-/telegram/tg_sessions/
-/.env
+/backend/celerybeat-schedule.db
+/backend/celerybeat.pid
+/backend/telegram/tg_sessions/
+/backend/.env
 /Pipfile.lock
