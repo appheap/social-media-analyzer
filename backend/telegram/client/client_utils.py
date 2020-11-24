@@ -84,6 +84,7 @@ clients_lock = RLock()
 
 from backend.telegram.client.client_manager import *
 
+
 def get_class_name(object):
     return str(object.__class__.__name__)
 
@@ -730,6 +731,7 @@ class DataBaseManager(object):
         if tg_chat is None or not db_creator_account or not client:
             return None
         _id = int(tg_chat.id)
+        db_tg_chat = None
 
         try:
             db_tg_chat = self.tg_models.Chat.objects.get(
@@ -758,19 +760,22 @@ class DataBaseManager(object):
                 else:
                     tg_chat: Chat = temp
                     is_public = True
-            try:
-                db_tg_chat = self.tg_models.Chat(
-                    chat_id=_id,
-                    is_public=True if tg_chat.username else is_public,
-                )
-                self.fill_db_tg_chat_attrs(db_tg_chat, tg_chat, db_creator_account, client, check_chat_type)
-                db_tg_chat.save()
-                if db_tg_chat.is_restricted:
-                    self.create_db_restrictions(tg_chat.restrictions, db_tg_chat)
+                try:
+                    db_tg_chat = self.tg_models.Chat(
+                        chat_id=_id,
+                        is_public=True if tg_chat.username else is_public,
+                    )
+                    self.fill_db_tg_chat_attrs(db_tg_chat, tg_chat, db_creator_account, client, check_chat_type)
+                    db_tg_chat.save()
+                    if db_tg_chat.is_restricted:
+                        self.create_db_restrictions(tg_chat.restrictions, db_tg_chat)
+                except Exception as e:
+                    logger.exception(e)
+                    db_tg_chat = None
+        except Exception as e:
+            logger.exception(e)
+            db_tg_chat = None
 
-            except Exception as e:
-                logger.exception(e)
-                db_tg_chat = None
         return db_tg_chat
 
     def get_message_media_type(self, message: Message):
@@ -2103,7 +2108,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                 except exceptions.ObjectDoesNotExist as e:
                     # user and membership does not exist, create them
                     tg_user = chat_member.user
-                    db_user = self.get_or_create_db_tg_user(tg_user, client)
+                    db_user = self.get_or_create_db_tg_user(tg_user, client, update_current=True, )
                     db_membership = self.get_or_create_membership(db_chat, db_user)
                     db_participant = self.create_channel_participant_from_chat_member(
                         chat_member=chat_member,
@@ -2275,37 +2280,44 @@ class TelegramClientManager(DataBaseManager):
 
     def handle_new_message(self, client: Client, message: Message):
         if message.chat:
-            now = arrow.utcnow().timestamp
-            db_chat = self.tg_models.Chat.objects.get(
-                chat_id=message.chat.id,
-                is_deleted=False,
-            )
-            if db_chat:
-                self.get_or_create_db_tg_message(
-                    message,
-                    db_chat,
-                    client,
-                    now,
-                )
-                client.read_history(db_chat.chat_id, max_id=message.message_id)
-            else:
-                db_telegram_account = self.tg_models.TelegramAccount.objects.get(
-                    is_deleted=False,
-                    session_name=client.session_name,
-                )
+            # check if the chat is the type of `channel` and it's `public` (current policy)
+            if message and message.chat and message.chat.username and message.chat.type == 'channel':
+                now = arrow.utcnow().timestamp
                 db_chat = self.get_or_create_db_tg_chat(
                     message.chat,
-                    db_telegram_account,
+                    self.tg_models.TelegramAccount.objects.get(
+                        session_name=client.session_name,
+                        is_deleted=False,
+                    ),
                     client,
                     update_current=True,
-                    is_tg_full_chat=False,
                 )
-                self.get_or_create_db_tg_message(
-                    message,
-                    db_chat,
-                    client,
-                    now,
-                )
+                if db_chat:
+                    self.get_or_create_db_tg_message(
+                        message,
+                        db_chat,
+                        client,
+                        now,
+                    )
+                    client.read_history(db_chat.chat_id, max_id=message.message_id)
+                else:
+                    db_telegram_account = self.tg_models.TelegramAccount.objects.get(
+                        is_deleted=False,
+                        session_name=client.session_name,
+                    )
+                    db_chat = self.get_or_create_db_tg_chat(
+                        message.chat,
+                        db_telegram_account,
+                        client,
+                        update_current=True,
+                        is_tg_full_chat=False,
+                    )
+                    self.get_or_create_db_tg_message(
+                        message,
+                        db_chat,
+                        client,
+                        now,
+                    )
 
     def handle_admin_rights_update(self, action, channel_id: int, tg_admin):
         admin_rights = action.new_participant.admin_rights
