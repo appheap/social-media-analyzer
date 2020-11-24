@@ -2279,45 +2279,44 @@ class TelegramClientManager(DataBaseManager):
                                     self.handle_admin_rights_update(action, channel_id, tg_admin)
 
     def handle_new_message(self, client: Client, message: Message):
-        if message.chat:
-            # check if the chat is the type of `channel` and it's `public` (current policy)
-            if message and message.chat and message.chat.username and message.chat.type == 'channel':
-                now = arrow.utcnow().timestamp
+        # check if the chat is the type of `channel` and it's `public` (current policy)
+        if message and message.chat and message.chat.username and message.chat.type == 'channel':
+            now = arrow.utcnow().timestamp
+            db_chat = self.get_or_create_db_tg_chat(
+                message.chat,
+                self.tg_models.TelegramAccount.objects.get(
+                    session_name=client.session_name,
+                    is_deleted=False,
+                ),
+                client,
+                update_current=True,
+            )
+            if db_chat:
+                self.get_or_create_db_tg_message(
+                    message,
+                    db_chat,
+                    client,
+                    now,
+                )
+                client.read_history(db_chat.chat_id, max_id=message.message_id)
+            else:
+                db_telegram_account = self.tg_models.TelegramAccount.objects.get(
+                    is_deleted=False,
+                    session_name=client.session_name,
+                )
                 db_chat = self.get_or_create_db_tg_chat(
                     message.chat,
-                    self.tg_models.TelegramAccount.objects.get(
-                        session_name=client.session_name,
-                        is_deleted=False,
-                    ),
+                    db_telegram_account,
                     client,
                     update_current=True,
+                    is_tg_full_chat=False,
                 )
-                if db_chat:
-                    self.get_or_create_db_tg_message(
-                        message,
-                        db_chat,
-                        client,
-                        now,
-                    )
-                    client.read_history(db_chat.chat_id, max_id=message.message_id)
-                else:
-                    db_telegram_account = self.tg_models.TelegramAccount.objects.get(
-                        is_deleted=False,
-                        session_name=client.session_name,
-                    )
-                    db_chat = self.get_or_create_db_tg_chat(
-                        message.chat,
-                        db_telegram_account,
-                        client,
-                        update_current=True,
-                        is_tg_full_chat=False,
-                    )
-                    self.get_or_create_db_tg_message(
-                        message,
-                        db_chat,
-                        client,
-                        now,
-                    )
+                self.get_or_create_db_tg_message(
+                    message,
+                    db_chat,
+                    client,
+                    now,
+                )
 
     def handle_admin_rights_update(self, action, channel_id: int, tg_admin):
         admin_rights = action.new_participant.admin_rights
