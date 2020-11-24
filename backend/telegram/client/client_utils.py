@@ -2095,7 +2095,6 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
         try:
             for chat_member in client.iter_chat_members(db_chat.chat_id, filter=_filter if _filter else Filters.ALL):
                 chat_member: ChatMember = chat_member
-                new_status = chat_member.status
                 now = arrow.utcnow().timestamp
                 try:
                     db_user = self.tg_models.User.objects.get(
