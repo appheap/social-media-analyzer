@@ -1,5 +1,8 @@
 **/__pycache__/**
-!**/migrations/**
+**/__pycache__/
+#!**/migrations/**
+**/migrations/
+
 
 package.json
 package-lock.json
