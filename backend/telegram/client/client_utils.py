@@ -7,14 +7,15 @@ from pyrogram.raw.base import ChannelAdminLogEventAction
 from pyrogram.raw.types import ChannelAdminLogEventsFilter, InputMessagesFilterPhotos, InputMessagesFilterDocument, \
     InputMessagesFilterUrl, InputMessagesFilterRoundVideo, InputMessagesFilterGeo, InputMessagesFilterContacts, \
     InputMessagesFilterGif, InputMessagesFilterVoice, InputMessagesFilterMusic, InputMessagesFilterVideo, \
-    ChannelParticipantsSearch, ChannelAdminLogEvent, ChatBannedRights, UpdateDeleteChannelMessages
+    ChannelParticipantsSearch, ChannelAdminLogEvent, ChatBannedRights, UpdateDeleteChannelMessages, UpdateChannel
 from pyrogram.raw.types.channels import AdminLogResults, ChannelParticipants, ChannelParticipantsNotModified
 from pyrogram.types import User as User, Restriction as PGRestricion
 from pyrogram.types import Dialog as Dialog
 from pyrogram.types import Message as Message
 from pyrogram.types import Chat as Chat
 from pyrogram.types import Update as Update
-from pyrogram.raw import functions, types
+from pyrogram.raw import types
+from pyrogram import raw
 # from pyrogram.raw.types import *
 import pyrogram.utils as utils
 from pyrogram.errors import FloodWait
@@ -124,11 +125,9 @@ class DataBaseManager(object):
         from backend.users import models
         self.users_models = models
 
-    def disable_channel_analyzers_with_admin_required(self, db_chat, db_tg_channel):
-        if db_tg_channel.is_active or db_tg_channel.is_account_admin:
-            db_tg_channel.is_active = False
-            db_tg_channel.is_account_admin = False
-            db_tg_channel.save()
+    def disable_channel_analyzers_with_admin_required(self, db_chat):
+        if not db_chat:
+            return
 
         if db_chat.admin_log_analyzer:
             db_chat.admin_log_analyzer.enabled = False
@@ -205,6 +204,23 @@ class DataBaseManager(object):
             add_admins=chat_member.can_promote_members,
         )
 
+    def promote_account(self, channel_id: int, tg_admin):
+        with transaction.atomic():
+            self.complete_add_channel_request_status(channel_id, tg_admin)
+            self.enable_tg_channel(channel_id, tg_admin)
+            # the rights is already added
+
+    def complete_add_channel_request_status(self, channel_id: int, tg_admin):
+        requests = self.tg_models.AddChannelRequest.objects.filter(
+            done=False,
+            channel_id=channel_id,
+            telegram_account=tg_admin,
+        )
+        for request in requests:
+            request.status = self.tg_models.AddChannelRequestStatusTypes.CHANNEL_ADMIN
+            request.done = True
+            request.save()
+
     def create_channel_participant_from_chat_member(
             self,
             *,
@@ -213,6 +229,9 @@ class DataBaseManager(object):
             client: Client,
             event_date: int,
             is_previous_participant: bool = None,
+
+            db_tg_channel=None,
+            db_tg_admin_account=None
     ):
         if not chat_member or not db_membership or not client or not event_date:
             return None
@@ -268,7 +287,7 @@ class DataBaseManager(object):
                 tg_user=chat_member.promoted_by,
                 client=client,
             )
-            db_participant.admin_rights = self.create_db_admin_rights(chat_member)
+            db_participant.admin_rights = self.create_db_admin_rights(chat_member, db_tg_admin_account, db_tg_channel)
 
         elif _type == 'kicked':
             db_participant.type = self.tg_models.ChannelParticipantTypes.kicked
@@ -437,9 +456,12 @@ class DataBaseManager(object):
             by=None,
             is_previous_participant: bool = None,
             tg_raw_users: dict = None,
-            tg_raw_participant=None
+            tg_raw_participant=None,
             # db_participant1=None,
             # db_participant2=None
+
+            db_tg_channel=None,
+            db_tg_admin_account=None,
     ):
         db_participant = None
         if event_type == 'join':
@@ -544,6 +566,9 @@ class DataBaseManager(object):
                     client=client,
                     event_date=event_date,
                     is_previous_participant=is_previous_participant,
+
+                    db_tg_channel=db_tg_channel,
+                    db_tg_admin_account=db_tg_admin_account
                 )
             except Exception as e:
                 logger.exception(e)
@@ -575,6 +600,35 @@ class DataBaseManager(object):
             )
 
             return db_tg_admin_account
+
+    def get_db_telegram_account(self, user_id: int):
+        try:
+            tg_admin: TelegramClientManager.tg_models.TelegramAccount = self.tg_models.TelegramAccount.objects.get(
+                is_deleted=False,
+                user_id=user_id,
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            tg_admin = None
+        except Exception as e:
+            tg_admin = None
+            logger.exception(e)
+
+        return tg_admin
+
+    def get_db_telegram_account_by_client(self, client: Client):
+        try:
+            tg_admin: TelegramClientManager.tg_models.TelegramAccount = self.tg_models.TelegramAccount.objects.get(
+                is_deleted=False,
+                session_name=client.session_name,
+                api_id=client.api_id,
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            tg_admin = None
+        except Exception as e:
+            tg_admin = None
+            logger.exception(e)
+
+        return tg_admin
 
     def update_add_channel_request_status(self, db_admin, channel_username: str, db_tg_channel,
                                           tg_full_chat: Chat, db_request_owner):
@@ -615,6 +669,38 @@ class DataBaseManager(object):
             db_channel = None
 
         return db_channel
+
+    def get_db_chat(self, db_tg_admin: "TelegramAccount", chat_id: int):
+        try:
+            db_chat = self.tg_models.Chat.objects.get(
+                chat_id=chat_id,
+                is_deleted=False,
+                logger_account=db_tg_admin,
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            db_chat = None
+            logger.exception(e)
+        except Exception as e:
+            db_chat = None
+            logger.exception(e)
+
+        return db_chat
+
+    def get_db_tg_channel(self, db_tg_admin: "TelegramAccount", channel_id: int):
+        try:
+            db_tg_channel = self.tg_models.TelegramChannel.objects.get(
+                channel_id=channel_id,
+                is_deleted=False,
+                telegram_account=db_tg_admin,
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            db_tg_channel = None
+            logger.exception(e)
+        except Exception as e:
+            db_tg_channel = None
+            logger.exception(e)
+
+        return db_tg_channel
 
     def create_entity_types(self, db_chat, db_message, message: Message):
         if not message:
@@ -760,18 +846,18 @@ class DataBaseManager(object):
                 else:
                     tg_chat: Chat = temp
                     is_public = True
-                try:
-                    db_tg_chat = self.tg_models.Chat(
-                        chat_id=_id,
-                        is_public=True if tg_chat.username else is_public,
-                    )
-                    self.fill_db_tg_chat_attrs(db_tg_chat, tg_chat, db_creator_account, client, check_chat_type)
-                    db_tg_chat.save()
-                    if db_tg_chat.is_restricted:
-                        self.create_db_restrictions(tg_chat.restrictions, db_tg_chat)
-                except Exception as e:
-                    logger.exception(e)
-                    db_tg_chat = None
+            try:
+                db_tg_chat = self.tg_models.Chat(
+                    chat_id=_id,
+                    is_public=True if tg_chat.username else is_public,
+                )
+                self.fill_db_tg_chat_attrs(db_tg_chat, tg_chat, db_creator_account, client, check_chat_type)
+                db_tg_chat.save()
+                if db_tg_chat.is_restricted:
+                    self.create_db_restrictions(tg_chat.restrictions, db_tg_chat)
+            except Exception as e:
+                logger.exception(e)
+                db_tg_chat = None
         except Exception as e:
             logger.exception(e)
             db_tg_chat = None
@@ -953,6 +1039,41 @@ class DataBaseManager(object):
                 except Exception as e:
                     logger.exception(e)
 
+    def enable_tg_channel(self, channel_id: int, db_tg_admin):
+        tg_channel = self.get_db_tg_channel(db_tg_admin, channel_id)
+        if tg_channel:
+            tg_channel.is_account_admin = True
+            tg_channel.is_active = True  # TODO what's the goal of having this ?
+            tg_channel.save()
+        return tg_channel
+
+    def disable_tg_channel(self, channel_id: int, client: Client):
+        """
+        Disable all channels related to this client because client was demoted to normal participant.
+
+        :param channel_id: ID of the telegram channel
+        :param client: Client that was admin of this channel
+        :return:
+        """
+        try:
+            tg_admin = self.tg_models.TelegramAccount.objects.get(
+                session_name=client.session_name,
+                is_deleted=False,
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        else:
+            tg_channels = self.tg_models.TelegramChannel.objects.filter(
+                channel_id=channel_id,
+                is_deleted=False,
+                telegram_account=tg_admin,
+            )
+            for tg_channel in tg_channels:
+                tg_channel.is_account_admin = False
+                tg_channel.save()
+
 
 class Worker(ConsumerProducerMixin, DataBaseManager):
     tg_exchange = tg_globals.tg_exchange
@@ -968,6 +1089,10 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                      'InputMessagesFilterUrl': 'url', 'InputMessagesFilterVoice': 'voice',
                      'InputMessagesFilterRoundVideo': 'video_note', 'InputMessagesFilterGif': 'animation',
                      'InputMessagesFilterGeo': 'location', 'InputMessagesFilterContacts': 'contact'}
+    _names = [
+        "ChannelParticipantSelf",
+        "ChannelParticipant",
+    ]
 
     def __init__(self, connection, clients, index: int):
         self.connection = connection
@@ -1115,7 +1240,8 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                     admins = client.get_chat_members(db_chat.chat_id, filter=Filters.ADMINISTRATORS)
                                 except tg_errors.ChatAdminRequired as e:
                                     # client is not admin of this channel, update telegram account related to this channel
-                                    self.disable_channel_analyzers_with_admin_required(db_chat, db_tg_channel)
+                                    self.disable_tg_channel(db_chat.chat_id, client)
+                                    self.disable_channel_analyzers_with_admin_required(db_chat)
                                 except Exception as e:
                                     logger.exception(e)
                                 else:
@@ -1294,7 +1420,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
     async def tg_get_message_views(self, client: Client, chat_id, ids: list):
         return client.send(
-            functions.messages.GetMessagesViews(peer=client.resolve_peer(chat_id), id=ids, increment=True)
+            raw.functions.messages.GetMessagesViews(peer=client.resolve_peer(chat_id), id=ids, increment=True)
         )
 
     async def get_views_chunk(self, client: Client, db_chat, i: int, all_views: dict):
@@ -1532,8 +1658,8 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                     client: Client = client
                     if client.is_connected:
                         res = client.send(
-                            functions.messages.GetSearchCounters(peer=client.resolve_peer(db_chat.chat_id),
-                                                                 filters=self._search_filter_count)
+                            raw.functions.messages.GetSearchCounters(peer=client.resolve_peer(db_chat.chat_id),
+                                                                     filters=self._search_filter_count)
                         )
                         if res:
                             count_dict = {}
@@ -1646,35 +1772,46 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
     def task_analyze_admin_logs(self, *args, **kwargs):
         response = BaseResponse()
-        chats = self.tg_models.Chat.objects.filter(admin_log_analyzer__isnull=False,
-                                                   admin_log_analyzer__enabled=True)
-        for db_chat in chats:
-            analyzer = db_chat.admin_log_analyzer
-            now = arrow.utcnow().timestamp
-            for client in clients:
-                if client.session_name == db_chat.logger_account.session_name:
-                    client: Client = client
-                    if client.is_connected:
-                        response = self.analyze_chat_admin_logs(db_chat, db_chat.logger_account, client, response)
-                    else:
-                        response.fail('client is not connected now')
-                    break
-            else:
-                response.fail('no client is ready')
-                break
 
-            if response.success:
-                if not analyzer.first_analyzed_at:
-                    analyzer.first_analyzed_at = now
-                analyzer.last_analyzed_at = now
-                analyzer.save()
+        db_tg_admin_id = kwargs.get('db_tg_admin_id', None)
+        chat_id = kwargs.get('chat_id', None)
+
+        if db_tg_admin_id and chat_id:
+            db_chat = self.get_db_chat(self.get_db_telegram_account(db_tg_admin_id), chat_id)
+            chats = []
+            if db_chat:
+                chats.append(db_chat)
+        else:
+            chats = self.tg_models.Chat.objects.filter(admin_log_analyzer__isnull=False,
+                                                       admin_log_analyzer__enabled=True)
+        if chats and len(chats):
+            for db_chat in chats:
+                analyzer = db_chat.admin_log_analyzer
+                now = arrow.utcnow().timestamp
+                for client in clients:
+                    if client.session_name == db_chat.logger_account.session_name:
+                        client: Client = client
+                        if client.is_connected:
+                            response = self.analyze_chat_admin_logs(db_chat, db_chat.logger_account, client, response)
+                        else:
+                            response.fail('client is not connected now')
+                        break
+                else:
+                    response.fail('no client is ready')
+                    break
+
+                if response.success:
+                    if not analyzer.first_analyzed_at:
+                        analyzer.first_analyzed_at = now
+                    analyzer.last_analyzed_at = now
+                    analyzer.save()
 
         return response
 
-    def analyze_chat_admin_logs(self, db_chat, tg_admin_account, client: Client, response: BaseResponse):
+    def analyze_chat_admin_logs(self, db_chat, db_tg_admin_account, client: Client, response: BaseResponse):
         try:
             admin_log: AdminLogResults = client.send(
-                functions.channels.GetAdminLog(
+                raw.functions.channels.GetAdminLog(
                     channel=client.resolve_peer(peer_id=db_chat.chat_id),
                     q="",
                     min_id=0,
@@ -1686,6 +1823,9 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             )
         except tg_errors.ChatAdminRequired:
             response.fail(f'chat admin required for chat {db_chat}')
+            # this tg_account was demoted to participant;
+            self.disable_tg_channel(db_chat.chat_id, client)
+            self.disable_channel_analyzers_with_admin_required(self.get_db_chat(db_tg_admin_account, db_chat.chat_id))
         except Exception as e:
             logger.exception(e)
             response.fail('UNKNOWN_ERROR')
@@ -1722,7 +1862,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                     event_id=event.id,
                                     user=db_user,
                                     chat=db_chat,
-                                    logged_by=tg_admin_account,
+                                    logged_by=db_tg_admin_account,
                                     date=event.date,
                                 )
                                 if action_type == ChannelAdminLogEventActionChangeTitle:
@@ -1965,6 +2105,10 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                         )
                                     )
 
+                                    if prev_tg_user.id == db_tg_admin_account.user_id:
+                                        temp_channel = self.get_db_tg_channel(db_tg_admin_account, db_chat.chat_id)
+                                        temp_admin = db_tg_admin_account
+
                                     prev_participant = self.get_or_create_participant_by_event(
                                         client=client,
                                         db_membership=db_membership,
@@ -1973,6 +2117,9 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                         is_previous_participant=True,
                                         tg_raw_participant=event.action.prev_participant,
                                         tg_raw_users=tg_raw_users,
+
+                                        db_tg_channel=temp_channel,
+                                        db_tg_admin_account=temp_admin,
                                     )
 
                                     new_participant = self.get_or_create_participant_by_event(
@@ -1984,6 +2131,9 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                         is_previous_participant=False,
                                         tg_raw_participant=event.action.new_participant,
                                         tg_raw_users=tg_raw_users,
+
+                                        db_tg_channel=temp_channel,
+                                        db_tg_admin_account=temp_admin,
                                     )
 
                                     db_event.action_participant_toggle_admin = self.tg_models.AdminLogEventActionToggleAdmin.objects.create(
@@ -2002,6 +2152,22 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                         db_participant=new_participant,
                                         event_date=event.date,
                                     )
+
+                                    if get_class_name(event.action.prev_participant) in self._names and get_class_name(
+                                            event.action.new_participant) == "ChannelParticipantAdmin":
+                                        # this tg_account was promoted to admin;
+                                        self.promote_account(db_chat.chat_id, db_tg_admin_account)
+
+                                    elif get_class_name(event.action.new_participant) in self._names and get_class_name(
+                                            event.action.prev_participant) == "ChannelParticipantAdmin":
+                                        # this tg_account was demoted to participant;
+                                        pass
+                                    elif get_class_name(
+                                            event.action.new_participant) == "ChannelParticipantAdmin" and get_class_name(
+                                        event.action.prev_participant) == "ChannelParticipantAdmin":
+                                        # this tg_account's admin rights was changed
+                                        # the new rights is updated already
+                                        pass
 
                                 elif action_type == ChannelAdminLogEventActionChangeStickerSet:
                                     db_event.action_change_sticker_set = self.tg_models.AdminLogEventActionChangeStickerSet.objects.create()
@@ -2183,10 +2349,6 @@ class TelegramClientManager(DataBaseManager):
         super().__init__(clients)
         self.clients = clients
         self.name = 'telegram_client_thread'
-        self.names = [
-            "ChannelParticipantSelf",
-            "ChannelParticipant",
-        ]
         from backend.telegram import models
         self.tg_models = models
 
@@ -2224,59 +2386,33 @@ class TelegramClientManager(DataBaseManager):
     # noinspection PyTypeChecker
     def handle_channel_update(self, client: Client, update):
         channel_id = int('-100' + str(update.channel_id))
+        # find the active telegram account associated with this client
+        db_tg_admin = self.get_db_telegram_account_by_client(client)
         try:
             admin_logs: AdminLogResults = client.send(
-                functions.channels.GetAdminLog(
+                raw.functions.channels.GetAdminLog(
                     channel=client.resolve_peer(peer_id=channel_id),
                     q="",
                     min_id=0,
                     max_id=0,
                     events_filter=ChannelAdminLogEventsFilter(promote=True, demote=True),
                     admins=None,
-                    limit=1
+                    limit=1  # fixme: what is the issue?
                 )
             )
             logger.info(admin_logs)
-        except tg_errors.RPCError as e:
-            logger.exception(e)
+        except tg_errors.ChatAdminRequired as e:
             # this tg_account was demoted to participant;
             self.disable_tg_channel(channel_id, client)
+            self.disable_channel_analyzers_with_admin_required(self.get_db_chat(db_tg_admin, channel_id))
         else:
-            from pyrogram.raw.types import User as PGuser
-            from pyrogram.raw.types import \
-                ChannelAdminLogEventActionParticipantToggleAdmin as PGaction_toggle_admin
-            for user in admin_logs.users:
-                user: PGuser = user
-                try:
-                    tg_admin: TelegramClientManager.tg_models.TelegramAccount = self.tg_models.TelegramAccount.objects.get(
-                        user_id=user.id,
-                        is_deleted=False,
-                        session_name=client.session_name
-                    )
-                except exceptions.ObjectDoesNotExist as e:
-                    pass
-                else:
-                    for admin_log_event in admin_logs.events:
-                        action = admin_log_event.action
-                        action_class_name = get_class_name(action)
-                        logger.info(action_class_name)
-                        if action_class_name == "ChannelAdminLogEventActionParticipantToggleAdmin":
-                            action: PGaction_toggle_admin = admin_log_event.action
-                            if action.prev_participant.user_id == tg_admin.user_id and action.new_participant.user_id == tg_admin.user_id:
-                                if get_class_name(action.prev_participant) in self.names and get_class_name(
-                                        action.new_participant) == "ChannelParticipantAdmin":
-                                    # this tg_account was promoted to admin;
-                                    self.handle_tg_account_promotion(action, channel_id, tg_admin)
-
-                                elif get_class_name(action.new_participant) in self.names and get_class_name(
-                                        action.prev_participant) == "ChannelParticipantAdmin":
-                                    # this tg_account was demoted to participant;
-                                    pass
-                                elif get_class_name(
-                                        action.new_participant) == "ChannelParticipantAdmin" and get_class_name(
-                                    action.prev_participant) == "ChannelParticipantAdmin":
-                                    # this tg_account's admin rights was changed
-                                    self.handle_admin_rights_update(action, channel_id, tg_admin)
+            tasks.admin_logs_analyzer.apply_async(
+                kwargs={
+                    'db_tg_admin_id': db_tg_admin.user_id,
+                    'chat_id': channel_id,
+                },
+                countdown=0,
+            )
 
     def handle_new_message(self, client: Client, message: Message):
         # check if the chat is the type of `channel` and it's `public` (current policy)
@@ -2317,102 +2453,6 @@ class TelegramClientManager(DataBaseManager):
                     client,
                     now,
                 )
-
-    def handle_admin_rights_update(self, action, channel_id: int, tg_admin):
-        admin_rights = action.new_participant.admin_rights
-        try:
-            tg_channel = self.tg_models.TelegramChannel.objects.get(
-                channel_id=channel_id,
-                is_deleted=False,
-                telegram_account=tg_admin,
-            )
-        except exceptions.ObjectDoesNotExist as e:
-            logger.exception(e)
-        else:
-            with transaction.atomic():
-                self.update_old_admin_rights(tg_admin, tg_channel)
-                self.save_admin_rights(admin_rights, tg_admin, tg_channel)
-
-    def handle_tg_account_promotion(self, action, channel_id: int, tg_admin):
-        admin_rights = action.new_participant.admin_rights
-        with transaction.atomic():
-            self.complete_add_channel_request_status(channel_id, tg_admin)
-            tg_channel = self.enable_tg_channel(channel_id, tg_admin)
-            self.save_admin_rights(admin_rights, tg_admin, tg_channel)
-
-    def enable_tg_channel(self, channel_id: int, tg_admin):
-        tg_channel = self.tg_models.TelegramChannel.objects.get(
-            channel_id=channel_id,
-            is_deleted=False,
-            telegram_account=tg_admin,
-        )
-        tg_channel.is_account_admin = True
-        tg_channel.is_active = True  # TODO what's the goal of having this ?
-        tg_channel.save()
-        return tg_channel
-
-    def complete_add_channel_request_status(self, channel_id: int, tg_admin):
-        requests = self.tg_models.AddChannelRequest.objects.filter(
-            done=False,
-            channel_id=channel_id,
-            telegram_account=tg_admin,
-        )
-        for request in requests:
-            request.status = self.tg_models.AddChannelRequestStatusTypes.CHANNEL_ADMIN
-            request.done = True
-            request.save()
-
-    def disable_tg_channel(self, channel_id: int, client: Client):
-        """
-        Disable all channels related to this client because client was demoted to normal participant.
-
-        :param channel_id: ID of the telegram channel
-        :param client: Client that was admin of this channel
-        :return:
-        """
-        try:
-            tg_admin = self.tg_models.TelegramAccount.objects.get(
-                session_name=client.session_name,
-                is_deleted=False,
-            )
-        except exceptions.ObjectDoesNotExist as e:
-            logger.exception(e)
-        else:
-            tg_channels = self.tg_models.TelegramChannel.objects.filter(
-                channel_id=channel_id,
-                is_deleted=False,
-                telegram_account=tg_admin,
-            )
-            for tg_channel in tg_channels:
-                tg_channel.is_account_admin = False
-                tg_channel.is_active = False  # TODO what's the goal of having this ?
-                tg_channel.save()
-
-    def save_admin_rights(self, admin_rights, tg_admin, tg_channel, is_latest=True):
-        tg_admin_rights_new = self.tg_models.AdminRights(
-            change_info=admin_rights.change_info,
-            post_messages=admin_rights.change_info,
-            edit_messages=admin_rights.edit_messages,
-            delete_messages=admin_rights.delete_messages,
-            ban_users=admin_rights.ban_users,
-            invite_users=admin_rights.invite_users,
-            pin_messages=admin_rights.pin_messages,
-            add_admins=admin_rights.add_admins,
-            is_latest=is_latest,
-            admin=tg_admin,
-            telegram_channel=tg_channel
-        )
-        tg_admin_rights_new.save()
-
-    def update_old_admin_rights(self, tg_admin, tg_channel):
-        old_admin_rights = self.tg_models.AdminRights.objects.filter(
-            admin=tg_admin,
-            telegram_channel=tg_channel,
-            is_latest=True,
-        )
-        for old_rights in old_admin_rights:
-            old_rights.is_latest = False
-            old_rights.save()
 
     def run(self) -> None:
         logger.info(mp.current_process().name)
