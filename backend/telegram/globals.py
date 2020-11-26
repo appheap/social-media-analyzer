@@ -1,6 +1,6 @@
 from kombu import Connection, Exchange, Queue, uuid, Consumer
-from backend.core.globals import logger
-from backend.utils.utils import prettify
+from core.globals import logger
+from utils.utils import prettify
 
 tg_exchange = Exchange('tg_exchange', 'direct', durable=True)
 info_queue = Queue('tg_info_queue', exchange=tg_exchange, routing_key='tg_info_queue')

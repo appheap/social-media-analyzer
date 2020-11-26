@@ -65,9 +65,9 @@ import threading
 from multiprocessing import Process
 import multiprocessing as mp
 #############################################
-from backend.core.globals import logger
-from backend.telegram import globals as tg_globals
-from backend.telegram import tasks
+from core.globals import logger
+from telegram import globals as tg_globals
+from telegram import tasks
 #############################################
 
 from django.core import exceptions
@@ -75,7 +75,7 @@ from django.db import DatabaseError, transaction
 import arrow
 
 #############################################
-from backend.utils.utils import prettify
+from utils.utils import prettify
 
 TG_BAD_REQUEST = 'TG_BAD_REQUEST'
 base_timezone = pytz.timezone('Asia/Tehran')
@@ -83,7 +83,7 @@ base_timezone = pytz.timezone('Asia/Tehran')
 clients = []
 clients_lock = RLock()
 
-from backend.telegram.client.client_manager import *
+from telegram.client.client_manager import *
 
 
 def get_class_name(object):
@@ -119,10 +119,10 @@ class DataBaseManager(object):
 
     def __init__(self, clients: list):
         self.clients = clients
-        from backend.telegram import models
+        from telegram import models
         self.tg_models = models
 
-        from backend.users import models
+        from users import models
         self.users_models = models
 
     def disable_channel_analyzers_with_admin_required(self, db_chat):
@@ -2349,7 +2349,7 @@ class TelegramClientManager(DataBaseManager):
         super().__init__(clients)
         self.clients = clients
         self.name = 'telegram_client_thread'
-        from backend.telegram import models
+        from telegram import models
         self.tg_models = models
 
     def on_disconnect(self, client: Client):

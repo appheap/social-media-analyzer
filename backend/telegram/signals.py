@@ -2,13 +2,13 @@ from django.db.models.signals import (
     pre_save, post_save, pre_delete, )
 from django.dispatch import receiver
 
-from backend.core.globals import logger
-from backend.telegram import models
+from core.globals import logger
+from telegram import models
 
 # @receiver(pre_save, sender=models.AddChannelRequest)
 # def handle_presave(sender, **kwargs):
 #     logger.info(f'\npresave: {str(sender)} : {kwargs}')
-from backend.utils.utils import prettify
+from utils.utils import prettify
 
 
 @receiver(post_save, sender=models.AddChannelRequest)

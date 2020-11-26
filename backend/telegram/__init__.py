@@ -1,1 +1,1 @@
-default_app_config = 'backend.telegram.apps.TelegramConfig'
+default_app_config = 'telegram.apps.TelegramConfig'

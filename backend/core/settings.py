@@ -44,10 +44,10 @@ INSTALLED_APPS = [
     'crispy_forms',
 
     # local
-    'backend.users',
-    'backend.pages',
-    'backend.telegram',
-    'backend.dashboard',
+    'users',
+    'pages',
+    'telegram',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -63,7 +63,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-ROOT_URLCONF = 'backend.core.urls'
+ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -75,8 +75,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'backend.core.context_processors.full_user',
-                'backend.core.context_processors.current_url',
+                'core.context_processors.full_user',
+                'core.context_processors.current_url',
             ],
         },
     },

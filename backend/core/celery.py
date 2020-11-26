@@ -4,9 +4,9 @@ from celery import Celery
 from celery.signals import worker_ready
 from kombu import Queue
 
-from backend.core.globals import logger
-from backend.telegram import tasks as tg_tasks
-from backend.utils.utils import prettify
+from core.globals import logger
+from telegram import tasks as tg_tasks
+from utils.utils import prettify
 
 # set the default Django settings module for the 'celery' program.
 

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AnonymousUser
 from django.urls import resolve
-from backend.users import models as user_models
+from users import models as user_models
 
 
 def full_user(request):
