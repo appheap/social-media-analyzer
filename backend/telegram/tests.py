@@ -1,6 +1,6 @@
 from . import models
-from backend.users.tests import BaseTestCase
-from backend.utils.utils import prettify
+from users.tests import BaseTestCase
+from utils.utils import prettify
 
 
 # Create your tests here.

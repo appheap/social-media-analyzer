@@ -1,7 +1,7 @@
 from celery import shared_task
 
-from backend.telegram.client import client_utils
-from backend.telegram.globals import tg_function
+from telegram.client import client_utils
+from telegram.globals import tg_function
 
 
 @shared_task(queue='tg_queue', timeout=60)

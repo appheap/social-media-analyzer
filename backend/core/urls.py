@@ -19,11 +19,11 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('users/', include('backend.users.urls')),
+    path('users/', include('users.urls')),
     path('users/', include('django.contrib.auth.urls')),
-    path('telegram/', include('backend.telegram.urls')),
-    path('dashboard/', include('backend.dashboard.urls')),
-    path('', include('backend.pages.urls')),
+    path('telegram/', include('telegram.urls')),
+    path('dashboard/', include('dashboard.urls')),
+    path('', include('pages.urls')),
 ]
 
 import django.conf.urls as urls

@@ -2,7 +2,8 @@ from django.apps import AppConfig
 
 
 class TelegramConfig(AppConfig):
-    name = 'backend.telegram'
+    name = 'telegram'
 
     def ready(self):
-        import backend.telegram.signals
+        import telegram.signals as signals
+        _ = signals

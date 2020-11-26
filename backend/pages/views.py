@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 
 # Create your views here.
-from backend.core.globals import logger
+from core.globals import logger
 
 
 class HomePageView(TemplateView):

@@ -9,12 +9,12 @@ from django.views.generic import CreateView
 from django.views.generic import FormView
 from django.views.generic.edit import FormMixin
 
-from backend.telegram import models as tg_models
+from telegram import models as tg_models
 from django.contrib.auth.mixins import LoginRequiredMixin
-from backend.telegram import forms as tg_forms
-from backend.core.globals import logger
+from telegram import forms as tg_forms
+from core.globals import logger
 
-from backend.telegram import tasks
+from telegram import tasks
 
 
 # Create your views here.

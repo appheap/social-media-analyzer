@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 import arrow
 from . import models
-from backend.utils.utils import prettify
+from utils.utils import prettify
 
 
 # Create your tests here.
