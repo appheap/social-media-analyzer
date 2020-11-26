@@ -141,6 +141,8 @@ USE_TZ = True
 # STATIC_URL = '/static/'
 
 #####################################################
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000
+
 # added settings
 AUTH_USER_MODEL = 'users.CustomUser'
 
