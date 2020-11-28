@@ -746,7 +746,7 @@ class Message(MyBaseModel):
 
     class Meta:
         ordering = ('-date', 'chat',)
-        pass
+        get_latest_by = ('-date', 'chat',)
 
     def __str__(self):
         return f"message {self.message_id} from {self.chat}"
@@ -784,6 +784,7 @@ class MessageView(MyBaseModel):
 
     class Meta:
         ordering = ['-date', 'message', ]
+        get_latest_by = ['-date', 'message', ]
 
     def __str__(self):
         return f"{self.views} @ ({arrow.get(self.date, tzinfo='utc').format('YYYY-MM-DD HH:mm:ss')}) of {self.message}"
@@ -823,6 +824,7 @@ class Entity(MyBaseModel):
 
     class Meta:
         verbose_name_plural = 'Entities'
+        ordering = ('message',)
 
     def __str__(self):
         return f"{self.type} of type {self.source} in {self.message}"
@@ -880,6 +882,10 @@ class ChatMemberCount(MyBaseModel):
         related_name='member_count_history',
     )
 
+    class Meta:
+        ordering = ('-date',)
+        get_latest_by = ('-date',)
+
     def __str__(self):
         return f"{self.chat} : {self.count} @ {arrow.get(self.date)}"
 
@@ -918,6 +924,10 @@ class ChatSharedMedia(MyBaseModel):
         null=True, blank=True,
         related_name='shared_media_history',
     )
+
+    class Meta:
+        ordering = ('-date',)
+        get_latest_by = ('-date',)
 
     def __str__(self):
         return f"{self.chat} @ {arrow.get(self.date)}"
