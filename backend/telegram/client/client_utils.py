@@ -940,6 +940,14 @@ class DataBaseManager(object):
             db_message = None
         return db_message
 
+    def mark_message_as_deleted(self, db_chat, db_message, deletion_date: int = None):
+        if not db_chat or not db_message or not deletion_date:
+            return
+        if not db_message.is_deleted:
+            db_message.is_deleted = True
+            db_message.delete_date = deletion_date
+            db_message.save()
+
     def get_or_create_db_tg_message(self, message: Message, db_chat, client: Client, now: int, deletion_date: int = 0):
         if message is None or not db_chat or not client:
             return None
@@ -1398,17 +1406,18 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                 continue
             for i, view in enumerate(views):
                 message_id = k + i
+                db_message = self.get_message_by_message_id(
+                    db_chat,
+                    message_id=message_id,
+                )
+
                 if view == 0:
                     # message no longer exists and it's deleted
-                    pass
+                    self.mark_message_as_deleted(db_chat, db_message)
                 else:
                     try:
                         now = arrow.utcnow().timestamp
                         with transaction.atomic():
-                            db_message = self.get_message_by_message_id(
-                                db_chat,
-                                message_id=message_id,
-                            )
                             if db_message:
                                 db_message_view = self.create_db_message_view_without_message(
                                     db_chat,
