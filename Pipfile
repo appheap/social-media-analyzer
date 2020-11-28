@@ -26,6 +26,7 @@ pyyaml = "*"
 argh = "*"
 asgiref = "*"
 trio = "*"
+emoji = "*"
 
 [requires]
 python_version = "3.6"

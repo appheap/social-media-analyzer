@@ -679,7 +679,6 @@ class DataBaseManager(object):
             )
         except exceptions.ObjectDoesNotExist as e:
             db_chat = None
-            logger.exception(e)
         except Exception as e:
             db_chat = None
             logger.exception(e)
@@ -796,6 +795,8 @@ class DataBaseManager(object):
         db_tg_chat.is_scam = getattr(tg_chat, 'is_scam', False)
         db_tg_chat.title = getattr(tg_chat, 'title', None)
         db_tg_chat.username = tg_chat.username.lower() if tg_chat.username else None
+        db_tg_chat.first_name = getattr(tg_chat, 'first_name', None)
+        db_tg_chat.last_name = getattr(tg_chat, 'last_name', None)
         db_tg_chat.description = getattr(tg_chat, 'description', None)
         db_tg_chat.dc_id = getattr(tg_chat, 'dc_id', None)
         if not check_chat_type:
@@ -863,6 +864,16 @@ class DataBaseManager(object):
             db_tg_chat = None
 
         return db_tg_chat
+
+    def create_or_update_dialog(self, db_chat, db_tg_admin_account):
+        if not db_chat or not db_tg_admin_account:
+            return None
+        return self.tg_models.Dialog.objects.update_or_create(
+            id=f"{db_tg_admin_account.user_id}:{db_chat.chat_id}",
+            chat=db_chat,
+            account=db_tg_admin_account,
+            is_member=True,
+        )
 
     def get_message_media_type(self, message: Message):
         if getattr(message, 'media', False):
@@ -967,14 +978,11 @@ class DataBaseManager(object):
 
         return db_message
 
-    def update_db_message_to_deleted(self, update: UpdateDeleteChannelMessages):
+    def update_db_message_to_deleted(self, client: Client, update: UpdateDeleteChannelMessages):
         now = arrow.utcnow().timestamp
-        db_chat = self.tg_models.Chat.objects.get(
-            chat_id=int(f"-100{update.channel_id}"),
-            is_deleted=False,
-        )
+        _id = int(f"-100{update.channel_id}")
+        db_chat = self.get_db_chat(self.get_db_telegram_account_by_client(client), _id)
         if db_chat:
-            logger.info(db_chat)
             self.tg_models.Message.objects.filter(
                 message_id__in=update.messages,
                 chat=db_chat,
@@ -1073,6 +1081,11 @@ class DataBaseManager(object):
             for tg_channel in tg_channels:
                 tg_channel.is_account_admin = False
                 tg_channel.save()
+
+    def disable_channel_with_analyzers(self, client, db_tg_admin, channel_id: int):
+        # this tg_account was demoted to participant;
+        self.disable_tg_channel(channel_id, client)
+        self.disable_channel_analyzers_with_admin_required(self.get_db_chat(db_tg_admin, channel_id))
 
 
 class Worker(ConsumerProducerMixin, DataBaseManager):
@@ -1212,43 +1225,58 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
             for client in self.clients:
                 client: Client = client
                 if client.session_name in session_names:
-                    db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(
-                        session_name=client.session_name,
-                        is_deleted=False,
-                    )
-                    for dialog in client.get_dialogs():
-                        if dialog.chat.type == 'channel' and dialog.chat.username is not None:
-                            db_chat = self.get_or_create_db_tg_chat(
-                                dialog.chat,
-                                db_tg_admin_account,
-                                client,
-                                update_current=True,
-                                is_tg_full_chat=False,
-                            )
-                            if db_chat:
-                                db_tg_channel = self.get_or_create_db_tg_channel(
-                                    db_tg_admin_account,
-                                    db_chat,
-                                    dialog.chat,
-                                    self.users_models.CustomUser.objects.get(username='sigma', is_superuser=True),
-                                )
+                    db_tg_admin_account = self.get_db_telegram_account_by_client(client)
+                    if db_tg_admin_account:
+                        from collections import defaultdict
+                        start = time.perf_counter()
+                        dialogs = self.get_all_dialogs(client)
+                        print(f"after : {time.perf_counter() - start}")
+                        if dialogs and len(dialogs):
+                            # fixme: remove this?
+                            types = defaultdict(int)
+                            for dialog in dialogs:
+                                types[dialog.chat.type] += 1
+                            logger.info(prettify(types))
 
-                                # create general channel analyzers
-                                self.create_general_channel_analyzers(db_chat)
+                            for dialog in dialogs:
+                                if dialog.chat.type not in ('private', 'bot'):
+                                    db_chat = self.get_or_create_db_tg_chat(
+                                        dialog.chat,
+                                        db_tg_admin_account,
+                                        client,
+                                        update_current=False,  # fixme: how to avoid floodWait when this is enabled?
+                                        is_tg_full_chat=False,  # fixme: speedup the first fetch
+                                    )
+                                    if db_chat:
+                                        self.create_or_update_dialog(db_chat, db_tg_admin_account)
 
-                                try:
-                                    admins = client.get_chat_members(db_chat.chat_id, filter=Filters.ADMINISTRATORS)
-                                except tg_errors.ChatAdminRequired as e:
-                                    # client is not admin of this channel, update telegram account related to this channel
-                                    self.disable_tg_channel(db_chat.chat_id, client)
-                                    self.disable_channel_analyzers_with_admin_required(db_chat)
-                                except Exception as e:
-                                    logger.exception(e)
-                                else:
-                                    # enable/create admin required analyzers for this channel
-                                    self.enable_or_create_channel_analyzers_with_admin_required(db_chat, db_tg_channel)
-                                    # update memberships for this channel
-                                    ids.append(db_chat.chat_id)
+                                        if dialog.chat.type == 'channel' and dialog.chat.username is not None:
+                                            db_tg_channel = self.get_or_create_db_tg_channel(
+                                                db_tg_admin_account,
+                                                db_chat,
+                                                dialog.chat,
+                                                self.users_models.CustomUser.objects.get(username='sigma',
+                                                                                         is_superuser=True),
+                                            )
+
+                                            # create general channel analyzers
+                                            self.create_general_channel_analyzers(db_chat)
+
+                                            try:
+                                                admins = client.get_chat_members(db_chat.chat_id,
+                                                                                 filter=Filters.ADMINISTRATORS)
+                                            except tg_errors.ChatAdminRequired as e:
+                                                # client is not admin of this channel, update telegram account related to this channel
+                                                self.disable_tg_channel(db_chat.chat_id, client)
+                                                self.disable_channel_analyzers_with_admin_required(db_chat)
+                                            except Exception as e:
+                                                logger.exception(e)
+                                            else:
+                                                # enable/create admin required analyzers for this channel
+                                                self.enable_or_create_channel_analyzers_with_admin_required(db_chat,
+                                                                                                            db_tg_channel)
+                                                # update memberships for this channel
+                                                ids.append(db_chat.chat_id)
         response.done()
         if len(ids):
             tasks.analyze_chat_members.apply_async(
@@ -2329,6 +2357,26 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
     ########################################
 
+    def get_all_dialogs(self, client: Client):
+        if not client:
+            return None
+        offset_date = 0
+        dialogs = []
+        while True:
+            try:
+                dialogs_slice = client.get_dialogs(offset_date, )
+            except tg_errors.RPCError:
+                pass
+            except Exception as e:
+                logger.exception(e)
+            else:
+                if dialogs_slice:
+                    dialogs.extend(dialogs_slice)
+                    offset_date = dialogs_slice[-1].top_message.date
+                else:
+                    break
+        return dialogs
+
 
 class TelegramConsumerManager(Thread):
     def __init__(self, clients, i):
@@ -2402,9 +2450,11 @@ class TelegramClientManager(DataBaseManager):
             )
             logger.info(admin_logs)
         except tg_errors.ChatAdminRequired as e:
-            # this tg_account was demoted to participant;
-            self.disable_tg_channel(channel_id, client)
-            self.disable_channel_analyzers_with_admin_required(self.get_db_chat(db_tg_admin, channel_id))
+            self.disable_channel_with_analyzers(client, db_tg_admin, channel_id)
+        except tg_errors.ChatWriteForbidden as e:
+            self.disable_channel_with_analyzers(client, db_tg_admin, channel_id)
+        except Exception as e:
+            logger.exception(e)
         else:
             tasks.admin_logs_analyzer.apply_async(
                 kwargs={

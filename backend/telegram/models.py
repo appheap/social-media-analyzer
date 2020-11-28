@@ -84,6 +84,7 @@ class TelegramAccount(MyBaseModel):
     # `member_count_history` : member counts logged by this account
     # `shared_media_history` : shared media counts logged by this account
     # `admin_rights` : admin rights belonging to this account
+    # `dialogs` : dialogs belonging to this account
 
     # User who is the owner of this telegram account
     custom_user = models.ForeignKey(
@@ -346,6 +347,29 @@ class User(MyBaseModel):
         return f"{self.first_name if self.first_name else self.last_name if self.last_name else ''} `@{self.username if self.username else self.user_id}`"
 
 
+class Dialog(MyBaseModel):
+    id = models.CharField(max_length=265, primary_key=True, )  # `user_id:chat_id`
+    chat = models.ForeignKey(
+        'telegram.Chat',
+        on_delete=models.CASCADE,
+        null=False,
+        related_name='dialogs',
+    )
+
+    account = models.ForeignKey(
+        'telegram.TelegramAccount',
+        on_delete=models.CASCADE,
+        null=False,
+        related_name='dialogs',
+    )
+
+    is_member = models.BooleanField(default=True, blank=True, )
+    left_at = models.BigIntegerField(null=True, blank=True, )
+
+    def __str__(self):
+        return f"{self.account} : {self.chat}"
+
+
 class Chat(MyBaseModel):
     chat_id = models.BigIntegerField(primary_key=True)
     type = models.CharField(
@@ -447,11 +471,25 @@ class Chat(MyBaseModel):
     # `member_count_history` : member count history of the chat
     # `shared_media_history` : shared media history of the chat
     # `message_views` : message views belonging to this chat
-    #
+    # `dialogs` : dialogs this chat belongs to
 
     def __str__(self):
-        s = self.title if self.title else self.first_name
-        return s if s else str(self.chat_id)
+        s = self.title if self.title else self.first_name if self.first_name else self.last_name
+        r = s if s else str(self.chat_id)
+        _type = '📢'
+        if self.type == 'channel':
+            _type = '📢'
+        elif self.type == 'supergroup':
+            _type = '👥*'
+        elif self.type == 'group':
+            _type = '👥'
+        elif self.type == 'private':
+            _type = '👤'
+        elif self.type == 'bot':
+            _type = '🤖'
+        else:
+            pass
+        return f'{_type} {r}'
 
 
 class Membership(MyBaseModel):
