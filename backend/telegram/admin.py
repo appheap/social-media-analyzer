@@ -241,6 +241,7 @@ admin.site.register(models.TelegramChannel)
 admin.site.register(models.AddChannelRequest)
 
 admin.site.register(models.User, UserAdmin)
+admin.site.register(models.Dialog)
 admin.site.register(models.Chat, ChatAdmin)
 admin.site.register(models.Membership, MembershipAdmin)
 admin.site.register(models.Message, MessageAdmin)
