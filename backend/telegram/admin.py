@@ -31,6 +31,7 @@ class SharedMediaHistoryInline(admin.TabularInline):
 class TelegramAccountAdmin(admin.ModelAdmin):
     inlines = [
         TelegramChannelInline,
+        ChatsInline,
         MemberCountHistoryInline,
         SharedMediaHistoryInline,
         MessageViewInline,

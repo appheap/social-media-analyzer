@@ -2,12 +2,13 @@ import typing
 from timeit import timeit
 
 from pyrogram import Client
-from pyrogram.handlers import MessageHandler, RawUpdateHandler, DisconnectHandler
+from pyrogram.handlers import MessageHandler, RawUpdateHandler, UserStatusHandler, DisconnectHandler
+from pyrogram.raw.base import ChannelAdminLogEventAction
 from pyrogram.raw.types import ChannelAdminLogEventsFilter, InputMessagesFilterPhotos, InputMessagesFilterDocument, \
     InputMessagesFilterUrl, InputMessagesFilterRoundVideo, InputMessagesFilterGeo, InputMessagesFilterContacts, \
     InputMessagesFilterGif, InputMessagesFilterVoice, InputMessagesFilterMusic, InputMessagesFilterVideo, \
-    ChannelAdminLogEvent, ChatBannedRights, UpdateDeleteChannelMessages
-from pyrogram.raw.types.channels import AdminLogResults
+    ChannelParticipantsSearch, ChannelAdminLogEvent, ChatBannedRights, UpdateDeleteChannelMessages, UpdateChannel
+from pyrogram.raw.types.channels import AdminLogResults, ChannelParticipants, ChannelParticipantsNotModified
 from pyrogram.types import User as User, Restriction as PGRestricion
 from pyrogram.types import Dialog as Dialog
 from pyrogram.types import Message as Message
@@ -123,16 +124,6 @@ class DataBaseManager(object):
 
         from users import models
         self.users_models = models
-
-    def get_app_user(self, db_userid):
-        try:
-            db_site_user = self.users_models.CustomUser.objects.get(pk=db_userid)
-        except exceptions.ObjectDoesNotExist as e:
-            db_site_user = None
-        except Exception as e:
-            logger.exception(e)
-            db_site_user = None
-        return db_site_user
 
     def disable_channel_analyzers_with_admin_required(self, db_chat):
         if not db_chat:
@@ -405,35 +396,35 @@ class DataBaseManager(object):
 
     def create_chat_banned_rights(self, chat_member: ChatMember):
         return self.tg_models.ChatBannedRight.objects.create(
-            can_view_messages=chat_member.status == 'restricted',
-            can_send_messages=chat_member.can_send_messages,
-            can_send_media=chat_member.can_send_media_messages,
-            can_send_stickers=chat_member.can_send_stickers,
-            can_send_gifs=chat_member.can_send_animations,
-            can_send_games=chat_member.can_send_games,
-            can_send_inline=chat_member.can_use_inline_bots,
-            can_embed_links=chat_member.can_add_web_page_previews,
-            can_send_polls=chat_member.can_send_polls,
-            can_change_info=chat_member.can_change_info,
-            can_invite_users=chat_member.can_invite_users,
-            can_pin_messages=chat_member.can_pin_messages,
+            view_messages=chat_member.status == 'restricted',
+            send_messages=chat_member.can_send_messages,
+            send_media=chat_member.can_send_media_messages,
+            send_stickers=chat_member.can_send_stickers,
+            send_gifs=chat_member.can_send_animations,
+            send_games=chat_member.can_send_games,
+            send_inline=chat_member.can_use_inline_bots,
+            embed_links=chat_member.can_add_web_page_previews,
+            send_polls=chat_member.can_send_polls,
+            change_info=chat_member.can_change_info,
+            invite_users=chat_member.can_invite_users,
+            pin_messages=chat_member.can_pin_messages,
             until_date=chat_member.until_date,
         )
 
     def create_chat_banned_rights_from_raw_rights(self, banned_rights: ChatBannedRights):
         return self.tg_models.ChatBannedRight.objects.create(
-            can_view_messages=not banned_rights.view_messages,
-            can_send_messages=not banned_rights.send_messages,
-            can_send_media=not banned_rights.send_media,
-            can_send_stickers=not banned_rights.send_stickers,
-            can_send_gifs=not banned_rights.send_gifs,
-            can_send_games=not banned_rights.send_games,
-            can_send_inline=not banned_rights.send_inline,
-            can_embed_links=not banned_rights.embed_links,
-            can_send_polls=not banned_rights.send_polls,
-            can_change_info=not banned_rights.change_info,
-            can_invite_users=not banned_rights.invite_users,
-            can_pin_messages=not banned_rights.pin_messages,
+            view_messages=banned_rights.view_messages,
+            send_messages=banned_rights.send_messages,
+            send_media=banned_rights.send_media,
+            send_stickers=banned_rights.send_stickers,
+            send_gifs=banned_rights.send_gifs,
+            send_games=banned_rights.send_games,
+            send_inline=banned_rights.send_inline,
+            embed_links=banned_rights.embed_links,
+            send_polls=banned_rights.send_polls,
+            change_info=banned_rights.change_info,
+            invite_users=banned_rights.invite_users,
+            pin_messages=banned_rights.pin_messages,
             until_date=banned_rights.until_date,
         )
 
@@ -710,19 +701,6 @@ class DataBaseManager(object):
 
         return db_tg_channel
 
-    def get_db_tg_channel_by_username(self, channel_username):
-        try:
-            db_tg_channel = self.tg_models.TelegramChannel.objects.get(
-                username=channel_username,
-                is_deleted=False
-            )
-        except exceptions.ObjectDoesNotExist as e:
-            db_tg_channel = None
-        except Exception as e:
-            logger.exception(e)
-            db_tg_channel = None
-        return db_tg_channel
-
     def create_entity_types(self, db_chat, db_message, message: Message):
         if not message:
             return None
@@ -821,7 +799,6 @@ class DataBaseManager(object):
         db_tg_chat.last_name = getattr(tg_chat, 'last_name', None)
         db_tg_chat.description = getattr(tg_chat, 'description', None)
         db_tg_chat.dc_id = getattr(tg_chat, 'dc_id', None)
-        db_tg_chat.permissions = self.create_or_update_chat_permissions(tg_chat)
         if not check_chat_type:
             if tg_chat.linked_chat:
                 db_tg_chat.linked_chat = self.get_or_create_db_tg_chat(
@@ -962,14 +939,6 @@ class DataBaseManager(object):
             logger.exception(e)
             db_message = None
         return db_message
-
-    def mark_message_as_deleted(self, db_chat, db_message, deletion_date: int = None):
-        if not db_chat or not db_message or not deletion_date:
-            return
-        if not db_message.is_deleted:
-            db_message.is_deleted = True
-            db_message.delete_date = deletion_date
-            db_message.save()
 
     def get_or_create_db_tg_message(self, message: Message, db_chat, client: Client, now: int, deletion_date: int = 0):
         if message is None or not db_chat or not client:
@@ -1117,51 +1086,6 @@ class DataBaseManager(object):
         # this tg_account was demoted to participant;
         self.disable_tg_channel(channel_id, client)
         self.disable_channel_analyzers_with_admin_required(self.get_db_chat(db_tg_admin, channel_id))
-
-    def update_or_create_chat_member_count(self, db_chat, tg_chat, response: BaseResponse):
-        now = arrow.utcnow().timestamp
-        try:
-            self.tg_models.ChatMemberCount.objects.update_or_create(
-                id=f"{db_chat.chat_id}:{db_chat.logger_account.user_id}:{now}",
-                count=tg_chat.members_count,
-                date=now,
-                chat=db_chat,
-                logged_by=db_chat.logger_account,
-            )
-        except Exception as e:
-            logger.exception(e)
-            response.fail('DB_ERROR')
-        else:
-            response.done('logged chat member count')
-        return response
-
-    def create_or_update_chat_permissions(self, tg_chat: Chat):
-        if tg_chat.permissions:
-            try:
-                db_chat_permissions = self.tg_models.ChatPermissions.objects.update_or_create(
-                    id=str(tg_chat.id),
-                    can_send_messages=tg_chat.permissions.can_send_messages,
-                    can_send_media_messages=tg_chat.permissions.can_send_media_messages,
-                    can_send_stickers=tg_chat.permissions.can_send_stickers,
-                    can_send_animations=tg_chat.permissions.can_send_animations,
-                    can_send_games=tg_chat.permissions.can_send_games,
-                    can_use_inline_bots=tg_chat.permissions.can_use_inline_bots,
-                    can_add_web_page_previews=tg_chat.permissions.can_add_web_page_previews,
-                    can_send_polls=tg_chat.permissions.can_send_polls,
-                    can_change_info=tg_chat.permissions.can_change_info,
-                    can_invite_users=tg_chat.permissions.can_invite_users,
-                    can_pin_messages=tg_chat.permissions.can_pin_messages,
-                )
-            except DatabaseError as e:
-                logger.exception(e)
-                db_chat_permissions = None
-            except Exception as e:
-                logger.exception(e)
-                db_chat_permissions = None
-
-            return db_chat_permissions
-        else:
-            return None
 
 
 class Worker(ConsumerProducerMixin, DataBaseManager):
@@ -1369,33 +1293,44 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
         channel_username = str(kwargs['channel_username']).lower()
         db_userid = kwargs['db_userid']
         response = BaseResponse()
-
-        db_request_owner = self.get_app_user(db_userid)
-        if db_request_owner:
-            db_tg_admin_account = self.get_db_telegram_account(db_tg_account_admin_id)
-            if db_tg_admin_account:
+        try:
+            db_request_owner = self.users_models.CustomUser.objects.get(pk=db_userid)
+        except exceptions.ObjectDoesNotExist as e:
+            logger.exception(e)
+            response.fail('No such user')
+        else:
+            try:
+                db_tg_admin_account = self.tg_models.TelegramAccount.objects.get(user_id=db_tg_account_admin_id,
+                                                                                 is_deleted=False)
+            except exceptions.ObjectDoesNotExist as e:
+                logger.exception(e)
+                response.fail('no such tg account')
+            else:
                 for client in clients:
                     if client.session_name == db_tg_admin_account.session_name:
                         client: Client = client
                         if client.is_connected:
-                            db_tg_channel = self.get_db_tg_channel_by_username(channel_username)
-                            if db_tg_channel:
-                                response.fail('this channel is already added')
-                            else:
+                            try:
+                                db_tg_channel = \
+                                    self.tg_models.TelegramChannel.objects.get(
+                                        username=channel_username,
+                                        is_deleted=False
+                                    )
+                            except exceptions.ObjectDoesNotExist as e:
+                                logger.exception(e)
                                 try:
                                     tg_chat: Chat = client.get_chat(channel_username)
+
                                 except tg_errors.BadRequest as e:
+                                    logger.exception(e)
                                     if type(e) == tg_errors.ChannelsTooMuch:
-                                        # fixme: what now?
                                         response.fail('Admin has joined too many channels or supergroups')
                                     else:
                                         response.fail(TG_BAD_REQUEST)
-                                except Exception as e:
-                                    logger.exception(e)
                                 else:
-                                    # check to see whether the chat is the type of channel and it's public
                                     if tg_chat.type == 'channel' and tg_chat.username:
                                         try:
+                                            tg_full_chat: Chat = client.get_chat(tg_chat.id)
                                             client.join_chat(channel_username)
                                         except tg_errors.RPCError as e:
                                             logger.exception(e)
@@ -1403,23 +1338,21 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                         else:
                                             try:
                                                 with transaction.atomic():
-                                                    db_chat = self.get_or_create_db_tg_chat(
-                                                        tg_chat,
-                                                        db_tg_admin_account,
-                                                        client,
-                                                    )
+                                                    db_chat = self.get_or_create_db_tg_chat(tg_full_chat,
+                                                                                            db_tg_admin_account,
+                                                                                            client)
                                                     db_tg_channel = self.get_or_create_db_tg_channel(
                                                         db_tg_admin_account,
                                                         db_chat,
-                                                        tg_chat,
+                                                        tg_full_chat,
                                                         db_request_owner,
                                                     )
 
                                                     db_add_request = self.update_add_channel_request_status(
                                                         db_tg_admin_account, channel_username, db_tg_channel,
-                                                        tg_chat,
-                                                        db_request_owner,
-                                                    )
+                                                        tg_full_chat,
+                                                        db_request_owner)
+
                                                     response.done('joined channel')
 
                                             except DatabaseError as e:
@@ -1427,15 +1360,15 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                                                 response.fail('DB_ERROR')
                                     else:
                                         response.fail('Only public channels can be added')
+                            else:
+                                response.fail('this channel is already added')
+
+
                         else:
                             response.fail('Sorry, that Admin account is not connected now.')
                         break
                 else:
                     response.fail('Sorry, that Admin account is not connected now.')
-            else:
-                response.fail('no such tg account')
-        else:
-            response.fail('No such user')
 
         return response
 
@@ -1448,18 +1381,17 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
                 continue
             for i, view in enumerate(views):
                 message_id = k + i
-                db_message = self.get_message_by_message_id(
-                    db_chat,
-                    message_id=message_id,
-                )
-
                 if view == 0:
                     # message no longer exists and it's deleted
-                    self.mark_message_as_deleted(db_chat, db_message)
+                    pass
                 else:
                     try:
                         now = arrow.utcnow().timestamp
                         with transaction.atomic():
+                            db_message = self.get_message_by_message_id(
+                                db_chat,
+                                message_id=message_id,
+                            )
                             if db_message:
                                 db_message_view = self.create_db_message_view_without_message(
                                     db_chat,
@@ -1699,31 +1631,34 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
         chats = self.tg_models.Chat.objects.filter(member_count_analyzer__isnull=False,
                                                    member_count_analyzer__enabled=True)
-        made_request = False
         for db_chat in chats:
             analyzer = db_chat.member_count_analyzer
-            last = arrow.utcnow().timestamp
+            now = arrow.utcnow().timestamp
             for client in clients:
                 if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
                         try:
-                            if made_request:
-                                time.sleep(0.7)
-                            # todo: a better way to get member_count?
                             tg_chat: Chat = client.get_chat(chat_id=db_chat.chat_id)
-                        except tg_errors.RPCError as e:
-                            response.fail('TG_ERROR')
-                            made_request = False
                         except Exception as e:
-                            response.fail('UNKNOWN')
+                            response.fail('TG_ERROR')
                             logger.exception(e)
-                            made_request = False
                         else:
-                            response = self.update_or_create_chat_member_count(db_chat, tg_chat, response)
-                            made_request = True
+                            try:
+                                now = arrow.utcnow().timestamp
+                                self.tg_models.ChatMemberCount.objects.create(
+                                    id=f"{db_chat.chat_id}:{db_chat.logger_account.user_id}:{now}",
+                                    count=tg_chat.members_count,
+                                    date=now,
+                                    chat=db_chat,
+                                    logged_by=db_chat.logger_account,
+                                )
+                            except Exception as e:
+                                logger.exception(e)
+                                response.fail('DB_ERROR')
+                            else:
+                                response.done('logged chat member count')
                     else:
-                        # fixme: update the response to support multiErrors
                         response.fail('client is not connected now')
                     break
             else:
@@ -1732,8 +1667,8 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
             if response.success:
                 if not analyzer.first_analyzed_at:
-                    analyzer.first_analyzed_at = last
-                analyzer.last_analyzed_at = last
+                    analyzer.first_analyzed_at = now
+                analyzer.last_analyzed_at = now
                 analyzer.save()
 
         return response
@@ -2357,13 +2292,7 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
     def analyze_chat_members(self, client: Client, db_chat, response: BaseResponse, _filter=None):
         try:
-            tg_full_chat: Chat = client.get_chat(db_chat.chat_id)
-
-            for chat_member in client.iter_chat_members(
-                    db_chat.chat_id,
-                    filter=_filter if _filter else Filters.ALL,
-                    last_member_count=tg_full_chat.members_count,
-            ):
+            for chat_member in client.iter_chat_members(db_chat.chat_id, filter=_filter if _filter else Filters.ALL):
                 chat_member: ChatMember = chat_member
                 now = arrow.utcnow().timestamp
                 try:
