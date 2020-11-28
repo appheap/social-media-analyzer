@@ -2306,7 +2306,13 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
     def analyze_chat_members(self, client: Client, db_chat, response: BaseResponse, _filter=None):
         try:
-            for chat_member in client.iter_chat_members(db_chat.chat_id, filter=_filter if _filter else Filters.ALL):
+            tg_full_chat: Chat = client.get_chat(db_chat.chat_id)
+
+            for chat_member in client.iter_chat_members(
+                    db_chat.chat_id,
+                    filter=_filter if _filter else Filters.ALL,
+                    last_member_count=tg_full_chat.members_count,
+            ):
                 chat_member: ChatMember = chat_member
                 now = arrow.utcnow().timestamp
                 try:
