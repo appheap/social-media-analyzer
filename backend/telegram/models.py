@@ -1583,29 +1583,29 @@ class ChatBannedRight(MyBaseModel):
     """
 
     # If set, does not allow a user to view messages in a supergroup/channel/chat
-    view_messages = models.BooleanField()
+    can_view_messages = models.BooleanField()
     # If set, does not allow a user to send messages in a supergroup/chat
-    send_messages = models.BooleanField()
+    can_send_messages = models.BooleanField()
     # If set, does not allow a user to send any media in a supergroup/chat
-    send_media = models.BooleanField()
+    can_send_media = models.BooleanField()
     # If set, does not allow a user to send stickers in a supergroup/chat
-    send_stickers = models.BooleanField()
+    can_send_stickers = models.BooleanField()
     # If set, does not allow a user to send gifs in a supergroup/chat
-    send_gifs = models.BooleanField()
+    can_send_gifs = models.BooleanField()
     # If set, does not allow a user to send games in a supergroup/chat/chat
-    send_games = models.BooleanField()
+    can_send_games = models.BooleanField()
     # If set, does not allow a user to use inline bots in a supergroup/chat
-    send_inline = models.BooleanField()
+    can_send_inline = models.BooleanField()
     # If set, does not allow a user to embed links in the messages of a supergroup/chat
-    embed_links = models.BooleanField()
+    can_embed_links = models.BooleanField()
     # If set, does not allow a user to send stickers in a supergroup/chat
-    send_polls = models.BooleanField()
+    can_send_polls = models.BooleanField()
     # If set, does not allow any user to change the description of a supergroup/chat
-    change_info = models.BooleanField()
+    can_change_info = models.BooleanField()
     # If set, does not allow any user to invite users in a supergroup/chat
-    invite_users = models.BooleanField()
+    can_invite_users = models.BooleanField()
     # If set, does not allow any user to pin messages in a supergroup/chat
-    pin_messages = models.BooleanField()
+    can_pin_messages = models.BooleanField()
     # "Validity of said permissions (0 = forever, forever = 2^31-1 for now)."
     until_date = models.BigIntegerField(default=0)
 
@@ -1617,6 +1617,8 @@ class ChatBannedRight(MyBaseModel):
 
 # for supergroups
 class ChatPermissions(MyBaseModel):
+    id = models.CharField(max_length=256, primary_key=True, )  # `chat_id`
+
     # True, if the user is allowed to send text messages, contacts, locations and venues.
     can_send_messages = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes, implies can_send_messages.
@@ -1645,6 +1647,8 @@ class ChatPermissions(MyBaseModel):
 
     class Meta:
         verbose_name_plural = 'Chat permissions'
+        ordering = ('-modified_at', '-created_at')
+        get_latest_by = ('-modified_at', '-created_at')
 
 
 class AdminRights(MyBaseModel):

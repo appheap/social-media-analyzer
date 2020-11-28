@@ -406,35 +406,35 @@ class DataBaseManager(object):
 
     def create_chat_banned_rights(self, chat_member: ChatMember):
         return self.tg_models.ChatBannedRight.objects.create(
-            view_messages=chat_member.status == 'restricted',
-            send_messages=chat_member.can_send_messages,
-            send_media=chat_member.can_send_media_messages,
-            send_stickers=chat_member.can_send_stickers,
-            send_gifs=chat_member.can_send_animations,
-            send_games=chat_member.can_send_games,
-            send_inline=chat_member.can_use_inline_bots,
-            embed_links=chat_member.can_add_web_page_previews,
-            send_polls=chat_member.can_send_polls,
-            change_info=chat_member.can_change_info,
-            invite_users=chat_member.can_invite_users,
-            pin_messages=chat_member.can_pin_messages,
+            can_view_messages=chat_member.status == 'restricted',
+            can_send_messages=chat_member.can_send_messages,
+            can_send_media=chat_member.can_send_media_messages,
+            can_send_stickers=chat_member.can_send_stickers,
+            can_send_gifs=chat_member.can_send_animations,
+            can_send_games=chat_member.can_send_games,
+            can_send_inline=chat_member.can_use_inline_bots,
+            can_embed_links=chat_member.can_add_web_page_previews,
+            can_send_polls=chat_member.can_send_polls,
+            can_change_info=chat_member.can_change_info,
+            can_invite_users=chat_member.can_invite_users,
+            can_pin_messages=chat_member.can_pin_messages,
             until_date=chat_member.until_date,
         )
 
     def create_chat_banned_rights_from_raw_rights(self, banned_rights: ChatBannedRights):
         return self.tg_models.ChatBannedRight.objects.create(
-            view_messages=banned_rights.view_messages,
-            send_messages=banned_rights.send_messages,
-            send_media=banned_rights.send_media,
-            send_stickers=banned_rights.send_stickers,
-            send_gifs=banned_rights.send_gifs,
-            send_games=banned_rights.send_games,
-            send_inline=banned_rights.send_inline,
-            embed_links=banned_rights.embed_links,
-            send_polls=banned_rights.send_polls,
-            change_info=banned_rights.change_info,
-            invite_users=banned_rights.invite_users,
-            pin_messages=banned_rights.pin_messages,
+            can_view_messages=not banned_rights.view_messages,
+            can_send_messages=not banned_rights.send_messages,
+            can_send_media=not banned_rights.send_media,
+            can_send_stickers=not banned_rights.send_stickers,
+            can_send_gifs=not banned_rights.send_gifs,
+            can_send_games=not banned_rights.send_games,
+            can_send_inline=not banned_rights.send_inline,
+            can_embed_links=not banned_rights.embed_links,
+            can_send_polls=not banned_rights.send_polls,
+            can_change_info=not banned_rights.change_info,
+            can_invite_users=not banned_rights.invite_users,
+            can_pin_messages=not banned_rights.pin_messages,
             until_date=banned_rights.until_date,
         )
 
@@ -822,6 +822,7 @@ class DataBaseManager(object):
         db_tg_chat.last_name = getattr(tg_chat, 'last_name', None)
         db_tg_chat.description = getattr(tg_chat, 'description', None)
         db_tg_chat.dc_id = getattr(tg_chat, 'dc_id', None)
+        db_tg_chat.permissions = self.create_or_update_chat_permissions(tg_chat)
         if not check_chat_type:
             if tg_chat.linked_chat:
                 db_tg_chat.linked_chat = self.get_or_create_db_tg_chat(
@@ -1134,6 +1135,34 @@ class DataBaseManager(object):
         else:
             response.done('logged chat member count')
         return response
+
+    def create_or_update_chat_permissions(self, tg_chat: Chat):
+        if tg_chat.permissions:
+            try:
+                db_chat_permissions = self.tg_models.ChatPermissions.objects.update_or_create(
+                    id=str(tg_chat.id),
+                    can_send_messages=tg_chat.permissions.can_send_messages,
+                    can_send_media_messages=tg_chat.permissions.can_send_media_messages,
+                    can_send_stickers=tg_chat.permissions.can_send_stickers,
+                    can_send_animations=tg_chat.permissions.can_send_animations,
+                    can_send_games=tg_chat.permissions.can_send_games,
+                    can_use_inline_bots=tg_chat.permissions.can_use_inline_bots,
+                    can_add_web_page_previews=tg_chat.permissions.can_add_web_page_previews,
+                    can_send_polls=tg_chat.permissions.can_send_polls,
+                    can_change_info=tg_chat.permissions.can_change_info,
+                    can_invite_users=tg_chat.permissions.can_invite_users,
+                    can_pin_messages=tg_chat.permissions.can_pin_messages,
+                )
+            except DatabaseError as e:
+                logger.exception(e)
+                db_chat_permissions = None
+            except Exception as e:
+                logger.exception(e)
+                db_chat_permissions = None
+
+            return db_chat_permissions
+        else:
+            return None
 
 
 class Worker(ConsumerProducerMixin, DataBaseManager):
