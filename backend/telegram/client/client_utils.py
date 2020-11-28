@@ -1087,6 +1087,23 @@ class DataBaseManager(object):
         self.disable_tg_channel(channel_id, client)
         self.disable_channel_analyzers_with_admin_required(self.get_db_chat(db_tg_admin, channel_id))
 
+    def update_or_create_chat_member_count(self, db_chat, tg_chat, response: BaseResponse):
+        now = arrow.utcnow().timestamp
+        try:
+            self.tg_models.ChatMemberCount.objects.update_or_create(
+                id=f"{db_chat.chat_id}:{db_chat.logger_account.user_id}:{now}",
+                count=tg_chat.members_count,
+                date=now,
+                chat=db_chat,
+                logged_by=db_chat.logger_account,
+            )
+        except Exception as e:
+            logger.exception(e)
+            response.fail('DB_ERROR')
+        else:
+            response.done('logged chat member count')
+        return response
+
 
 class Worker(ConsumerProducerMixin, DataBaseManager):
     tg_exchange = tg_globals.tg_exchange
@@ -1631,34 +1648,31 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
         chats = self.tg_models.Chat.objects.filter(member_count_analyzer__isnull=False,
                                                    member_count_analyzer__enabled=True)
+        made_request = False
         for db_chat in chats:
             analyzer = db_chat.member_count_analyzer
-            now = arrow.utcnow().timestamp
+            last = arrow.utcnow().timestamp
             for client in clients:
                 if client.session_name == db_chat.logger_account.session_name:
                     client: Client = client
                     if client.is_connected:
                         try:
+                            if made_request:
+                                time.sleep(0.7)
+                            # todo: a better way to get member_count?
                             tg_chat: Chat = client.get_chat(chat_id=db_chat.chat_id)
-                        except Exception as e:
+                        except tg_errors.RPCError as e:
                             response.fail('TG_ERROR')
+                            made_request = False
+                        except Exception as e:
+                            response.fail('UNKNOWN')
                             logger.exception(e)
+                            made_request = False
                         else:
-                            try:
-                                now = arrow.utcnow().timestamp
-                                self.tg_models.ChatMemberCount.objects.create(
-                                    id=f"{db_chat.chat_id}:{db_chat.logger_account.user_id}:{now}",
-                                    count=tg_chat.members_count,
-                                    date=now,
-                                    chat=db_chat,
-                                    logged_by=db_chat.logger_account,
-                                )
-                            except Exception as e:
-                                logger.exception(e)
-                                response.fail('DB_ERROR')
-                            else:
-                                response.done('logged chat member count')
+                            response = self.update_or_create_chat_member_count(db_chat, tg_chat, response)
+                            made_request = True
                     else:
+                        # fixme: update the response to support multiErrors
                         response.fail('client is not connected now')
                     break
             else:
@@ -1667,8 +1681,8 @@ class Worker(ConsumerProducerMixin, DataBaseManager):
 
             if response.success:
                 if not analyzer.first_analyzed_at:
-                    analyzer.first_analyzed_at = now
-                analyzer.last_analyzed_at = now
+                    analyzer.first_analyzed_at = last
+                analyzer.last_analyzed_at = last
                 analyzer.save()
 
         return response
