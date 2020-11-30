@@ -62,4 +62,4 @@ class CreateGroup(Scaffold):
             )
         )
 
-        return await types.Chat._parse_chat(self, r.chats[0])
+        return types.Chat._parse_chat(self, r.chats[0])

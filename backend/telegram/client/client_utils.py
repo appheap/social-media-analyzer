@@ -2,13 +2,12 @@ import typing
 from timeit import timeit
 
 from pyrogram import Client
-from pyrogram.handlers import MessageHandler, RawUpdateHandler, UserStatusHandler, DisconnectHandler
-from pyrogram.raw.base import ChannelAdminLogEventAction
+from pyrogram.handlers import MessageHandler, RawUpdateHandler, DisconnectHandler
 from pyrogram.raw.types import ChannelAdminLogEventsFilter, InputMessagesFilterPhotos, InputMessagesFilterDocument, \
     InputMessagesFilterUrl, InputMessagesFilterRoundVideo, InputMessagesFilterGeo, InputMessagesFilterContacts, \
     InputMessagesFilterGif, InputMessagesFilterVoice, InputMessagesFilterMusic, InputMessagesFilterVideo, \
-    ChannelParticipantsSearch, ChannelAdminLogEvent, ChatBannedRights, UpdateDeleteChannelMessages, UpdateChannel
-from pyrogram.raw.types.channels import AdminLogResults, ChannelParticipants, ChannelParticipantsNotModified
+    ChannelAdminLogEvent, ChatBannedRights, UpdateDeleteChannelMessages
+from pyrogram.raw.types.channels import AdminLogResults
 from pyrogram.types import User as User, Restriction as PGRestricion
 from pyrogram.types import Dialog as Dialog
 from pyrogram.types import Message as Message
