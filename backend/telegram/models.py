@@ -1594,7 +1594,7 @@ class ChatBannedRight(MyBaseModel):
     can_send_gifs = models.BooleanField()
     # If set, does not allow a user to send games in a supergroup/chat/chat
     can_send_games = models.BooleanField()
-    # If set, does not allow a user to use inline bots in a supergroup/chat
+    # If set, does not allow a user to use inline bots_and_keyboards in a supergroup/chat
     can_send_inline = models.BooleanField()
     # If set, does not allow a user to embed links in the messages of a supergroup/chat
     can_embed_links = models.BooleanField()
@@ -1629,7 +1629,7 @@ class ChatPermissions(MyBaseModel):
     can_send_animations = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send games, implies can_send_media_messages.
     can_send_games = models.BooleanField(null=True, blank=True, )
-    # True, if the user is allowed to use inline bots, implies can_send_media_messages.
+    # True, if the user is allowed to use inline bots_and_keyboards, implies can_send_media_messages.
     can_use_inline_bots = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to add web page previews to their messages, implies can_send_media_messages.
     can_add_web_page_previews = models.BooleanField(null=True, blank=True, )

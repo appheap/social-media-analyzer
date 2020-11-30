@@ -1,0 +1,104 @@
+#  Pyrogram - Telegram MTProto API Client Library for Python
+#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#
+#  This file is part of Pyrogram.
+#
+#  Pyrogram is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published
+#  by the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Pyrogram is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
+
+from io import BytesIO
+
+from pyrogram.raw.core.primitives import Int, Long, Int128, Int256, Bool, Bytes, String, Double, Vector
+from pyrogram.raw.core import TLObject
+from pyrogram import raw
+from typing import List, Union, Any
+
+
+# # # # # # # # # # # # # # # # # # # # # # # #
+#               !!! WARNING !!!               #
+#          This is a generated file!          #
+# All changes made in this file will be lost! #
+# # # # # # # # # # # # # # # # # # # # # # # #
+
+
+class ReqDHParams(TLObject):  # type: ignore
+    """Telegram API method.
+
+    Details:
+        - Layer: ``117``
+        - ID: ``0xd712e4be``
+
+    Parameters:
+        nonce: ``int`` ``128-bit``
+        server_nonce: ``int`` ``128-bit``
+        p: ``bytes``
+        q: ``bytes``
+        public_key_fingerprint: ``int`` ``64-bit``
+        encrypted_data: ``bytes``
+
+    Returns:
+        :obj:`ServerDHParams <pyrogram.raw.base.ServerDHParams>`
+    """
+
+    __slots__: List[str] = ["nonce", "server_nonce", "p", "q", "public_key_fingerprint", "encrypted_data"]
+
+    ID = 0xd712e4be
+    QUALNAME = "functions.ReqDHParams"
+
+    def __init__(self, *, nonce: int, server_nonce: int, p: bytes, q: bytes, public_key_fingerprint: int,
+                 encrypted_data: bytes) -> None:
+        self.nonce = nonce  # int128
+        self.server_nonce = server_nonce  # int128
+        self.p = p  # bytes
+        self.q = q  # bytes
+        self.public_key_fingerprint = public_key_fingerprint  # long
+        self.encrypted_data = encrypted_data  # bytes
+
+    @staticmethod
+    def read(data: BytesIO, *args: Any) -> "ReqDHParams":
+        # No flags
+
+        nonce = Int128.read(data)
+
+        server_nonce = Int128.read(data)
+
+        p = Bytes.read(data)
+
+        q = Bytes.read(data)
+
+        public_key_fingerprint = Long.read(data)
+
+        encrypted_data = Bytes.read(data)
+
+        return ReqDHParams(nonce=nonce, server_nonce=server_nonce, p=p, q=q,
+                           public_key_fingerprint=public_key_fingerprint, encrypted_data=encrypted_data)
+
+    def write(self) -> bytes:
+        data = BytesIO()
+        data.write(Int(self.ID, False))
+
+        # No flags
+
+        data.write(Int128(self.nonce))
+
+        data.write(Int128(self.server_nonce))
+
+        data.write(Bytes(self.p))
+
+        data.write(Bytes(self.q))
+
+        data.write(Long(self.public_key_fingerprint))
+
+        data.write(Bytes(self.encrypted_data))
+
+        return data.getvalue()
