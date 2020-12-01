@@ -1,6 +1,9 @@
 import pyrogram
 from pyrogram import raw, types
 from ..object import Object
+import pyrogram
+from pyrogram import raw, types
+from pyrogram import utils
 
 
 class Group(Object):
