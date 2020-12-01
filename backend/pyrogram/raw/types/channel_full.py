@@ -80,7 +80,8 @@ class ChannelFull(TLObject):  # type: ignore
                             "has_scheduled", "can_view_stats", "participants_count", "admins_count", "kicked_count",
                             "banned_count", "online_count", "migrated_from_chat_id", "migrated_from_max_id",
                             "pinned_msg_id", "stickerset", "available_min_id", "folder_id", "linked_chat_id",
-                            "location", "slowmode_seconds", "slowmode_next_send_date", "stats_dc"]
+                            "location", "slowmode_seconds", "slowmode_next_send_date", "stats_dc",
+                            "blocked"]
 
     ID = 0xf0e6672a
     QUALNAME = "types.ChannelFull"
@@ -99,7 +100,7 @@ class ChannelFull(TLObject):  # type: ignore
                  available_min_id: Union[None, int] = None, folder_id: Union[None, int] = None,
                  linked_chat_id: Union[None, int] = None, location: "raw.base.ChannelLocation" = None,
                  slowmode_seconds: Union[None, int] = None, slowmode_next_send_date: Union[None, int] = None,
-                 stats_dc: Union[None, int] = None) -> None:
+                 stats_dc: Union[None, int] = None, blocked: Union[None, bool] = None, ) -> None:
         self.id = id  # int
         self.about = about  # string
         self.read_inbox_max_id = read_inbox_max_id  # int
@@ -117,6 +118,7 @@ class ChannelFull(TLObject):  # type: ignore
         self.can_set_location = can_set_location  # flags.16?true
         self.has_scheduled = has_scheduled  # flags.19?true
         self.can_view_stats = can_view_stats  # flags.20?true
+        self.blocked = blocked  # flags.22?true
         self.participants_count = participants_count  # flags.0?int
         self.admins_count = admins_count  # flags.1?int
         self.kicked_count = kicked_count  # flags.2?int
@@ -145,6 +147,7 @@ class ChannelFull(TLObject):  # type: ignore
         can_set_location = True if flags & (1 << 16) else False
         has_scheduled = True if flags & (1 << 19) else False
         can_view_stats = True if flags & (1 << 20) else False
+        blocked = True if flags & (1 << 22) else False
         id = Int.read(data)
 
         about = String.read(data)
@@ -195,7 +198,7 @@ class ChannelFull(TLObject):  # type: ignore
                            migrated_from_max_id=migrated_from_max_id, pinned_msg_id=pinned_msg_id,
                            stickerset=stickerset, available_min_id=available_min_id, folder_id=folder_id,
                            linked_chat_id=linked_chat_id, location=location, slowmode_seconds=slowmode_seconds,
-                           slowmode_next_send_date=slowmode_next_send_date, stats_dc=stats_dc)
+                           slowmode_next_send_date=slowmode_next_send_date, stats_dc=stats_dc, blocked=blocked)
 
     def write(self) -> bytes:
         data = BytesIO()

@@ -1,6 +1,7 @@
 from typing import Union, List, Generator, Optional
 
-from pyrogram import raw, types
+import pyrogram
+from pyrogram import raw
 from pyrogram import types
 from pyrogram import utils
 
@@ -95,7 +96,7 @@ class Chat(Object):
     def __init__(
             self,
             *,
-            client: "Client" = None,
+            client: "pyrogram.Client" = None,
             id: int,
             type: str,
 
@@ -107,28 +108,6 @@ class Chat(Object):
             user: "types.User" = None,
             group: "types.Group" = None,
             channel: "types.Channel" = None,
-
-            is_verified: bool = None,
-            is_restricted: bool = None,
-            is_creator: bool = None,
-            is_scam: bool = None,
-            is_support: bool = None,
-            title: str = None,
-            username: str = None,
-            first_name: str = None,
-            last_name: str = None,
-            photo: "types.ChatPhoto" = None,
-            description: str = None,
-            dc_id: int = None,
-            invite_link: str = None,
-            pinned_message=None,
-            sticker_set_name: str = None,
-            can_set_sticker_set: bool = None,
-            members_count: int = None,
-            restrictions: List["types.Restriction"] = None,
-            permissions: "types.ChatPermissions" = None,
-            distance: int = None,
-            linked_chat: "types.Chat" = None
     ):
         super().__init__(client)
 
@@ -143,95 +122,100 @@ class Chat(Object):
         self.group = group
         self.channel = channel
 
-        self.is_verified = is_verified
-        self.is_restricted = is_restricted
-        self.is_creator = is_creator
-        self.is_scam = is_scam
-        self.is_support = is_support
-        self.title = title
-        self.username = username
-        self.first_name = first_name
-        self.last_name = last_name
-        self.photo = photo
-        self.description = description
-        self.dc_id = dc_id
-        self.invite_link = invite_link
-        self.pinned_message = pinned_message
-        self.sticker_set_name = sticker_set_name
-        self.can_set_sticker_set = can_set_sticker_set
-        self.members_count = members_count
-        self.restrictions = restrictions
-        self.permissions = permissions
-        self.distance = distance
-        self.linked_chat = linked_chat
+    @staticmethod
+    def _parse_user_chat(client, user: raw.types.User) -> "Chat":
+        peer_id = user.id
+
+        return Chat(
+            client=client,
+
+            id=peer_id,
+            type="bot" if user.bot else "private",
+            user=types.User._parse(client, user),
+            is_full_type=False,
+        )
 
     @staticmethod
-    async def _parse_user_chat(client, user: raw.types.UserFull) -> "Chat":
+    async def _parse_user_full_chat(client, user: raw.types.UserFull) -> "Chat":
         peer_id = user.user.id
 
         return Chat(
             client=client,
+
             id=peer_id,
             type="bot" if user.user.bot else "private",
             full_user=await types.UserFull._parse(client, user),
-
-            # is_verified=getattr(user, "verified", None),
-            # is_restricted=getattr(user, "restricted", None),
-            # is_scam=getattr(user, "scam", None),
-            # is_support=getattr(user, "support", None),
-            # username=user.username,
-            # first_name=user.first_name,
-            # last_name=user.last_name,
-            # photo=tg_types.ChatPhoto._parse(client, user.photo, peer_id, user.access_hash),
-            # restrictions=types.List([tg_types.Restriction._parse(r) for r in user.restriction_reason]) or None,
-            # dc_id=getattr(getattr(user, "photo", None), "dc_id", None),
-            # client=client
+            is_full_type=True,
         )
 
     @staticmethod
-    def _parse_group_chat(client, chat: raw.types.Chat) -> "Chat":
+    async def _parse_group_chat(client, chat: raw.types.Chat) -> "Chat":
         peer_id = -chat.id
 
         return Chat(
+            client=client,
+
             id=peer_id,
             type="group",
-            title=chat.title,
-            is_creator=getattr(chat, "creator", None),
-            photo=types.ChatPhoto._parse(client, getattr(chat, "photo", None), peer_id, 0),
-            permissions=types.ChatPermissions._parse(getattr(chat, "default_banned_rights", None)),
-            members_count=getattr(chat, "participants_count", None),
-            dc_id=getattr(getattr(chat, "photo", None), "dc_id", None),
-            client=client
+            group=await types.Group._parse(client, chat),
+            is_full_type=False,
+        )
+
+    @staticmethod
+    async def _parse_group_full_chat(
+            client,
+            chat_full: "raw.types.messages.ChatFull",
+            users: dict,
+            chats: dict,
+    ) -> "Chat":
+
+        peer_id = -chat_full.full_chat.id
+        return Chat(
+            client=client,
+
+            id=peer_id,
+            type="group",
+            full_group=await types.GroupFull._parse(client, chat_full.full_chat, users, chats),
+            group=await types.Group._parse(client, chats[chat_full.full_chat.id]),
+            is_full_type=True,
+        )
+
+    @staticmethod
+    async def _parse_channel_full_chat(client, chat_full: raw.types.messages.ChatFull, users: dict,
+                                       chats: dict) -> "Chat":
+        peer_id = utils.get_channel_id(chat_full.full_chat.id)
+
+        channel = chats[chat_full.full_chat.id]
+        return Chat(
+            client=client,
+
+            id=peer_id,
+            type="supergroup" if channel.megagroup else "channel",
+            full_channel=await types.ChannelFull._parse(client, chat_full.full_chat, users, chats),
+            channel=types.Channel._parse(client, channel),
+            is_full_type=True,
         )
 
     @staticmethod
     def _parse_channel_chat(client, channel: raw.types.Channel) -> "Chat":
         peer_id = utils.get_channel_id(channel.id)
-        restriction_reason = getattr(channel, "restriction_reason", [])
         return Chat(
+            client=client,
+
             id=peer_id,
             type="supergroup" if channel.megagroup else "channel",
-            is_verified=getattr(channel, "verified", None),
-            is_restricted=getattr(channel, "restricted", None),
-            is_creator=getattr(channel, "creator", None),
-            is_scam=getattr(channel, "scam", None),
-            title=channel.title,
-            username=getattr(channel, "username", None),
-            photo=types.ChatPhoto._parse(client, getattr(channel, "photo", None), peer_id, channel.access_hash),
-            restrictions=types.List([types.Restriction._parse(r) for r in restriction_reason]) or None,
-            permissions=types.ChatPermissions._parse(getattr(channel, "default_banned_rights", None)),
-            members_count=getattr(channel, "participants_count", None),
-            dc_id=getattr(getattr(channel, "photo", None), "dc_id", None),
-            client=client
+            channel=types.Channel._parse(client, channel),
+            is_full_type=False,
         )
 
     @staticmethod
-    def _parse(client, message: raw.types.Message or raw.types.MessageService, users: dict, chats: dict) -> "Chat":
+    async def _parse(client, message: raw.types.Message or raw.types.MessageService, users: dict,
+                     chats: dict) -> "Chat":
         if isinstance(message.to_id, raw.types.PeerUser):
             return Chat._parse_user_chat(client, users[message.to_id.user_id if message.out else message.from_id])
 
         if isinstance(message.to_id, raw.types.PeerChat):
-            return Chat._parse_group_chat(client, chats[message.to_id.chat_id])
+            return await Chat._parse_group_chat(client, chats[message.to_id.chat_id])
 
         return Chat._parse_channel_chat(client, chats[message.to_id.channel_id])
 
@@ -247,52 +231,28 @@ class Chat(Object):
     @staticmethod
     async def _parse_full(client, chat_full: raw.types.messages.ChatFull or raw.types.UserFull) -> "Chat":
         if isinstance(chat_full, raw.types.UserFull):
-            parsed_chat = await Chat._parse_user_chat(client, chat_full)
-
+            parsed_chat = await Chat._parse_user_full_chat(client, chat_full)
         else:
-            full_chat = chat_full.full_chat
-            chat = None
-            linked_chat = None
+            users = {}
+            chats = {}
+            if chat_full.users:
+                users = {_user.id: _user for _user in chat_full.users}
 
-            for c in chat_full.chats:
-                if full_chat.id == c.id:
-                    chat = c
+            if chat_full.chats:
+                chats = {_chat.id: _chat for _chat in chat_full.chats}
 
-                if isinstance(full_chat, raw.types.ChannelFull):
-                    if full_chat.linked_chat_id == c.id:
-                        linked_chat = c
-
-            if isinstance(full_chat, raw.types.ChatFull):
-                parsed_chat = Chat._parse_group_chat(client, chat)
-                parsed_chat.description = full_chat.about or None
-
-                if isinstance(full_chat.participants, raw.types.ChatParticipants):
-                    parsed_chat.members_count = len(full_chat.participants.participants)
+            if isinstance(chat_full.full_chat, raw.types.ChatFull):
+                # parsed_chat = Chat._parse_group_chat(client, chat)
+                parsed_chat = await Chat._parse_group_full_chat(client, chat_full, users, chats)
             else:
-                parsed_chat = Chat._parse_channel_chat(client, chat)
-                parsed_chat.members_count = full_chat.participants_count
-                parsed_chat.description = full_chat.about or None
-                # TODO: Add StickerSet type
-                parsed_chat.can_set_sticker_set = full_chat.can_set_stickers
-                parsed_chat.sticker_set_name = getattr(full_chat.stickerset, "short_name", None)
-                if linked_chat:
-                    parsed_chat.linked_chat = Chat._parse_channel_chat(client, linked_chat)
-
-            if full_chat.pinned_msg_id:
-                parsed_chat.pinned_message = await client.get_messages(
-                    parsed_chat.id,
-                    message_ids=full_chat.pinned_msg_id
-                )
-
-            if isinstance(full_chat.exported_invite, raw.types.ChatInviteExported):
-                parsed_chat.invite_link = full_chat.exported_invite.link
+                parsed_chat = await Chat._parse_channel_full_chat(client, chat_full, users, chats, )
 
         return parsed_chat
 
     @staticmethod
-    def _parse_chat(client, chat: Union[raw.types.Chat, raw.types.User, raw.types.Channel]) -> "Chat":
+    async def _parse_chat(client, chat: Union[raw.types.Chat, raw.types.User, raw.types.Channel]) -> "Chat":
         if isinstance(chat, raw.types.Chat):
-            return Chat._parse_group_chat(client, chat)
+            return await Chat._parse_group_chat(client, chat)
         elif isinstance(chat, raw.types.User):
             return Chat._parse_user_chat(client, chat)
         else:

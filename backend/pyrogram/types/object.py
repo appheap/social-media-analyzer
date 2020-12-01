@@ -38,8 +38,6 @@ class Object(metaclass=Meta):
             "_": obj.__class__.__name__,
             **{
                 attr: (
-                    "*" * len(getattr(obj, attr))
-                    if attr == "phone_number" else
                     str(datetime.fromtimestamp(getattr(obj, attr)))
                     if attr.endswith("date") else
                     getattr(obj, attr)

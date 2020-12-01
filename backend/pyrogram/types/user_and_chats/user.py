@@ -1,12 +1,12 @@
 import html
 from typing import List
 
-from pyrogram import raw, types as tg_types
+import pyrogram
+from pyrogram import raw, types
 from pyrogram import types
 from pyrogram.types.update import Update
 
 from ..object import Object
-import telegram.client as tg
 
 
 class Link(str):
@@ -132,7 +132,7 @@ class User(Object, Update):
     def __init__(
             self,
             *,
-            client: "tg.Client" = None,
+            client: "pyrogram.Client" = None,
             id: int,
             is_self: bool = None,
             is_contact: bool = None,
@@ -152,8 +152,8 @@ class User(Object, Update):
             language_code: str = None,
             dc_id: int = None,
             phone_number: str = None,
-            photo: "tg_types.ChatPhoto" = None,
-            restrictions: List["tg_types.Restriction"] = None,
+            photo: "types.ChatPhoto" = None,
+            restrictions: List["types.Restriction"] = None,
 
             # added
             bot_info_version: int = None,
@@ -220,8 +220,8 @@ class User(Object, Update):
             language_code=user.lang_code,
             dc_id=getattr(user.photo, "dc_id", None),
             phone_number=user.phone,
-            photo=tg_types.ChatPhoto._parse(client, user.photo, user.id, user.access_hash),
-            restrictions=types.List([tg_types.Restriction._parse(r) for r in user.restriction_reason]) or None,
+            photo=types.ChatPhoto._parse(client, user.photo, user.id, user.access_hash),
+            restrictions=types.List([types.Restriction._parse(r) for r in user.restriction_reason]) or None,
 
             # added
             bot_info_version=getattr(user, 'bot_info_version', None),

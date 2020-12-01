@@ -443,7 +443,7 @@ class Message(Object, Update):
             parsed_message = Message(
                 message_id=message.id,
                 date=message.date,
-                chat=types.Chat._parse(client, message, users, chats),
+                chat=await types.Chat._parse(client, message, users, chats),
                 from_user=types.User._parse(client, users.get(message.from_id, None)),
                 service=True,
                 new_chat_members=new_chat_members,
@@ -607,7 +607,7 @@ class Message(Object, Update):
             parsed_message = Message(
                 message_id=message.id,
                 date=message.date,
-                chat=types.Chat._parse(client, message, users, chats),
+                chat=await types.Chat._parse(client, message, users, chats),
                 from_user=types.User._parse(client, users.get(message.from_id, None)),
                 text=(
                     Str(message.message).init(entities) or None

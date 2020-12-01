@@ -19,7 +19,31 @@ from .video_note import VideoNote
 from .voice import Voice
 from .webpage import WebPage
 
+# added
+from .sticker_set import StickerSet
+from .photo_size_base import PhotoSizeBase
+from .photo_size_empty import PhotoSizeEmpty
+from .photo_size import PhotoSize
+from .photo_cached_size import PhotoCachedSize
+from .photo_stripped_size import PhotoStrippedSize
+from .photo_size_progressive import PhotoSizeProgressive
+from .photo_path_size import PhotoPathSize
+from .file_location import FileLocation
+
 __all__ = [
     "Animation", "Audio", "Contact", "Document", "Game", "Location", "Message", "MessageEntity", "Photo", "Thumbnail",
-    "StrippedThumbnail", "Poll", "PollOption", "Sticker", "Venue", "Video", "VideoNote", "Voice", "WebPage", "Dice"
+    "StrippedThumbnail", "Poll", "PollOption", "Sticker", "Venue", "Video", "VideoNote", "Voice", "WebPage", "Dice",
+
+    # added
+    "StickerSet",
+    "PhotoSizeBase",
+    "PhotoSizeEmpty",
+    "PhotoSize",
+    "PhotoCachedSize",
+    "PhotoStrippedSize",
+    "PhotoSizeProgressive",
+    "PhotoPathSize",
+
+    "FileLocation",
+
 ]
