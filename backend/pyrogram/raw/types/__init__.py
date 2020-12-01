@@ -180,6 +180,8 @@ from .photo_size_empty import PhotoSizeEmpty
 from .photo_size import PhotoSize
 from .photo_cached_size import PhotoCachedSize
 from .photo_stripped_size import PhotoStrippedSize
+from .photo_size_progressive import PhotoSizeProgressive
+from .photo_path_size import PhotoPathSize
 from .geo_point_empty import GeoPointEmpty
 from .geo_point import GeoPoint
 from .input_notify_peer import InputNotifyPeer
