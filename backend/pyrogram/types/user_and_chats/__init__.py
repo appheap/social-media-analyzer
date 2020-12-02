@@ -1,5 +1,4 @@
 from .chat import Chat
-from .chat_member import ChatMember
 from .chat_permissions import ChatPermissions
 from .chat_photo import ChatPhoto
 from .chat_preview import ChatPreview
@@ -11,7 +10,7 @@ from .user import User
 from .peer_notify_settings import PeerNotifySettings
 
 __all__ = [
-    "Chat", "ChatMember", "ChatPermissions", "ChatPhoto", "ChatPreview", "Dialog", "User", "Restriction",
+    "Chat", "ChatPermissions", "ChatPhoto", "ChatPreview", "Dialog", "User", "Restriction",
 
     # added
     "PeerNotifySettings",

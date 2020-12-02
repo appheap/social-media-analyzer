@@ -35,7 +35,7 @@ class ChatAdminRights(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatAdminRights`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x5fb224d5``
 
     Parameters:
@@ -47,10 +47,11 @@ class ChatAdminRights(TLObject):  # type: ignore
         invite_users (optional): ``bool``
         pin_messages (optional): ``bool``
         add_admins (optional): ``bool``
+        anonymous (optional): ``bool``
     """
 
     __slots__: List[str] = ["change_info", "post_messages", "edit_messages", "delete_messages", "ban_users",
-                            "invite_users", "pin_messages", "add_admins"]
+                            "invite_users", "pin_messages", "add_admins", "anonymous"]
 
     ID = 0x5fb224d5
     QUALNAME = "types.ChatAdminRights"
@@ -58,7 +59,8 @@ class ChatAdminRights(TLObject):  # type: ignore
     def __init__(self, *, change_info: Union[None, bool] = None, post_messages: Union[None, bool] = None,
                  edit_messages: Union[None, bool] = None, delete_messages: Union[None, bool] = None,
                  ban_users: Union[None, bool] = None, invite_users: Union[None, bool] = None,
-                 pin_messages: Union[None, bool] = None, add_admins: Union[None, bool] = None) -> None:
+                 pin_messages: Union[None, bool] = None, add_admins: Union[None, bool] = None,
+                 anonymous: Union[None, bool] = None) -> None:
         self.change_info = change_info  # flags.0?true
         self.post_messages = post_messages  # flags.1?true
         self.edit_messages = edit_messages  # flags.2?true
@@ -67,6 +69,7 @@ class ChatAdminRights(TLObject):  # type: ignore
         self.invite_users = invite_users  # flags.5?true
         self.pin_messages = pin_messages  # flags.7?true
         self.add_admins = add_admins  # flags.9?true
+        self.anonymous = anonymous  # flags.10?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "ChatAdminRights":
@@ -80,9 +83,10 @@ class ChatAdminRights(TLObject):  # type: ignore
         invite_users = True if flags & (1 << 5) else False
         pin_messages = True if flags & (1 << 7) else False
         add_admins = True if flags & (1 << 9) else False
+        anonymous = True if flags & (1 << 10) else False
         return ChatAdminRights(change_info=change_info, post_messages=post_messages, edit_messages=edit_messages,
                                delete_messages=delete_messages, ban_users=ban_users, invite_users=invite_users,
-                               pin_messages=pin_messages, add_admins=add_admins)
+                               pin_messages=pin_messages, add_admins=add_admins, anonymous=anonymous)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -97,6 +101,7 @@ class ChatAdminRights(TLObject):  # type: ignore
         flags |= (1 << 5) if self.invite_users is not None else 0
         flags |= (1 << 7) if self.pin_messages is not None else 0
         flags |= (1 << 9) if self.add_admins is not None else 0
+        flags |= (1 << 10) if self.anonymous is not None else 0
         data.write(Int(flags))
 
         return data.getvalue()

@@ -6,6 +6,7 @@ from .channel_full import ChannelFull
 from .chat_admin_rights import ChatAdminRights
 from .channel_location import ChannelLocation
 from .geo_point import GeoPoint
+from .chat_participant import ChatParticipant
 
 __all__ = [
     "Group",
@@ -16,5 +17,6 @@ __all__ = [
     "ChatAdminRights",
     "ChannelLocation",
     "GeoPoint",
+    "ChatParticipant",
 
 ]

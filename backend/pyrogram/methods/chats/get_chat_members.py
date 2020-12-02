@@ -43,7 +43,7 @@ class GetChatMembers(Scaffold):
             limit: int = 200,
             query: str = "",
             filter: str = Filters.RECENT
-    ) -> List["types.ChatMember"]:
+    ) -> List["types.ChatParticipant"]:
         """Get a chunk of the members list of a chat.
 
         You can get up to 200 chat members at once.
@@ -86,7 +86,7 @@ class GetChatMembers(Scaffold):
         .. [2] A query string is applicable only for *"all"*, *"kicked"* and *"restricted"* filters only.
 
         Returns:
-            List of :obj:`~pyrogram.types.ChatMember`: On success, a list of chat members is returned.
+            List of :obj:`~pyrogram.types.ChatParticipant`: On success, a list of chat members is returned.
 
         Raises:
             ValueError: In case you used an invalid filter or a chat id that belongs to a user.
@@ -115,7 +115,7 @@ class GetChatMembers(Scaffold):
             members = r.full_chat.participants.participants
             users = {i.id: i for i in r.users}
 
-            return types.List(types.ChatMember._parse(self, member, users) for member in members)
+            return types.List(types.ChatParticipant._parse(self, member, users) for member in members)
         elif isinstance(peer, raw.types.InputPeerChannel):
             filter = filter.lower()
 
@@ -148,6 +148,6 @@ class GetChatMembers(Scaffold):
             members = r.participants
             users = {i.id: i for i in r.users}
 
-            return types.List(types.ChatMember._parse(self, member, users) for member in members)
+            return types.List(types.ChatParticipant._parse(self, member, users) for member in members)
         else:
             raise ValueError(f'The chat_id "{chat_id}" belongs to a user')
