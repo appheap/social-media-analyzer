@@ -26,7 +26,11 @@ from typing import Union
 from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
-PhotoSize = Union[raw.types.PhotoCachedSize, raw.types.PhotoSize, raw.types.PhotoSizeEmpty, raw.types.PhotoStrippedSize]
+PhotoSize = Union[
+    raw.types.PhotoCachedSize, raw.types.PhotoSize,
+    raw.types.PhotoSizeEmpty, raw.types.PhotoStrippedSize,
+    raw.types.PhotoSizeProgressive, raw.types.PhotoPathSize,
+]
 
 
 # noinspection PyRedeclaration

@@ -35,8 +35,8 @@ class MessageService(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Message`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x9e19a1f6``
+        - Layer: ``121``
+        - ID: ``0x286fa604``
 
     Parameters:
         id: ``int`` ``32-bit``
@@ -49,21 +49,22 @@ class MessageService(TLObject):  # type: ignore
         silent (optional): ``bool``
         post (optional): ``bool``
         legacy (optional): ``bool``
-        from_id (optional): ``int`` ``32-bit``
-        reply_to_msg_id (optional): ``int`` ``32-bit``
+        from_id (optional): :obj: `Peer <pyrogram.raw.base.Peer>`
+        reply_to (optional): ``int`` ``32-bit``
     """
 
     __slots__: List[str] = ["id", "to_id", "date", "action", "out", "mentioned", "media_unread", "silent", "post",
-                            "legacy", "from_id", "reply_to_msg_id"]
+                            "legacy", "from_id", "reply_to_msg_id", "reply_to", ]
 
-    ID = 0x9e19a1f6
+    ID = 0x286fa604
     QUALNAME = "types.MessageService"
 
     def __init__(self, *, id: int, to_id: "raw.base.Peer", date: int, action: "raw.base.MessageAction",
                  out: Union[None, bool] = None, mentioned: Union[None, bool] = None,
                  media_unread: Union[None, bool] = None, silent: Union[None, bool] = None,
-                 post: Union[None, bool] = None, legacy: Union[None, bool] = None, from_id: Union[None, int] = None,
-                 reply_to_msg_id: Union[None, int] = None) -> None:
+                 post: Union[None, bool] = None, legacy: Union[None, bool] = None,
+                 from_id: Union[None, "raw.base.Peer"] = None,
+                 reply_to: Union[None, "raw.base.MessageReplyHeader"] = None) -> None:
         self.id = id  # int
         self.to_id = to_id  # Peer
         self.date = date  # int
@@ -74,8 +75,8 @@ class MessageService(TLObject):  # type: ignore
         self.silent = silent  # flags.13?true
         self.post = post  # flags.14?true
         self.legacy = legacy  # flags.19?true
-        self.from_id = from_id  # flags.8?int
-        self.reply_to_msg_id = reply_to_msg_id  # flags.3?int
+        self.from_id = from_id  # flags.8?Peer
+        self.reply_to = reply_to  # flags.3?MessageReplyHeader
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "MessageService":
@@ -89,17 +90,17 @@ class MessageService(TLObject):  # type: ignore
         legacy = True if flags & (1 << 19) else False
         id = Int.read(data)
 
-        from_id = Int.read(data) if flags & (1 << 8) else None
+        from_id = TLObject.read(data) if flags & (1 << 8) else None
         to_id = TLObject.read(data)
 
-        reply_to_msg_id = Int.read(data) if flags & (1 << 3) else None
+        reply_to = TLObject.read(data) if flags & (1 << 3) else None
         date = Int.read(data)
 
         action = TLObject.read(data)
 
         return MessageService(id=id, to_id=to_id, date=date, action=action, out=out, mentioned=mentioned,
                               media_unread=media_unread, silent=silent, post=post, legacy=legacy, from_id=from_id,
-                              reply_to_msg_id=reply_to_msg_id)
+                              reply_to=reply_to)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -119,12 +120,12 @@ class MessageService(TLObject):  # type: ignore
         data.write(Int(self.id))
 
         if self.from_id is not None:
-            data.write(Int(self.from_id))
+            data.write(self.from_id.write())
 
         data.write(self.to_id.write())
 
-        if self.reply_to_msg_id is not None:
-            data.write(Int(self.reply_to_msg_id))
+        if self.reply_to is not None:
+            data.write(self.reply_to.write())
 
         data.write(Int(self.date))
 

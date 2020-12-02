@@ -35,7 +35,7 @@ class MessageActionChatMigrateTo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageAction`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x51bdb021``
 
     Parameters:

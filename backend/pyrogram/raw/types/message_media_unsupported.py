@@ -35,7 +35,7 @@ class MessageMediaUnsupported(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageMedia`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x9f84f49e``
 
     **No parameters required.**

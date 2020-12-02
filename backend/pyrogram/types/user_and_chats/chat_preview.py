@@ -1,7 +1,7 @@
 from typing import List
 
 import pyrogram
-from pyrogram import raw, types as tg_types
+from pyrogram import raw
 from pyrogram import types
 from ..object import Object
 
@@ -34,7 +34,7 @@ class ChatPreview(Object):
             type: str,
             members_count: int,
             photo: "types.Photo" = None,
-            members: List["tg_types.User"] = None
+            members: List["types.User"] = None
     ):
         super().__init__(client)
 
@@ -53,7 +53,7 @@ class ChatPreview(Object):
                   "supergroup"),
             members_count=chat_invite.participants_count,
             photo=types.Photo._parse(client, chat_invite.photo),
-            members=[tg_types.User._parse(client, user) for user in chat_invite.participants] or None,
+            members=[types.User._parse(client, user) for user in chat_invite.participants] or None,
             client=client
         )
 
