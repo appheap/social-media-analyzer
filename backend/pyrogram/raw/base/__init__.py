@@ -67,6 +67,8 @@ from .chat_photo import ChatPhoto
 from .message import Message
 from .message_media import MessageMedia
 from .message_action import MessageAction
+from .message_reply_header import MessageReplyHeader
+from .message_replies import MessageReplies
 from .dialog import Dialog
 from .photo import Photo
 from .photo_size import PhotoSize
