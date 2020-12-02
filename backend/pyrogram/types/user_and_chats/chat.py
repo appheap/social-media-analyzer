@@ -700,7 +700,7 @@ class Chat(Object):
     async def get_member(
             self,
             user_id: Union[int, str],
-    ) -> "types.ChatMember":
+    ) -> "types.ChatParticipant":
         """Bound method *get_member* of :obj:`~pyrogram.types.Chat`.
 
         Use as a shortcut for:
@@ -718,7 +718,7 @@ class Chat(Object):
                 chat.get_member(user_id)
 
         Returns:
-            :obj:`~pyrogram.types.ChatMember`: On success, a chat member is returned.
+            :obj:`~pyrogram.types.ChatParticipant`: On success, a chat member is returned.
         """
 
         return await self._client.get_chat_member(
@@ -732,7 +732,7 @@ class Chat(Object):
             limit: int = 200,
             query: str = "",
             filter: str = "all"
-    ) -> List["types.ChatMember"]:
+    ) -> List["types.ChatParticipant"]:
         """Bound method *get_members* of :obj:`~pyrogram.types.Chat`.
 
         Use as a shortcut for:
@@ -748,7 +748,7 @@ class Chat(Object):
                 chat.get_members()
 
         Returns:
-            List of :obj:`~pyrogram.types.ChatMember`: On success, a list of chat members is returned.
+            List of :obj:`~pyrogram.types.ChatParticipant`: On success, a list of chat members is returned.
         """
 
         return await self._client.get_chat_members(
@@ -764,7 +764,7 @@ class Chat(Object):
             limit: int = 0,
             query: str = "",
             filter: str = "all"
-    ) -> Optional[Generator["types.ChatMember", None, None]]:
+    ) -> Optional[Generator["types.ChatParticipant", None, None]]:
         """Bound method *iter_members* of :obj:`~pyrogram.types.Chat`.
 
         Use as a shortcut for:

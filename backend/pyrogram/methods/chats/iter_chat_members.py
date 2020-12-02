@@ -47,7 +47,7 @@ class IterChatMembers(Scaffold):
             filter: str = Filters.RECENT,
 
             last_member_count: int = 0,  # to speedup iteration for small chats
-    ) -> Optional[AsyncGenerator["types.ChatMember", None]]:
+    ) -> Optional[AsyncGenerator["types.ChatParticipant", None]]:
         """Iterate through the members of a chat sequentially.
 
         This convenience method does the same as repeatedly calling :meth:`~pyrogram.Client.get_chat_members` in a loop,
@@ -78,7 +78,7 @@ class IterChatMembers(Scaffold):
                 Defaults to *"recent"*.
 
         Returns:
-            ``Generator``: A generator yielding :obj:`~pyrogram.types.ChatMember` objects.
+            ``Generator``: A generator yielding :obj:`~pyrogram.types.ChatParticipant` objects.
 
         Example:
             .. code-block:: python
