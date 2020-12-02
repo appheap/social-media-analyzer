@@ -136,6 +136,8 @@ from .chat_photo import ChatPhoto
 from .message_empty import MessageEmpty
 from .message import Message
 from .message_service import MessageService
+from .message_reply_header import MessageReplyHeader
+from .message_replies import MessageReplies
 from .message_media_empty import MessageMediaEmpty
 from .message_media_photo import MessageMediaPhoto
 from .message_media_geo import MessageMediaGeo
@@ -172,6 +174,7 @@ from .message_action_bot_allowed import MessageActionBotAllowed
 from .message_action_secure_values_sent_me import MessageActionSecureValuesSentMe
 from .message_action_secure_values_sent import MessageActionSecureValuesSent
 from .message_action_contact_sign_up import MessageActionContactSignUp
+from .message_action_geo_proximity_reached import MessageActionGeoProximityReached
 from .dialog import Dialog
 from .dialog_folder import DialogFolder
 from .photo_empty import PhotoEmpty

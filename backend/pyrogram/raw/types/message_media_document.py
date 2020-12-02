@@ -35,7 +35,7 @@ class MessageMediaDocument(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageMedia`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x9cb070d7``
 
     Parameters:

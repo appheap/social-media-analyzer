@@ -35,12 +35,14 @@ class MessageMediaGeoLive(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageMedia`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x7c3c2609``
+        - Layer: ``121``
+        - ID: ``0xb940c666``
 
     Parameters:
         geo: :obj:`GeoPoint <pyrogram.raw.base.GeoPoint>`
+        heading (optional): ``int`` ``32-bit``
         period: ``int`` ``32-bit``
+        proximity_notification_radius (optional): ``int`` ``32-bit``
 
     See Also:
         This object can be returned by 2 methods:
@@ -52,33 +54,49 @@ class MessageMediaGeoLive(TLObject):  # type: ignore
             - :obj:`messages.UploadMedia <pyrogram.raw.functions.messages.UploadMedia>`
     """
 
-    __slots__: List[str] = ["geo", "period"]
+    __slots__: List[str] = ["geo", "heading", "period", "proximity_notification_radius"]
 
-    ID = 0x7c3c2609
+    ID = 0xb940c666
     QUALNAME = "types.MessageMediaGeoLive"
 
-    def __init__(self, *, geo: "raw.base.GeoPoint", period: int) -> None:
+    def __init__(self, *, geo: "raw.base.GeoPoint", period: int, heading: Union[None, int] = None,
+                 proximity_notification_radius: Union[None, int] = None) -> None:
         self.geo = geo  # GeoPoint
         self.period = period  # int
+        self.heading = heading  # flags.0?int
+        self.proximity_notification_radius = proximity_notification_radius  # flags.1?int
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "MessageMediaGeoLive":
-        # No flags
+        flags = Int.read(data)
 
         geo = TLObject.read(data)
 
+        heading = Int.read(data) if flags & (1 << 0) else None
         period = Int.read(data)
 
-        return MessageMediaGeoLive(geo=geo, period=period)
+        proximity_notification_radius = Int.read(data) if flags & (1 << 1) else None
+
+        return MessageMediaGeoLive(geo=geo, period=period, heading=heading,
+                                   proximity_notification_radius=proximity_notification_radius)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.heading is not None else 0
+        flags |= (1 << 1) if self.proximity_notification_radius is not None else 0
+        data.write(Int(flags))
 
         data.write(self.geo.write())
 
+        if self.heading is not None:
+            data.write(Int(self.heading))
+
         data.write(Int(self.period))
+
+        if self.proximity_notification_radius is not None:
+            data.write(Int(self.proximity_notification_radius))
 
         return data.getvalue()

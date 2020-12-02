@@ -23,47 +23,33 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
 # All changes made in this file will be lost! #
 # # # # # # # # # # # # # # # # # # # # # # # #
 
+from typing import Union
+from pyrogram import raw
 
-class ReplyInlineMarkup(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ReplyMarkup`.
+MessageReplies = Union[raw.types.MessageReplies,]
 
-    Details:
-        - Layer: ``121``
-        - ID: ``0x48a30254``
 
-    Parameters:
-        rows: List of :obj:`KeyboardButtonRow <pyrogram.raw.base.KeyboardButtonRow>`
+# noinspection PyRedeclaration
+class MessageReplies:  # type: ignore
+    """This base type has 1 constructors available.
+
+    Constructors:
+        .. hlist::
+            :columns: 2
+
+            - :obj:`Message <pyrogram.raw.types.MessageReplies>`
     """
 
-    __slots__: List[str] = ["rows"]
+    QUALNAME = "pyrogram.raw.base.MessageReplies"
 
-    ID = 0x48a30254
-    QUALNAME = "types.ReplyInlineMarkup"
-
-    def __init__(self, *, rows: List["raw.base.KeyboardButtonRow"]) -> None:
-        self.rows = rows  # Vector<KeyboardButtonRow>
-
-    @staticmethod
-    def read(data: BytesIO, *args: Any) -> "ReplyInlineMarkup":
-        # No flags
-
-        rows = TLObject.read(data)
-
-        return ReplyInlineMarkup(rows=rows)
-
-    def write(self) -> bytes:
-        data = BytesIO()
-        data.write(Int(self.ID, False))
-
-        # No flags
-
-        data.write(Vector(self.rows))
-
-        return data.getvalue()
+    def __init__(self):
+        raise TypeError("Base types can only be used for type checking purposes: "
+                        "you tried to use a base type instance as argument, "
+                        "but you need to instantiate one of its constructors instead. "
+                        "More info: https://docs.pyrogram.org/telegram/base/message")

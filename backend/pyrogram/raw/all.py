@@ -22,7 +22,7 @@
 # All changes made in this file will be lost! #
 # # # # # # # # # # # # # # # # # # # # # # # #
 
-layer = 117
+layer = 121
 
 objects = {
     0x05162463: "pyrogram.raw.types.ResPQ",
@@ -159,9 +159,11 @@ objects = {
     0x37c1011c: "pyrogram.raw.types.ChatPhotoEmpty",
     0xd20b9f3c: "pyrogram.raw.types.ChatPhoto",
     0x83e5de54: "pyrogram.raw.types.MessageEmpty",
-    0x452c0e65: "pyrogram.raw.types.Message",
-    0x9e19a1f6: "pyrogram.raw.types.MessageService",
+    0x58ae39c9: "pyrogram.raw.types.Message",
+    0x286fa604: "pyrogram.raw.types.MessageService",
     0x3ded6320: "pyrogram.raw.types.MessageMediaEmpty",
+    0x4128faac: "pyrogram.raw.types.MessageReplies",
+    0xa6d57763: "pyrogram.raw.types.MessageReplyHeader",
     0x695150d7: "pyrogram.raw.types.MessageMediaPhoto",
     0x56e0d474: "pyrogram.raw.types.MessageMediaGeo",
     0xcbf24940: "pyrogram.raw.types.MessageMediaContact",
@@ -171,7 +173,7 @@ objects = {
     0x2ec0533f: "pyrogram.raw.types.MessageMediaVenue",
     0xfdb19008: "pyrogram.raw.types.MessageMediaGame",
     0x84551347: "pyrogram.raw.types.MessageMediaInvoice",
-    0x7c3c2609: "pyrogram.raw.types.MessageMediaGeoLive",
+    0xb940c666: "pyrogram.raw.types.MessageMediaGeoLive",
     0x4bd6e798: "pyrogram.raw.types.MessageMediaPoll",
     0x3f7ee58b: "pyrogram.raw.types.MessageMediaDice",
     0xb6aef7b0: "pyrogram.raw.types.MessageActionEmpty",
@@ -197,6 +199,7 @@ objects = {
     0x1b287353: "pyrogram.raw.types.MessageActionSecureValuesSentMe",
     0xd95c6154: "pyrogram.raw.types.MessageActionSecureValuesSent",
     0xf3f25f76: "pyrogram.raw.types.MessageActionContactSignUp",
+    0x98e0d697: "pyrogram.raw.types.MessageActionGeoProximityReached",
     0x2c171f72: "pyrogram.raw.types.Dialog",
     0x71bd134c: "pyrogram.raw.types.DialogFolder",
     0x2331b22d: "pyrogram.raw.types.PhotoEmpty",
@@ -205,8 +208,10 @@ objects = {
     0x77bfb61b: "pyrogram.raw.types.PhotoSize",
     0xe9a734fa: "pyrogram.raw.types.PhotoCachedSize",
     0xe0b0bc2e: "pyrogram.raw.types.PhotoStrippedSize",
+    0x5aa86a51: "pyrogram.raw.types.PhotoSizeProgressive",
+    0xd8214d41: "pyrogram.raw.types.PhotoPathSize",
     0x1117dd5f: "pyrogram.raw.types.GeoPointEmpty",
-    0x296f104: "pyrogram.raw.types.GeoPoint",
+    0xb2a2f663: "pyrogram.raw.types.GeoPoint",
     0x5e002502: "pyrogram.raw.types.auth.SentCode",
     0xcd050916: "pyrogram.raw.types.auth.Authorization",
     0x44747e9a: "pyrogram.raw.types.auth.AuthorizationSignUpRequired",
@@ -242,7 +247,7 @@ objects = {
     0xf0e3e596: "pyrogram.raw.types.messages.DialogsNotModified",
     0x8c718e87: "pyrogram.raw.types.messages.Messages",
     0xc8edce1e: "pyrogram.raw.types.messages.MessagesSlice",
-    0x99262e37: "pyrogram.raw.types.messages.ChannelMessages",
+    0x64479808: "pyrogram.raw.types.messages.ChannelMessages",
     0x74535f21: "pyrogram.raw.types.messages.MessagesNotModified",
     0x64ff9fd5: "pyrogram.raw.types.messages.Chats",
     0x9cd81144: "pyrogram.raw.types.messages.ChatsSlice",
@@ -564,7 +569,7 @@ objects = {
     0x17db940b: "pyrogram.raw.types.BotInlineMediaResult",
     0x947ca848: "pyrogram.raw.types.messages.BotResults",
     0x5dab1af4: "pyrogram.raw.types.ExportedMessageLink",
-    0x353a686b: "pyrogram.raw.types.MessageFwdHeader",
+    0x5f777dce: "pyrogram.raw.types.MessageFwdHeader",
     0x72a3158c: "pyrogram.raw.types.auth.CodeTypeSms",
     0x741cd3e3: "pyrogram.raw.types.auth.CodeTypeCall",
     0x226ccefb: "pyrogram.raw.types.auth.CodeTypeFlashCall",

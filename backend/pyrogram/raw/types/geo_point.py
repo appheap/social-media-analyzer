@@ -35,28 +35,30 @@ class GeoPoint(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.GeoPoint`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x296f104``
+        - Layer: ``121``
+        - ID: ``0xb2a2f663``
 
     Parameters:
         long: ``float`` ``64-bit``
         lat: ``float`` ``64-bit``
         access_hash: ``int`` ``64-bit``
+        accuracy_radius (optional): ``int`` ``32-bit``
     """
 
-    __slots__: List[str] = ["long", "lat", "access_hash"]
+    __slots__: List[str] = ["long", "lat", "access_hash", "accuracy_radius"]
 
-    ID = 0x296f104
+    ID = 0xb2a2f663
     QUALNAME = "types.GeoPoint"
 
-    def __init__(self, *, long: float, lat: float, access_hash: int) -> None:
+    def __init__(self, *, long: float, lat: float, access_hash: int, accuracy_radius: Union[None, int] = None) -> None:
         self.long = long  # double
         self.lat = lat  # double
         self.access_hash = access_hash  # long
+        self.accuracy_radius = accuracy_radius  # flags.0?int
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "GeoPoint":
-        # No flags
+        flags = Int.read(data)
 
         long = Double.read(data)
 
@@ -64,18 +66,26 @@ class GeoPoint(TLObject):  # type: ignore
 
         access_hash = Long.read(data)
 
-        return GeoPoint(long=long, lat=lat, access_hash=access_hash)
+        accuracy_radius = Int.read(data) if flags & (1 << 0) else None
+
+        return GeoPoint(long=long, lat=lat, access_hash=access_hash, accuracy_radius=accuracy_radius)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.accuracy_radius is not None else 0
+
+        data.write(Int(flags))
 
         data.write(Double(self.long))
 
         data.write(Double(self.lat))
 
         data.write(Long(self.access_hash))
+
+        if self.accuracy_radius is not None:
+            data.write(Int(self.accuracy_radius))
 
         return data.getvalue()

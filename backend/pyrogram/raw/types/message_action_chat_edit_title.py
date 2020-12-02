@@ -35,7 +35,7 @@ class MessageActionChatEditTitle(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageAction`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0xb5a1ce5a``
 
     Parameters:

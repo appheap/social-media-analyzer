@@ -63,19 +63,21 @@ class ChannelMessages(TLObject):  # type: ignore
             - :obj:`channels.GetMessages <pyrogram.raw.functions.channels.GetMessages>`
     """
 
-    __slots__: List[str] = ["pts", "count", "messages", "chats", "users", "inexact"]
+    __slots__: List[str] = ["pts", "count", "messages", "chats", "users", "inexact", "offset_id_offset"]
 
-    ID = 0x99262e37
+    ID = 0x64479808
     QUALNAME = "types.messages.ChannelMessages"
 
     def __init__(self, *, pts: int, count: int, messages: List["raw.base.Message"], chats: List["raw.base.Chat"],
-                 users: List["raw.base.User"], inexact: Union[None, bool] = None) -> None:
+                 users: List["raw.base.User"], inexact: Union[None, bool] = None,
+                 offset_id_offset: Union[None, int] = None) -> None:
         self.pts = pts  # int
         self.count = count  # int
         self.messages = messages  # Vector<Message>
         self.chats = chats  # Vector<Chat>
         self.users = users  # Vector<User>
         self.inexact = inexact  # flags.1?true
+        self.offset_id_offset = offset_id_offset  # flags.2?int
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "ChannelMessages":
@@ -86,13 +88,16 @@ class ChannelMessages(TLObject):  # type: ignore
 
         count = Int.read(data)
 
+        offset_id_offset = Int.read(data) if flags & (1 << 2) else None
+
         messages = TLObject.read(data)
 
         chats = TLObject.read(data)
 
         users = TLObject.read(data)
 
-        return ChannelMessages(pts=pts, count=count, messages=messages, chats=chats, users=users, inexact=inexact)
+        return ChannelMessages(pts=pts, count=count, messages=messages, chats=chats, users=users, inexact=inexact,
+                               offset_id_offset=offset_id_offset)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -105,6 +110,9 @@ class ChannelMessages(TLObject):  # type: ignore
         data.write(Int(self.pts))
 
         data.write(Int(self.count))
+
+        if self.offset_id_offset is not None:
+            data.write(Int(self.offset_id_offset))
 
         data.write(Vector(self.messages))
 
