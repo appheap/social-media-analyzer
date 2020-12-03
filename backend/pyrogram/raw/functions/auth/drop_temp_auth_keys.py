@@ -35,7 +35,7 @@ class DropTempAuthKeys(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x8e48a188``
 
     Parameters:

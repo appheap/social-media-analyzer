@@ -35,7 +35,7 @@ class ResetAuthorizations(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x9fab0d1a``
 
     **No parameters required.**

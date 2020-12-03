@@ -35,7 +35,7 @@ class LogOut(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x5717da40``
 
     **No parameters required.**
