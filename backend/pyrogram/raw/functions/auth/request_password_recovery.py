@@ -35,7 +35,7 @@ class RequestPasswordRecovery(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0xd897bc66``
 
     **No parameters required.**

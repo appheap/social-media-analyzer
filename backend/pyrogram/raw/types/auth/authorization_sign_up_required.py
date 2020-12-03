@@ -35,7 +35,7 @@ class AuthorizationSignUpRequired(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.auth.Authorization`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x44747e9a``
 
     Parameters:

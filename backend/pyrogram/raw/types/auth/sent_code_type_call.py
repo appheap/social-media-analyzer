@@ -35,7 +35,7 @@ class SentCodeTypeCall(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.auth.SentCodeType`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0x5353e5a7``
 
     Parameters:

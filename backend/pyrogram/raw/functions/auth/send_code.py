@@ -35,7 +35,7 @@ class SendCode(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``121``
         - ID: ``0xa677244f``
 
     Parameters:
