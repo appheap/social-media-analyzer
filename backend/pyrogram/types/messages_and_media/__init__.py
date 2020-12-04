@@ -29,6 +29,8 @@ from .photo_stripped_size import PhotoStrippedSize
 from .photo_size_progressive import PhotoSizeProgressive
 from .photo_path_size import PhotoPathSize
 from .file_location import FileLocation
+from .message_views import MessageViews
+from .message_replies import MessageReplies
 
 __all__ = [
     "Animation", "Audio", "Contact", "Document", "Game", "Location", "Message", "MessageEntity", "Photo", "Thumbnail",
@@ -43,6 +45,8 @@ __all__ = [
     "PhotoStrippedSize",
     "PhotoSizeProgressive",
     "PhotoPathSize",
+    "MessageViews",
+    "MessageReplies",
 
     "FileLocation",
 

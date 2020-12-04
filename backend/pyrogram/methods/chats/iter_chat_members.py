@@ -77,6 +77,9 @@ class IterChatMembers(Scaffold):
                 *"administrators"* - chat administrators only.
                 Defaults to *"recent"*.
 
+            last_member_count (``int``):
+                Last member count number
+
         Returns:
             ``Generator``: A generator yielding :obj:`~pyrogram.types.ChatParticipant` objects.
 

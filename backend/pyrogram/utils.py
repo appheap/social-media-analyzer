@@ -132,6 +132,22 @@ def get_input_media_from_file_id(
         raise ValueError(f"Unknown media type: {file_id_str}")
 
 
+async def parse_message_views(client, message_views: "raw.types.messages.MessageViews", message_ids: list):
+    users = {i.id: i for i in message_views.users}
+    chats = {i.id: i for i in message_views.chats}
+
+    if not message_views.views:
+        return types.List()
+
+    parsed_views = []
+    for message_id, view in zip(message_ids, message_views.views):
+        parsed_view = await types.MessageViews._parse(client, message_id, view, users, chats)
+        if parsed_view:
+            parsed_views.append(parsed_view)
+
+    return types.List(parsed_views)
+
+
 async def parse_messages(client, messages: "raw.types.messages.Messages", replies: int = 1) -> List["types.Message"]:
     users = {i.id: i for i in messages.users}
     chats = {i.id: i for i in messages.chats}

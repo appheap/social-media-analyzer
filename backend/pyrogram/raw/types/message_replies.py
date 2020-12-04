@@ -42,7 +42,7 @@ class MessageReplies(TLObject):  # type: ignore
         replies: ``int`` ``32-bit``
         replies_pts: ``int`` ``32-bit``
         comments (optional): ``bool``
-        recent_repliers (optional): List of :obj:`Peer <pyrogram.raw.base.Peer>`
+         (optional): List of :obj:`Peer <pyrogram.raw.base.Peer>`
         channel_id (optional): ``int`` ``32-bit``
         max_id (optional): ``int`` ``32-bit``
         read_max_id (optional): ``int`` ``32-bit``
