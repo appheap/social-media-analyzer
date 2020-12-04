@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class UpdatesCombined(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Updates`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0x725b04c3``
 
     Parameters:
@@ -47,7 +46,7 @@ class UpdatesCombined(TLObject):  # type: ignore
         seq: ``int`` ``32-bit``
 
     See Also:
-        This object can be returned by 46 methods:
+        This object can be returned by 47 methods:
 
         .. hlist::
             :columns: 2
@@ -57,6 +56,7 @@ class UpdatesCombined(TLObject):  # type: ignore
             - :obj:`contacts.AddContact <pyrogram.raw.functions.contacts.AddContact>`
             - :obj:`contacts.AcceptContact <pyrogram.raw.functions.contacts.AcceptContact>`
             - :obj:`contacts.GetLocated <pyrogram.raw.functions.contacts.GetLocated>`
+            - :obj:`contacts.BlockFromReplies <pyrogram.raw.functions.contacts.BlockFromReplies>`
             - :obj:`messages.SendMessage <pyrogram.raw.functions.messages.SendMessage>`
             - :obj:`messages.SendMedia <pyrogram.raw.functions.messages.SendMedia>`
             - :obj:`messages.ForwardMessages <pyrogram.raw.functions.messages.ForwardMessages>`

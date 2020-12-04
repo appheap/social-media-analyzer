@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class LangPackString(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.LangPackString`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xcad181f6``
 
     Parameters:

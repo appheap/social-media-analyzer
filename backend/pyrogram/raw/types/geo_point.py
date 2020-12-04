@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class GeoPoint(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.GeoPoint`.
 
     Details:
-        - Layer: ``121``
+        - Layer: ``120``
         - ID: ``0xb2a2f663``
 
     Parameters:
@@ -67,7 +66,6 @@ class GeoPoint(TLObject):  # type: ignore
         access_hash = Long.read(data)
 
         accuracy_radius = Int.read(data) if flags & (1 << 0) else None
-
         return GeoPoint(long=long, lat=lat, access_hash=access_hash, accuracy_radius=accuracy_radius)
 
     def write(self) -> bytes:
@@ -76,7 +74,6 @@ class GeoPoint(TLObject):  # type: ignore
 
         flags = 0
         flags |= (1 << 0) if self.accuracy_radius is not None else 0
-
         data.write(Int(flags))
 
         data.write(Double(self.long))

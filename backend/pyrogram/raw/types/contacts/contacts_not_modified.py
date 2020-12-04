@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class ContactsNotModified(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.contacts.Contacts`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xb74ba9d2``
 
     **No parameters required.**

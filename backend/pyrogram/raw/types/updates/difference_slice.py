@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class DifferenceSlice(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.updates.Difference`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xa8fb1981``
 
     Parameters:

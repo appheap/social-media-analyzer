@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class PasswordSettings(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.account.PasswordSettings`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0x9a5c33e5``
 
     Parameters:

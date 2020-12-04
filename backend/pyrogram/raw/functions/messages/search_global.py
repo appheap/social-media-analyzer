@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,11 +34,14 @@ class SearchGlobal(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xbf7225a4``
+        - Layer: ``120``
+        - ID: ``0x4bc6589a``
 
     Parameters:
         q: ``str``
+        filter: :obj:`MessagesFilter <pyrogram.raw.base.MessagesFilter>`
+        min_date: ``int`` ``32-bit``
+        max_date: ``int`` ``32-bit``
         offset_rate: ``int`` ``32-bit``
         offset_peer: :obj:`InputPeer <pyrogram.raw.base.InputPeer>`
         offset_id: ``int`` ``32-bit``
@@ -50,14 +52,19 @@ class SearchGlobal(TLObject):  # type: ignore
         :obj:`messages.Messages <pyrogram.raw.base.messages.Messages>`
     """
 
-    __slots__: List[str] = ["q", "offset_rate", "offset_peer", "offset_id", "limit", "folder_id"]
+    __slots__: List[str] = ["q", "filter", "min_date", "max_date", "offset_rate", "offset_peer", "offset_id", "limit",
+                            "folder_id"]
 
-    ID = 0xbf7225a4
+    ID = 0x4bc6589a
     QUALNAME = "functions.messages.SearchGlobal"
 
-    def __init__(self, *, q: str, offset_rate: int, offset_peer: "raw.base.InputPeer", offset_id: int, limit: int,
+    def __init__(self, *, q: str, filter: "raw.base.MessagesFilter", min_date: int, max_date: int, offset_rate: int,
+                 offset_peer: "raw.base.InputPeer", offset_id: int, limit: int,
                  folder_id: Union[None, int] = None) -> None:
         self.q = q  # string
+        self.filter = filter  # MessagesFilter
+        self.min_date = min_date  # int
+        self.max_date = max_date  # int
         self.offset_rate = offset_rate  # int
         self.offset_peer = offset_peer  # InputPeer
         self.offset_id = offset_id  # int
@@ -71,6 +78,12 @@ class SearchGlobal(TLObject):  # type: ignore
         folder_id = Int.read(data) if flags & (1 << 0) else None
         q = String.read(data)
 
+        filter = TLObject.read(data)
+
+        min_date = Int.read(data)
+
+        max_date = Int.read(data)
+
         offset_rate = Int.read(data)
 
         offset_peer = TLObject.read(data)
@@ -79,8 +92,8 @@ class SearchGlobal(TLObject):  # type: ignore
 
         limit = Int.read(data)
 
-        return SearchGlobal(q=q, offset_rate=offset_rate, offset_peer=offset_peer, offset_id=offset_id, limit=limit,
-                            folder_id=folder_id)
+        return SearchGlobal(q=q, filter=filter, min_date=min_date, max_date=max_date, offset_rate=offset_rate,
+                            offset_peer=offset_peer, offset_id=offset_id, limit=limit, folder_id=folder_id)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -94,6 +107,12 @@ class SearchGlobal(TLObject):  # type: ignore
             data.write(Int(self.folder_id))
 
         data.write(String(self.q))
+
+        data.write(self.filter.write())
+
+        data.write(Int(self.min_date))
+
+        data.write(Int(self.max_date))
 
         data.write(Int(self.offset_rate))
 

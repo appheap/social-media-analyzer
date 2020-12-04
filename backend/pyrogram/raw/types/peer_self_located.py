@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class PeerSelfLocated(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PeerLocated`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xf8ec284b``
 
     Parameters:

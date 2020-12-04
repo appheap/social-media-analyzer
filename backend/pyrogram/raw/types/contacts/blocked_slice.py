@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,12 +34,13 @@ class BlockedSlice(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.contacts.Blocked`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x900802a1``
+        - Layer: ``120``
+        - ID: ``0xe1664194``
 
     Parameters:
         count: ``int`` ``32-bit``
-        blocked: List of :obj:`ContactBlocked <pyrogram.raw.base.ContactBlocked>`
+        blocked: List of :obj:`PeerBlocked <pyrogram.raw.base.PeerBlocked>`
+        chats: List of :obj:`Chat <pyrogram.raw.base.Chat>`
         users: List of :obj:`User <pyrogram.raw.base.User>`
 
     See Also:
@@ -52,14 +52,16 @@ class BlockedSlice(TLObject):  # type: ignore
             - :obj:`contacts.GetBlocked <pyrogram.raw.functions.contacts.GetBlocked>`
     """
 
-    __slots__: List[str] = ["count", "blocked", "users"]
+    __slots__: List[str] = ["count", "blocked", "chats", "users"]
 
-    ID = 0x900802a1
+    ID = 0xe1664194
     QUALNAME = "types.contacts.BlockedSlice"
 
-    def __init__(self, *, count: int, blocked: List["raw.base.ContactBlocked"], users: List["raw.base.User"]) -> None:
+    def __init__(self, *, count: int, blocked: List["raw.base.PeerBlocked"], chats: List["raw.base.Chat"],
+                 users: List["raw.base.User"]) -> None:
         self.count = count  # int
-        self.blocked = blocked  # Vector<ContactBlocked>
+        self.blocked = blocked  # Vector<PeerBlocked>
+        self.chats = chats  # Vector<Chat>
         self.users = users  # Vector<User>
 
     @staticmethod
@@ -70,9 +72,11 @@ class BlockedSlice(TLObject):  # type: ignore
 
         blocked = TLObject.read(data)
 
+        chats = TLObject.read(data)
+
         users = TLObject.read(data)
 
-        return BlockedSlice(count=count, blocked=blocked, users=users)
+        return BlockedSlice(count=count, blocked=blocked, chats=chats, users=users)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -83,6 +87,8 @@ class BlockedSlice(TLObject):  # type: ignore
         data.write(Int(self.count))
 
         data.write(Vector(self.blocked))
+
+        data.write(Vector(self.chats))
 
         data.write(Vector(self.users))
 

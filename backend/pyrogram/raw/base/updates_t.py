@@ -47,7 +47,7 @@ class Updates:  # type: ignore
             - :obj:`UpdatesTooLong <pyrogram.raw.types.UpdatesTooLong>`
 
     See Also:
-        This object can be returned by 46 methods:
+        This object can be returned by 47 methods:
 
         .. hlist::
             :columns: 2
@@ -57,6 +57,7 @@ class Updates:  # type: ignore
             - :obj:`contacts.AddContact <pyrogram.raw.functions.contacts.AddContact>`
             - :obj:`contacts.AcceptContact <pyrogram.raw.functions.contacts.AcceptContact>`
             - :obj:`contacts.GetLocated <pyrogram.raw.functions.contacts.GetLocated>`
+            - :obj:`contacts.BlockFromReplies <pyrogram.raw.functions.contacts.BlockFromReplies>`
             - :obj:`messages.SendMessage <pyrogram.raw.functions.messages.SendMessage>`
             - :obj:`messages.SendMedia <pyrogram.raw.functions.messages.SendMedia>`
             - :obj:`messages.ForwardMessages <pyrogram.raw.functions.messages.ForwardMessages>`

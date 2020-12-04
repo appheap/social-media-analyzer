@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 Update = Union[
-    raw.types.UpdateBotCallbackQuery, raw.types.UpdateBotInlineQuery, raw.types.UpdateBotInlineSend, raw.types.UpdateBotPrecheckoutQuery, raw.types.UpdateBotShippingQuery, raw.types.UpdateBotWebhookJSON, raw.types.UpdateBotWebhookJSONQuery, raw.types.UpdateChannel, raw.types.UpdateChannelAvailableMessages, raw.types.UpdateChannelMessageViews, raw.types.UpdateChannelParticipant, raw.types.UpdateChannelPinnedMessage, raw.types.UpdateChannelReadMessagesContents, raw.types.UpdateChannelTooLong, raw.types.UpdateChannelWebPage, raw.types.UpdateChatDefaultBannedRights, raw.types.UpdateChatParticipantAdd, raw.types.UpdateChatParticipantAdmin, raw.types.UpdateChatParticipantDelete, raw.types.UpdateChatParticipants, raw.types.UpdateChatPinnedMessage, raw.types.UpdateChatUserTyping, raw.types.UpdateConfig, raw.types.UpdateContactsReset, raw.types.UpdateDcOptions, raw.types.UpdateDeleteChannelMessages, raw.types.UpdateDeleteMessages, raw.types.UpdateDeleteScheduledMessages, raw.types.UpdateDialogFilter, raw.types.UpdateDialogFilterOrder, raw.types.UpdateDialogFilters, raw.types.UpdateDialogPinned, raw.types.UpdateDialogUnreadMark, raw.types.UpdateDraftMessage, raw.types.UpdateEditChannelMessage, raw.types.UpdateEditMessage, raw.types.UpdateEncryptedChatTyping, raw.types.UpdateEncryptedMessagesRead, raw.types.UpdateEncryption, raw.types.UpdateFavedStickers, raw.types.UpdateFolderPeers, raw.types.UpdateGeoLiveViewed, raw.types.UpdateInlineBotCallbackQuery, raw.types.UpdateLangPack, raw.types.UpdateLangPackTooLong, raw.types.UpdateLoginToken, raw.types.UpdateMessageID, raw.types.UpdateMessagePoll, raw.types.UpdateMessagePollVote, raw.types.UpdateNewChannelMessage, raw.types.UpdateNewEncryptedMessage, raw.types.UpdateNewMessage, raw.types.UpdateNewScheduledMessage, raw.types.UpdateNewStickerSet, raw.types.UpdateNotifySettings, raw.types.UpdatePeerLocated, raw.types.UpdatePeerSettings, raw.types.UpdatePhoneCall, raw.types.UpdatePhoneCallSignalingData, raw.types.UpdatePinnedDialogs, raw.types.UpdatePrivacy, raw.types.UpdatePtsChanged, raw.types.UpdateReadChannelInbox, raw.types.UpdateReadChannelOutbox, raw.types.UpdateReadFeaturedStickers, raw.types.UpdateReadHistoryInbox, raw.types.UpdateReadHistoryOutbox, raw.types.UpdateReadMessagesContents, raw.types.UpdateRecentStickers, raw.types.UpdateSavedGifs, raw.types.UpdateServiceNotification, raw.types.UpdateStickerSets, raw.types.UpdateStickerSetsOrder, raw.types.UpdateTheme, raw.types.UpdateUserBlocked, raw.types.UpdateUserName, raw.types.UpdateUserPhone, raw.types.UpdateUserPhoto, raw.types.UpdateUserPinnedMessage, raw.types.UpdateUserStatus, raw.types.UpdateUserTyping, raw.types.UpdateWebPage]
+    raw.types.UpdateBotCallbackQuery, raw.types.UpdateBotInlineQuery, raw.types.UpdateBotInlineSend, raw.types.UpdateBotPrecheckoutQuery, raw.types.UpdateBotShippingQuery, raw.types.UpdateBotWebhookJSON, raw.types.UpdateBotWebhookJSONQuery, raw.types.UpdateChannel, raw.types.UpdateChannelAvailableMessages, raw.types.UpdateChannelMessageForwards, raw.types.UpdateChannelMessageViews, raw.types.UpdateChannelParticipant, raw.types.UpdateChannelReadMessagesContents, raw.types.UpdateChannelTooLong, raw.types.UpdateChannelUserTyping, raw.types.UpdateChannelWebPage, raw.types.UpdateChatDefaultBannedRights, raw.types.UpdateChatParticipantAdd, raw.types.UpdateChatParticipantAdmin, raw.types.UpdateChatParticipantDelete, raw.types.UpdateChatParticipants, raw.types.UpdateChatUserTyping, raw.types.UpdateConfig, raw.types.UpdateContactsReset, raw.types.UpdateDcOptions, raw.types.UpdateDeleteChannelMessages, raw.types.UpdateDeleteMessages, raw.types.UpdateDeleteScheduledMessages, raw.types.UpdateDialogFilter, raw.types.UpdateDialogFilterOrder, raw.types.UpdateDialogFilters, raw.types.UpdateDialogPinned, raw.types.UpdateDialogUnreadMark, raw.types.UpdateDraftMessage, raw.types.UpdateEditChannelMessage, raw.types.UpdateEditMessage, raw.types.UpdateEncryptedChatTyping, raw.types.UpdateEncryptedMessagesRead, raw.types.UpdateEncryption, raw.types.UpdateFavedStickers, raw.types.UpdateFolderPeers, raw.types.UpdateGeoLiveViewed, raw.types.UpdateInlineBotCallbackQuery, raw.types.UpdateLangPack, raw.types.UpdateLangPackTooLong, raw.types.UpdateLoginToken, raw.types.UpdateMessageID, raw.types.UpdateMessagePoll, raw.types.UpdateMessagePollVote, raw.types.UpdateNewChannelMessage, raw.types.UpdateNewEncryptedMessage, raw.types.UpdateNewMessage, raw.types.UpdateNewScheduledMessage, raw.types.UpdateNewStickerSet, raw.types.UpdateNotifySettings, raw.types.UpdatePeerBlocked, raw.types.UpdatePeerLocated, raw.types.UpdatePeerSettings, raw.types.UpdatePhoneCall, raw.types.UpdatePhoneCallSignalingData, raw.types.UpdatePinnedChannelMessages, raw.types.UpdatePinnedDialogs, raw.types.UpdatePinnedMessages, raw.types.UpdatePrivacy, raw.types.UpdatePtsChanged, raw.types.UpdateReadChannelDiscussionInbox, raw.types.UpdateReadChannelDiscussionOutbox, raw.types.UpdateReadChannelInbox, raw.types.UpdateReadChannelOutbox, raw.types.UpdateReadFeaturedStickers, raw.types.UpdateReadHistoryInbox, raw.types.UpdateReadHistoryOutbox, raw.types.UpdateReadMessagesContents, raw.types.UpdateRecentStickers, raw.types.UpdateSavedGifs, raw.types.UpdateServiceNotification, raw.types.UpdateStickerSets, raw.types.UpdateStickerSetsOrder, raw.types.UpdateTheme, raw.types.UpdateUserName, raw.types.UpdateUserPhone, raw.types.UpdateUserPhoto, raw.types.UpdateUserStatus, raw.types.UpdateUserTyping, raw.types.UpdateWebPage]
 
 
 # noinspection PyRedeclaration
 class Update:  # type: ignore
-    """This base type has 82 constructors available.
+    """This base type has 85 constructors available.
 
     Constructors:
         .. hlist::
@@ -47,18 +47,18 @@ class Update:  # type: ignore
             - :obj:`UpdateBotWebhookJSONQuery <pyrogram.raw.types.UpdateBotWebhookJSONQuery>`
             - :obj:`UpdateChannel <pyrogram.raw.types.UpdateChannel>`
             - :obj:`UpdateChannelAvailableMessages <pyrogram.raw.types.UpdateChannelAvailableMessages>`
+            - :obj:`UpdateChannelMessageForwards <pyrogram.raw.types.UpdateChannelMessageForwards>`
             - :obj:`UpdateChannelMessageViews <pyrogram.raw.types.UpdateChannelMessageViews>`
             - :obj:`UpdateChannelParticipant <pyrogram.raw.types.UpdateChannelParticipant>`
-            - :obj:`UpdateChannelPinnedMessage <pyrogram.raw.types.UpdateChannelPinnedMessage>`
             - :obj:`UpdateChannelReadMessagesContents <pyrogram.raw.types.UpdateChannelReadMessagesContents>`
             - :obj:`UpdateChannelTooLong <pyrogram.raw.types.UpdateChannelTooLong>`
+            - :obj:`UpdateChannelUserTyping <pyrogram.raw.types.UpdateChannelUserTyping>`
             - :obj:`UpdateChannelWebPage <pyrogram.raw.types.UpdateChannelWebPage>`
             - :obj:`UpdateChatDefaultBannedRights <pyrogram.raw.types.UpdateChatDefaultBannedRights>`
             - :obj:`UpdateChatParticipantAdd <pyrogram.raw.types.UpdateChatParticipantAdd>`
             - :obj:`UpdateChatParticipantAdmin <pyrogram.raw.types.UpdateChatParticipantAdmin>`
             - :obj:`UpdateChatParticipantDelete <pyrogram.raw.types.UpdateChatParticipantDelete>`
             - :obj:`UpdateChatParticipants <pyrogram.raw.types.UpdateChatParticipants>`
-            - :obj:`UpdateChatPinnedMessage <pyrogram.raw.types.UpdateChatPinnedMessage>`
             - :obj:`UpdateChatUserTyping <pyrogram.raw.types.UpdateChatUserTyping>`
             - :obj:`UpdateConfig <pyrogram.raw.types.UpdateConfig>`
             - :obj:`UpdateContactsReset <pyrogram.raw.types.UpdateContactsReset>`
@@ -93,13 +93,18 @@ class Update:  # type: ignore
             - :obj:`UpdateNewScheduledMessage <pyrogram.raw.types.UpdateNewScheduledMessage>`
             - :obj:`UpdateNewStickerSet <pyrogram.raw.types.UpdateNewStickerSet>`
             - :obj:`UpdateNotifySettings <pyrogram.raw.types.UpdateNotifySettings>`
+            - :obj:`UpdatePeerBlocked <pyrogram.raw.types.UpdatePeerBlocked>`
             - :obj:`UpdatePeerLocated <pyrogram.raw.types.UpdatePeerLocated>`
             - :obj:`UpdatePeerSettings <pyrogram.raw.types.UpdatePeerSettings>`
             - :obj:`UpdatePhoneCall <pyrogram.raw.types.UpdatePhoneCall>`
             - :obj:`UpdatePhoneCallSignalingData <pyrogram.raw.types.UpdatePhoneCallSignalingData>`
+            - :obj:`UpdatePinnedChannelMessages <pyrogram.raw.types.UpdatePinnedChannelMessages>`
             - :obj:`UpdatePinnedDialogs <pyrogram.raw.types.UpdatePinnedDialogs>`
+            - :obj:`UpdatePinnedMessages <pyrogram.raw.types.UpdatePinnedMessages>`
             - :obj:`UpdatePrivacy <pyrogram.raw.types.UpdatePrivacy>`
             - :obj:`UpdatePtsChanged <pyrogram.raw.types.UpdatePtsChanged>`
+            - :obj:`UpdateReadChannelDiscussionInbox <pyrogram.raw.types.UpdateReadChannelDiscussionInbox>`
+            - :obj:`UpdateReadChannelDiscussionOutbox <pyrogram.raw.types.UpdateReadChannelDiscussionOutbox>`
             - :obj:`UpdateReadChannelInbox <pyrogram.raw.types.UpdateReadChannelInbox>`
             - :obj:`UpdateReadChannelOutbox <pyrogram.raw.types.UpdateReadChannelOutbox>`
             - :obj:`UpdateReadFeaturedStickers <pyrogram.raw.types.UpdateReadFeaturedStickers>`
@@ -112,11 +117,9 @@ class Update:  # type: ignore
             - :obj:`UpdateStickerSets <pyrogram.raw.types.UpdateStickerSets>`
             - :obj:`UpdateStickerSetsOrder <pyrogram.raw.types.UpdateStickerSetsOrder>`
             - :obj:`UpdateTheme <pyrogram.raw.types.UpdateTheme>`
-            - :obj:`UpdateUserBlocked <pyrogram.raw.types.UpdateUserBlocked>`
             - :obj:`UpdateUserName <pyrogram.raw.types.UpdateUserName>`
             - :obj:`UpdateUserPhone <pyrogram.raw.types.UpdateUserPhone>`
             - :obj:`UpdateUserPhoto <pyrogram.raw.types.UpdateUserPhoto>`
-            - :obj:`UpdateUserPinnedMessage <pyrogram.raw.types.UpdateUserPinnedMessage>`
             - :obj:`UpdateUserStatus <pyrogram.raw.types.UpdateUserStatus>`
             - :obj:`UpdateUserTyping <pyrogram.raw.types.UpdateUserTyping>`
             - :obj:`UpdateWebPage <pyrogram.raw.types.UpdateWebPage>`

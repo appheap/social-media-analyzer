@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 ChannelParticipantsFilter = Union[
-    raw.types.ChannelParticipantsAdmins, raw.types.ChannelParticipantsBanned, raw.types.ChannelParticipantsBots, raw.types.ChannelParticipantsContacts, raw.types.ChannelParticipantsKicked, raw.types.ChannelParticipantsRecent, raw.types.ChannelParticipantsSearch]
+    raw.types.ChannelParticipantsAdmins, raw.types.ChannelParticipantsBanned, raw.types.ChannelParticipantsBots, raw.types.ChannelParticipantsContacts, raw.types.ChannelParticipantsKicked, raw.types.ChannelParticipantsMentions, raw.types.ChannelParticipantsRecent, raw.types.ChannelParticipantsSearch]
 
 
 # noinspection PyRedeclaration
 class ChannelParticipantsFilter:  # type: ignore
-    """This base type has 7 constructors available.
+    """This base type has 8 constructors available.
 
     Constructors:
         .. hlist::
@@ -43,6 +43,7 @@ class ChannelParticipantsFilter:  # type: ignore
             - :obj:`ChannelParticipantsBots <pyrogram.raw.types.ChannelParticipantsBots>`
             - :obj:`ChannelParticipantsContacts <pyrogram.raw.types.ChannelParticipantsContacts>`
             - :obj:`ChannelParticipantsKicked <pyrogram.raw.types.ChannelParticipantsKicked>`
+            - :obj:`ChannelParticipantsMentions <pyrogram.raw.types.ChannelParticipantsMentions>`
             - :obj:`ChannelParticipantsRecent <pyrogram.raw.types.ChannelParticipantsRecent>`
             - :obj:`ChannelParticipantsSearch <pyrogram.raw.types.ChannelParticipantsSearch>`
     """

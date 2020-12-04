@@ -31,45 +31,48 @@ from typing import List, Union, Any
 # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class ContactBlocked(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ContactBlocked`.
+class ChannelParticipantsMentions(TLObject):  # type: ignore
+    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChannelParticipantsFilter`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x561bc879``
+        - Layer: ``120``
+        - ID: ``0xe04b5ceb``
 
     Parameters:
-        user_id: ``int`` ``32-bit``
-        date: ``int`` ``32-bit``
+        q (optional): ``str``
+        top_msg_id (optional): ``int`` ``32-bit``
     """
 
-    __slots__: List[str] = ["user_id", "date"]
+    __slots__: List[str] = ["q", "top_msg_id"]
 
-    ID = 0x561bc879
-    QUALNAME = "types.ContactBlocked"
+    ID = 0xe04b5ceb
+    QUALNAME = "types.ChannelParticipantsMentions"
 
-    def __init__(self, *, user_id: int, date: int) -> None:
-        self.user_id = user_id  # int
-        self.date = date  # int
+    def __init__(self, *, q: Union[None, str] = None, top_msg_id: Union[None, int] = None) -> None:
+        self.q = q  # flags.0?string
+        self.top_msg_id = top_msg_id  # flags.1?int
 
     @staticmethod
-    def read(data: BytesIO, *args: Any) -> "ContactBlocked":
-        # No flags
+    def read(data: BytesIO, *args: Any) -> "ChannelParticipantsMentions":
+        flags = Int.read(data)
 
-        user_id = Int.read(data)
-
-        date = Int.read(data)
-
-        return ContactBlocked(user_id=user_id, date=date)
+        q = String.read(data) if flags & (1 << 0) else None
+        top_msg_id = Int.read(data) if flags & (1 << 1) else None
+        return ChannelParticipantsMentions(q=q, top_msg_id=top_msg_id)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.q is not None else 0
+        flags |= (1 << 1) if self.top_msg_id is not None else 0
+        data.write(Int(flags))
 
-        data.write(Int(self.user_id))
+        if self.q is not None:
+            data.write(String(self.q))
 
-        data.write(Int(self.date))
+        if self.top_msg_id is not None:
+            data.write(Int(self.top_msg_id))
 
         return data.getvalue()

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,13 +34,13 @@ class MessageMediaGeoLive(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageMedia`.
 
     Details:
-        - Layer: ``121``
+        - Layer: ``120``
         - ID: ``0xb940c666``
 
     Parameters:
         geo: :obj:`GeoPoint <pyrogram.raw.base.GeoPoint>`
-        heading (optional): ``int`` ``32-bit``
         period: ``int`` ``32-bit``
+        heading (optional): ``int`` ``32-bit``
         proximity_notification_radius (optional): ``int`` ``32-bit``
 
     See Also:
@@ -54,7 +53,7 @@ class MessageMediaGeoLive(TLObject):  # type: ignore
             - :obj:`messages.UploadMedia <pyrogram.raw.functions.messages.UploadMedia>`
     """
 
-    __slots__: List[str] = ["geo", "heading", "period", "proximity_notification_radius"]
+    __slots__: List[str] = ["geo", "period", "heading", "proximity_notification_radius"]
 
     ID = 0xb940c666
     QUALNAME = "types.MessageMediaGeoLive"
@@ -76,7 +75,6 @@ class MessageMediaGeoLive(TLObject):  # type: ignore
         period = Int.read(data)
 
         proximity_notification_radius = Int.read(data) if flags & (1 << 1) else None
-
         return MessageMediaGeoLive(geo=geo, period=period, heading=heading,
                                    proximity_notification_radius=proximity_notification_radius)
 

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,38 +34,43 @@ class KeyboardButtonCallback(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.KeyboardButton`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x683a5e46``
+        - Layer: ``120``
+        - ID: ``0x35bbdb6b``
 
     Parameters:
         text: ``str``
         data: ``bytes``
+        requires_password (optional): ``bool``
     """
 
-    __slots__: List[str] = ["text", "data"]
+    __slots__: List[str] = ["text", "data", "requires_password"]
 
-    ID = 0x683a5e46
+    ID = 0x35bbdb6b
     QUALNAME = "types.KeyboardButtonCallback"
 
-    def __init__(self, *, text: str, data: bytes) -> None:
+    def __init__(self, *, text: str, data: bytes, requires_password: Union[None, bool] = None) -> None:
         self.text = text  # string
         self.data = data  # bytes
+        self.requires_password = requires_password  # flags.0?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "KeyboardButtonCallback":
-        # No flags
+        flags = Int.read(data)
 
+        requires_password = True if flags & (1 << 0) else False
         text = String.read(data)
 
         data = Bytes.read(data)
 
-        return KeyboardButtonCallback(text=text, data=data)
+        return KeyboardButtonCallback(text=text, data=data, requires_password=requires_password)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.requires_password is not None else 0
+        data.write(Int(flags))
 
         data.write(String(self.text))
 

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class PasswordRecovery(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.auth.PasswordRecovery`.
 
     Details:
-        - Layer: ``121``
+        - Layer: ``120``
         - ID: ``0x137948a5``
 
     Parameters:

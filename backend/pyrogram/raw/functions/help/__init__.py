@@ -43,3 +43,4 @@ from .edit_user_info import EditUserInfo
 from .get_promo_data import GetPromoData
 from .hide_promo_data import HidePromoData
 from .dismiss_suggestion import DismissSuggestion
+from .get_countries_list import GetCountriesList

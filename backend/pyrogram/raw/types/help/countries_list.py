@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -31,40 +30,44 @@ from typing import List, Union, Any
 # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class UpdateChatPinnedMessage(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
+class CountriesList(TLObject):  # type: ignore
+    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.help.CountriesList`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xe10db349``
+        - Layer: ``120``
+        - ID: ``0x87d0759e``
 
     Parameters:
-        chat_id: ``int`` ``32-bit``
-        id: ``int`` ``32-bit``
-        version: ``int`` ``32-bit``
+        countries: List of :obj:`help.Country <pyrogram.raw.base.help.Country>`
+        hash: ``int`` ``32-bit``
+
+    See Also:
+        This object can be returned by 1 method:
+
+        .. hlist::
+            :columns: 2
+
+            - :obj:`help.GetCountriesList <pyrogram.raw.functions.help.GetCountriesList>`
     """
 
-    __slots__: List[str] = ["chat_id", "id", "version"]
+    __slots__: List[str] = ["countries", "hash"]
 
-    ID = 0xe10db349
-    QUALNAME = "types.UpdateChatPinnedMessage"
+    ID = 0x87d0759e
+    QUALNAME = "types.help.CountriesList"
 
-    def __init__(self, *, chat_id: int, id: int, version: int) -> None:
-        self.chat_id = chat_id  # int
-        self.id = id  # int
-        self.version = version  # int
+    def __init__(self, *, countries: List["raw.base.help.Country"], hash: int) -> None:
+        self.countries = countries  # Vector<help.Country>
+        self.hash = hash  # int
 
     @staticmethod
-    def read(data: BytesIO, *args: Any) -> "UpdateChatPinnedMessage":
+    def read(data: BytesIO, *args: Any) -> "CountriesList":
         # No flags
 
-        chat_id = Int.read(data)
+        countries = TLObject.read(data)
 
-        id = Int.read(data)
+        hash = Int.read(data)
 
-        version = Int.read(data)
-
-        return UpdateChatPinnedMessage(chat_id=chat_id, id=id, version=version)
+        return CountriesList(countries=countries, hash=hash)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -72,10 +75,8 @@ class UpdateChatPinnedMessage(TLObject):  # type: ignore
 
         # No flags
 
-        data.write(Int(self.chat_id))
+        data.write(Vector(self.countries))
 
-        data.write(Int(self.id))
-
-        data.write(Int(self.version))
+        data.write(Int(self.hash))
 
         return data.getvalue()

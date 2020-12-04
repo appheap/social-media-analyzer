@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class ResendCode(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``121``
+        - Layer: ``120``
         - ID: ``0x3ef1a9bf``
 
     Parameters:

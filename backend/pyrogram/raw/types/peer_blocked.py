@@ -31,36 +31,36 @@ from typing import List, Union, Any
 # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class UpdateChannelPinnedMessage(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
+class PeerBlocked(TLObject):  # type: ignore
+    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PeerBlocked`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x98592475``
+        - Layer: ``120``
+        - ID: ``0xe8fd8014``
 
     Parameters:
-        channel_id: ``int`` ``32-bit``
-        id: ``int`` ``32-bit``
+        peer_id: :obj:`Peer <pyrogram.raw.base.Peer>`
+        date: ``int`` ``32-bit``
     """
 
-    __slots__: List[str] = ["channel_id", "id"]
+    __slots__: List[str] = ["peer_id", "date"]
 
-    ID = 0x98592475
-    QUALNAME = "types.UpdateChannelPinnedMessage"
+    ID = 0xe8fd8014
+    QUALNAME = "types.PeerBlocked"
 
-    def __init__(self, *, channel_id: int, id: int) -> None:
-        self.channel_id = channel_id  # int
-        self.id = id  # int
+    def __init__(self, *, peer_id: "raw.base.Peer", date: int) -> None:
+        self.peer_id = peer_id  # Peer
+        self.date = date  # int
 
     @staticmethod
-    def read(data: BytesIO, *args: Any) -> "UpdateChannelPinnedMessage":
+    def read(data: BytesIO, *args: Any) -> "PeerBlocked":
         # No flags
 
-        channel_id = Int.read(data)
+        peer_id = TLObject.read(data)
 
-        id = Int.read(data)
+        date = Int.read(data)
 
-        return UpdateChannelPinnedMessage(channel_id=channel_id, id=id)
+        return PeerBlocked(peer_id=peer_id, date=date)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -68,8 +68,8 @@ class UpdateChannelPinnedMessage(TLObject):  # type: ignore
 
         # No flags
 
-        data.write(Int(self.channel_id))
+        data.write(self.peer_id.write())
 
-        data.write(Int(self.id))
+        data.write(Int(self.date))
 
         return data.getvalue()

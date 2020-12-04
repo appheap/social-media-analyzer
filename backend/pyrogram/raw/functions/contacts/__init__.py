@@ -41,3 +41,4 @@ from .toggle_top_peers import ToggleTopPeers
 from .add_contact import AddContact
 from .accept_contact import AcceptContact
 from .get_located import GetLocated
+from .block_from_replies import BlockFromReplies

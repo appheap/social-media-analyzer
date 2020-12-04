@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class MessageFwdHeader(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageFwdHeader`.
 
     Details:
-        - Layer: ``121``
+        - Layer: ``120``
         - ID: ``0x5f777dce``
 
     Parameters:
@@ -49,24 +48,16 @@ class MessageFwdHeader(TLObject):  # type: ignore
         psa_type (optional): ``str``
     """
 
-    __slots__: List[str] = ["date", "from_id", "from_name", "channel_post", "post_author",
-                            "saved_from_peer", "saved_from_msg_id", "psa_type"]
+    __slots__: List[str] = ["date", "from_id", "from_name", "channel_post", "post_author", "saved_from_peer",
+                            "saved_from_msg_id", "psa_type"]
 
     ID = 0x5f777dce
     QUALNAME = "types.MessageFwdHeader"
 
-    def __init__(
-            self,
-            *,
-            date: int,
-            from_id: Union[None, "raw.base.Peer"] = None,
-            from_name: Union[None, str] = None,
-            channel_post: Union[None, int] = None,
-            post_author: Union[None, str] = None,
-            saved_from_peer: "raw.base.Peer" = None,
-            saved_from_msg_id: Union[None, int] = None,
-            psa_type: Union[None, str] = None,
-    ) -> None:
+    def __init__(self, *, date: int, from_id: "raw.base.Peer" = None, from_name: Union[None, str] = None,
+                 channel_post: Union[None, int] = None, post_author: Union[None, str] = None,
+                 saved_from_peer: "raw.base.Peer" = None, saved_from_msg_id: Union[None, int] = None,
+                 psa_type: Union[None, str] = None) -> None:
         self.date = date  # int
         self.from_id = from_id  # flags.0?Peer
         self.from_name = from_name  # flags.5?string
@@ -81,6 +72,7 @@ class MessageFwdHeader(TLObject):  # type: ignore
         flags = Int.read(data)
 
         from_id = TLObject.read(data) if flags & (1 << 0) else None
+
         from_name = String.read(data) if flags & (1 << 5) else None
         date = Int.read(data)
 
@@ -90,9 +82,8 @@ class MessageFwdHeader(TLObject):  # type: ignore
 
         saved_from_msg_id = Int.read(data) if flags & (1 << 4) else None
         psa_type = String.read(data) if flags & (1 << 6) else None
-
-        return MessageFwdHeader(date=date, from_id=from_id, from_name=from_name,
-                                channel_post=channel_post, post_author=post_author, saved_from_peer=saved_from_peer,
+        return MessageFwdHeader(date=date, from_id=from_id, from_name=from_name, channel_post=channel_post,
+                                post_author=post_author, saved_from_peer=saved_from_peer,
                                 saved_from_msg_id=saved_from_msg_id, psa_type=psa_type)
 
     def write(self) -> bytes:

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class SecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.SecurePasswordKdfAlgo`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xbbf2dda0``
 
     Parameters:

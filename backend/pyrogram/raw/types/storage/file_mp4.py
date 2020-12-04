@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class FileMp4(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.storage.FileType`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xb3cea0e4``
 
     **No parameters required.**

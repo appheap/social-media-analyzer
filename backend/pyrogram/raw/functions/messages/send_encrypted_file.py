@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,35 +34,38 @@ class SendEncryptedFile(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x9a901b66``
+        - Layer: ``120``
+        - ID: ``0x5559481d``
 
     Parameters:
         peer: :obj:`InputEncryptedChat <pyrogram.raw.base.InputEncryptedChat>`
         random_id: ``int`` ``64-bit``
         data: ``bytes``
         file: :obj:`InputEncryptedFile <pyrogram.raw.base.InputEncryptedFile>`
+        silent (optional): ``bool``
 
     Returns:
         :obj:`messages.SentEncryptedMessage <pyrogram.raw.base.messages.SentEncryptedMessage>`
     """
 
-    __slots__: List[str] = ["peer", "random_id", "data", "file"]
+    __slots__: List[str] = ["peer", "random_id", "data", "file", "silent"]
 
-    ID = 0x9a901b66
+    ID = 0x5559481d
     QUALNAME = "functions.messages.SendEncryptedFile"
 
     def __init__(self, *, peer: "raw.base.InputEncryptedChat", random_id: int, data: bytes,
-                 file: "raw.base.InputEncryptedFile") -> None:
+                 file: "raw.base.InputEncryptedFile", silent: Union[None, bool] = None) -> None:
         self.peer = peer  # InputEncryptedChat
         self.random_id = random_id  # long
         self.data = data  # bytes
         self.file = file  # InputEncryptedFile
+        self.silent = silent  # flags.0?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "SendEncryptedFile":
-        # No flags
+        flags = Int.read(data)
 
+        silent = True if flags & (1 << 0) else False
         peer = TLObject.read(data)
 
         random_id = Long.read(data)
@@ -72,13 +74,15 @@ class SendEncryptedFile(TLObject):  # type: ignore
 
         file = TLObject.read(data)
 
-        return SendEncryptedFile(peer=peer, random_id=random_id, data=data, file=file)
+        return SendEncryptedFile(peer=peer, random_id=random_id, data=data, file=file, silent=silent)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.silent is not None else 0
+        data.write(Int(flags))
 
         data.write(self.peer.write())
 

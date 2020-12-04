@@ -136,8 +136,6 @@ from .chat_photo import ChatPhoto
 from .message_empty import MessageEmpty
 from .message import Message
 from .message_service import MessageService
-from .message_reply_header import MessageReplyHeader
-from .message_replies import MessageReplies
 from .message_media_empty import MessageMediaEmpty
 from .message_media_photo import MessageMediaPhoto
 from .message_media_geo import MessageMediaGeo
@@ -184,7 +182,6 @@ from .photo_size import PhotoSize
 from .photo_cached_size import PhotoCachedSize
 from .photo_stripped_size import PhotoStrippedSize
 from .photo_size_progressive import PhotoSizeProgressive
-from .photo_path_size import PhotoPathSize
 from .geo_point_empty import GeoPointEmpty
 from .geo_point import GeoPoint
 from .input_notify_peer import InputNotifyPeer
@@ -206,7 +203,6 @@ from .input_report_reason_geo_irrelevant import InputReportReasonGeoIrrelevant
 from .user_full import UserFull
 from .contact import Contact
 from .imported_contact import ImportedContact
-from .contact_blocked import ContactBlocked
 from .contact_status import ContactStatus
 from .input_messages_filter_empty import InputMessagesFilterEmpty
 from .input_messages_filter_photos import InputMessagesFilterPhotos
@@ -224,6 +220,7 @@ from .input_messages_filter_round_video import InputMessagesFilterRoundVideo
 from .input_messages_filter_my_mentions import InputMessagesFilterMyMentions
 from .input_messages_filter_geo import InputMessagesFilterGeo
 from .input_messages_filter_contacts import InputMessagesFilterContacts
+from .input_messages_filter_pinned import InputMessagesFilterPinned
 from .update_new_message import UpdateNewMessage
 from .update_message_id import UpdateMessageID
 from .update_delete_messages import UpdateDeleteMessages
@@ -240,7 +237,6 @@ from .update_encrypted_messages_read import UpdateEncryptedMessagesRead
 from .update_chat_participant_add import UpdateChatParticipantAdd
 from .update_chat_participant_delete import UpdateChatParticipantDelete
 from .update_dc_options import UpdateDcOptions
-from .update_user_blocked import UpdateUserBlocked
 from .update_notify_settings import UpdateNotifySettings
 from .update_service_notification import UpdateServiceNotification
 from .update_privacy import UpdatePrivacy
@@ -263,7 +259,6 @@ from .update_saved_gifs import UpdateSavedGifs
 from .update_bot_inline_query import UpdateBotInlineQuery
 from .update_bot_inline_send import UpdateBotInlineSend
 from .update_edit_channel_message import UpdateEditChannelMessage
-from .update_channel_pinned_message import UpdateChannelPinnedMessage
 from .update_bot_callback_query import UpdateBotCallbackQuery
 from .update_edit_message import UpdateEditMessage
 from .update_inline_bot_callback_query import UpdateInlineBotCallbackQuery
@@ -288,8 +283,6 @@ from .update_channel_read_messages_contents import UpdateChannelReadMessagesCont
 from .update_contacts_reset import UpdateContactsReset
 from .update_channel_available_messages import UpdateChannelAvailableMessages
 from .update_dialog_unread_mark import UpdateDialogUnreadMark
-from .update_user_pinned_message import UpdateUserPinnedMessage
-from .update_chat_pinned_message import UpdateChatPinnedMessage
 from .update_message_poll import UpdateMessagePoll
 from .update_chat_default_banned_rights import UpdateChatDefaultBannedRights
 from .update_folder_peers import UpdateFolderPeers
@@ -306,6 +299,13 @@ from .update_dialog_filter_order import UpdateDialogFilterOrder
 from .update_dialog_filters import UpdateDialogFilters
 from .update_phone_call_signaling_data import UpdatePhoneCallSignalingData
 from .update_channel_participant import UpdateChannelParticipant
+from .update_channel_message_forwards import UpdateChannelMessageForwards
+from .update_read_channel_discussion_inbox import UpdateReadChannelDiscussionInbox
+from .update_read_channel_discussion_outbox import UpdateReadChannelDiscussionOutbox
+from .update_peer_blocked import UpdatePeerBlocked
+from .update_channel_user_typing import UpdateChannelUserTyping
+from .update_pinned_messages import UpdatePinnedMessages
+from .update_pinned_channel_messages import UpdatePinnedChannelMessages
 from .updates_too_long import UpdatesTooLong
 from .update_short_message import UpdateShortMessage
 from .update_short_chat_message import UpdateShortChatMessage
@@ -457,6 +457,7 @@ from .channel_participant_self import ChannelParticipantSelf
 from .channel_participant_creator import ChannelParticipantCreator
 from .channel_participant_admin import ChannelParticipantAdmin
 from .channel_participant_banned import ChannelParticipantBanned
+from .channel_participant_left import ChannelParticipantLeft
 from .channel_participants_recent import ChannelParticipantsRecent
 from .channel_participants_admins import ChannelParticipantsAdmins
 from .channel_participants_kicked import ChannelParticipantsKicked
@@ -464,6 +465,7 @@ from .channel_participants_bots import ChannelParticipantsBots
 from .channel_participants_banned import ChannelParticipantsBanned
 from .channel_participants_search import ChannelParticipantsSearch
 from .channel_participants_contacts import ChannelParticipantsContacts
+from .channel_participants_mentions import ChannelParticipantsMentions
 from .input_bot_inline_message_media_auto import InputBotInlineMessageMediaAuto
 from .input_bot_inline_message_text import InputBotInlineMessageText
 from .input_bot_inline_message_media_geo import InputBotInlineMessageMediaGeo
@@ -752,5 +754,9 @@ from .stats_group_top_poster import StatsGroupTopPoster
 from .stats_group_top_admin import StatsGroupTopAdmin
 from .stats_group_top_inviter import StatsGroupTopInviter
 from .global_privacy_settings import GlobalPrivacySettings
+from .message_views import MessageViews
+from .message_reply_header import MessageReplyHeader
+from .message_replies import MessageReplies
+from .peer_blocked import PeerBlocked
 from . import help, storage, auth, contacts, messages, updates, photos, upload, account, channels, payments, phone, \
     stats

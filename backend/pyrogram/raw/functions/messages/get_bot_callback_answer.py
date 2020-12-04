@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,30 +34,32 @@ class GetBotCallbackAnswer(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x810a9fec``
+        - Layer: ``120``
+        - ID: ``0x9342ca07``
 
     Parameters:
         peer: :obj:`InputPeer <pyrogram.raw.base.InputPeer>`
         msg_id: ``int`` ``32-bit``
         game (optional): ``bool``
         data (optional): ``bytes``
+        password (optional): :obj:`InputCheckPasswordSRP <pyrogram.raw.base.InputCheckPasswordSRP>`
 
     Returns:
         :obj:`messages.BotCallbackAnswer <pyrogram.raw.base.messages.BotCallbackAnswer>`
     """
 
-    __slots__: List[str] = ["peer", "msg_id", "game", "data"]
+    __slots__: List[str] = ["peer", "msg_id", "game", "data", "password"]
 
-    ID = 0x810a9fec
+    ID = 0x9342ca07
     QUALNAME = "functions.messages.GetBotCallbackAnswer"
 
     def __init__(self, *, peer: "raw.base.InputPeer", msg_id: int, game: Union[None, bool] = None,
-                 data: Union[None, bytes] = None) -> None:
+                 data: Union[None, bytes] = None, password: "raw.base.InputCheckPasswordSRP" = None) -> None:
         self.peer = peer  # InputPeer
         self.msg_id = msg_id  # int
         self.game = game  # flags.1?true
         self.data = data  # flags.0?bytes
+        self.password = password  # flags.2?InputCheckPasswordSRP
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "GetBotCallbackAnswer":
@@ -70,7 +71,9 @@ class GetBotCallbackAnswer(TLObject):  # type: ignore
         msg_id = Int.read(data)
 
         data = Bytes.read(data) if flags & (1 << 0) else None
-        return GetBotCallbackAnswer(peer=peer, msg_id=msg_id, game=game, data=data)
+        password = TLObject.read(data) if flags & (1 << 2) else None
+
+        return GetBotCallbackAnswer(peer=peer, msg_id=msg_id, game=game, data=data, password=password)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -79,6 +82,7 @@ class GetBotCallbackAnswer(TLObject):  # type: ignore
         flags = 0
         flags |= (1 << 1) if self.game is not None else 0
         flags |= (1 << 0) if self.data is not None else 0
+        flags |= (1 << 2) if self.password is not None else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())
@@ -87,5 +91,8 @@ class GetBotCallbackAnswer(TLObject):  # type: ignore
 
         if self.data is not None:
             data.write(Bytes(self.data))
+
+        if self.password is not None:
+            data.write(self.password.write())
 
         return data.getvalue()

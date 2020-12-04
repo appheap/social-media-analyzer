@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -31,36 +30,32 @@ from typing import List, Union, Any
 # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class PhotoPathSize(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhotoSize`.
+class ChannelParticipantLeft(TLObject):  # type: ignore
+    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChannelParticipant`.
 
     Details:
-        - Layer: ``121``
-        - ID: ``0xd8214d41``
+        - Layer: ``120``
+        - ID: ``0xc3c6796b``
 
     Parameters:
-        type: ``str``
-        bytes: ``bytes``
+        user_id: ``int`` ``32-bit``
     """
 
-    __slots__: List[str] = ["type", "bytes"]
+    __slots__: List[str] = ["user_id"]
 
-    ID = 0xd8214d41
-    QUALNAME = "types.PhotoPathSize"
+    ID = 0xc3c6796b
+    QUALNAME = "types.ChannelParticipantLeft"
 
-    def __init__(self, *, type: str, bytes: bytes) -> None:
-        self.type = type  # string
-        self.bytes = bytes  # bytes
+    def __init__(self, *, user_id: int) -> None:
+        self.user_id = user_id  # int
 
     @staticmethod
-    def read(data: BytesIO, *args: Any) -> "PhotoPathSize":
+    def read(data: BytesIO, *args: Any) -> "ChannelParticipantLeft":
         # No flags
 
-        type = String.read(data)
+        user_id = Int.read(data)
 
-        bytes = Bytes.read(data)
-
-        return PhotoPathSize(type=type, bytes=bytes)
+        return ChannelParticipantLeft(user_id=user_id)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -68,8 +63,6 @@ class PhotoPathSize(TLObject):  # type: ignore
 
         # No flags
 
-        data.write(String(self.type))
-
-        data.write(Bytes(self.bytes))
+        data.write(Int(self.user_id))
 
         return data.getvalue()

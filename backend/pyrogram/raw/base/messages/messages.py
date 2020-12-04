@@ -44,7 +44,7 @@ class Messages:  # type: ignore
             - :obj:`messages.MessagesSlice <pyrogram.raw.types.messages.MessagesSlice>`
 
     See Also:
-        This object can be returned by 9 methods:
+        This object can be returned by 11 methods:
 
         .. hlist::
             :columns: 2
@@ -57,7 +57,9 @@ class Messages:  # type: ignore
             - :obj:`messages.GetRecentLocations <pyrogram.raw.functions.messages.GetRecentLocations>`
             - :obj:`messages.GetScheduledHistory <pyrogram.raw.functions.messages.GetScheduledHistory>`
             - :obj:`messages.GetScheduledMessages <pyrogram.raw.functions.messages.GetScheduledMessages>`
+            - :obj:`messages.GetReplies <pyrogram.raw.functions.messages.GetReplies>`
             - :obj:`channels.GetMessages <pyrogram.raw.functions.channels.GetMessages>`
+            - :obj:`stats.GetMessagePublicForwards <pyrogram.raw.functions.stats.GetMessagePublicForwards>`
     """
 
     QUALNAME = "pyrogram.raw.base.messages.Messages"

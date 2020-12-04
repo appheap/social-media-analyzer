@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class ChannelFull(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatFull`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xf0e6672a``
 
     Parameters:
@@ -56,6 +55,7 @@ class ChannelFull(TLObject):  # type: ignore
         can_set_location (optional): ``bool``
         has_scheduled (optional): ``bool``
         can_view_stats (optional): ``bool``
+        blocked (optional): ``bool``
         participants_count (optional): ``int`` ``32-bit``
         admins_count (optional): ``int`` ``32-bit``
         kicked_count (optional): ``int`` ``32-bit``
@@ -77,11 +77,10 @@ class ChannelFull(TLObject):  # type: ignore
     __slots__: List[str] = ["id", "about", "read_inbox_max_id", "read_outbox_max_id", "unread_count", "chat_photo",
                             "notify_settings", "exported_invite", "bot_info", "pts", "can_view_participants",
                             "can_set_username", "can_set_stickers", "hidden_prehistory", "can_set_location",
-                            "has_scheduled", "can_view_stats", "participants_count", "admins_count", "kicked_count",
-                            "banned_count", "online_count", "migrated_from_chat_id", "migrated_from_max_id",
-                            "pinned_msg_id", "stickerset", "available_min_id", "folder_id", "linked_chat_id",
-                            "location", "slowmode_seconds", "slowmode_next_send_date", "stats_dc",
-                            "blocked"]
+                            "has_scheduled", "can_view_stats", "blocked", "participants_count", "admins_count",
+                            "kicked_count", "banned_count", "online_count", "migrated_from_chat_id",
+                            "migrated_from_max_id", "pinned_msg_id", "stickerset", "available_min_id", "folder_id",
+                            "linked_chat_id", "location", "slowmode_seconds", "slowmode_next_send_date", "stats_dc"]
 
     ID = 0xf0e6672a
     QUALNAME = "types.ChannelFull"
@@ -92,15 +91,15 @@ class ChannelFull(TLObject):  # type: ignore
                  can_view_participants: Union[None, bool] = None, can_set_username: Union[None, bool] = None,
                  can_set_stickers: Union[None, bool] = None, hidden_prehistory: Union[None, bool] = None,
                  can_set_location: Union[None, bool] = None, has_scheduled: Union[None, bool] = None,
-                 can_view_stats: Union[None, bool] = None, participants_count: Union[None, int] = None,
-                 admins_count: Union[None, int] = None, kicked_count: Union[None, int] = None,
-                 banned_count: Union[None, int] = None, online_count: Union[None, int] = None,
-                 migrated_from_chat_id: Union[None, int] = None, migrated_from_max_id: Union[None, int] = None,
-                 pinned_msg_id: Union[None, int] = None, stickerset: "raw.base.StickerSet" = None,
-                 available_min_id: Union[None, int] = None, folder_id: Union[None, int] = None,
-                 linked_chat_id: Union[None, int] = None, location: "raw.base.ChannelLocation" = None,
-                 slowmode_seconds: Union[None, int] = None, slowmode_next_send_date: Union[None, int] = None,
-                 stats_dc: Union[None, int] = None, blocked: Union[None, bool] = None, ) -> None:
+                 can_view_stats: Union[None, bool] = None, blocked: Union[None, bool] = None,
+                 participants_count: Union[None, int] = None, admins_count: Union[None, int] = None,
+                 kicked_count: Union[None, int] = None, banned_count: Union[None, int] = None,
+                 online_count: Union[None, int] = None, migrated_from_chat_id: Union[None, int] = None,
+                 migrated_from_max_id: Union[None, int] = None, pinned_msg_id: Union[None, int] = None,
+                 stickerset: "raw.base.StickerSet" = None, available_min_id: Union[None, int] = None,
+                 folder_id: Union[None, int] = None, linked_chat_id: Union[None, int] = None,
+                 location: "raw.base.ChannelLocation" = None, slowmode_seconds: Union[None, int] = None,
+                 slowmode_next_send_date: Union[None, int] = None, stats_dc: Union[None, int] = None) -> None:
         self.id = id  # int
         self.about = about  # string
         self.read_inbox_max_id = read_inbox_max_id  # int
@@ -192,13 +191,13 @@ class ChannelFull(TLObject):  # type: ignore
                            can_view_participants=can_view_participants, can_set_username=can_set_username,
                            can_set_stickers=can_set_stickers, hidden_prehistory=hidden_prehistory,
                            can_set_location=can_set_location, has_scheduled=has_scheduled,
-                           can_view_stats=can_view_stats, participants_count=participants_count,
+                           can_view_stats=can_view_stats, blocked=blocked, participants_count=participants_count,
                            admins_count=admins_count, kicked_count=kicked_count, banned_count=banned_count,
                            online_count=online_count, migrated_from_chat_id=migrated_from_chat_id,
                            migrated_from_max_id=migrated_from_max_id, pinned_msg_id=pinned_msg_id,
                            stickerset=stickerset, available_min_id=available_min_id, folder_id=folder_id,
                            linked_chat_id=linked_chat_id, location=location, slowmode_seconds=slowmode_seconds,
-                           slowmode_next_send_date=slowmode_next_send_date, stats_dc=stats_dc, blocked=blocked)
+                           slowmode_next_send_date=slowmode_next_send_date, stats_dc=stats_dc)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -212,6 +211,7 @@ class ChannelFull(TLObject):  # type: ignore
         flags |= (1 << 16) if self.can_set_location is not None else 0
         flags |= (1 << 19) if self.has_scheduled is not None else 0
         flags |= (1 << 20) if self.can_view_stats is not None else 0
+        flags |= (1 << 22) if self.blocked is not None else 0
         flags |= (1 << 0) if self.participants_count is not None else 0
         flags |= (1 << 1) if self.admins_count is not None else 0
         flags |= (1 << 2) if self.kicked_count is not None else 0

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class ArchivedStickers(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.ArchivedStickers`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0x4fcba9c8``
 
     Parameters:
