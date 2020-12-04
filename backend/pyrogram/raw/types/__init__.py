@@ -136,8 +136,6 @@ from .chat_photo import ChatPhoto
 from .message_empty import MessageEmpty
 from .message import Message
 from .message_service import MessageService
-from .message_reply_header import MessageReplyHeader
-from .message_replies import MessageReplies
 from .message_media_empty import MessageMediaEmpty
 from .message_media_photo import MessageMediaPhoto
 from .message_media_geo import MessageMediaGeo
