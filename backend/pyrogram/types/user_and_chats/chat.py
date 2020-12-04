@@ -124,6 +124,9 @@ class Chat(Object):
 
     @staticmethod
     def _parse_user_chat(client, user: raw.types.User) -> "Chat":
+        if user is None:
+            return None
+
         peer_id = user.id
 
         return Chat(
@@ -150,6 +153,9 @@ class Chat(Object):
 
     @staticmethod
     async def _parse_group_chat(client, chat: raw.types.Chat) -> "Chat":
+        if chat is None:
+            return None
+
         peer_id = -chat.id
 
         return Chat(
@@ -198,6 +204,9 @@ class Chat(Object):
 
     @staticmethod
     def _parse_channel_chat(client, channel: raw.types.Channel) -> "Chat":
+        if channel is None:
+            return None
+
         peer_id = utils.get_channel_id(channel.id)
         return Chat(
             client=client,
@@ -211,13 +220,14 @@ class Chat(Object):
     @staticmethod
     async def _parse(client, message: raw.types.Message or raw.types.MessageService, users: dict,
                      chats: dict) -> "Chat":
-        if isinstance(message.to_id, raw.types.PeerUser):
-            return Chat._parse_user_chat(client, users[message.to_id.user_id if message.out else message.from_id])
+        if isinstance(message.peer_id, raw.types.PeerUser):
+            return Chat._parse_user_chat(client,
+                                         users[message.peer_id.user_id if message.out else message.from_id.user_id])
 
-        if isinstance(message.to_id, raw.types.PeerChat):
-            return await Chat._parse_group_chat(client, chats[message.to_id.chat_id])
+        if isinstance(message.peer_id, raw.types.PeerChat):
+            return await Chat._parse_group_chat(client, chats[message.peer_id.chat_id])
 
-        return Chat._parse_channel_chat(client, chats[message.to_id.channel_id])
+        return Chat._parse_channel_chat(client, chats[message.peer_id.channel_id])
 
     @staticmethod
     def _parse_dialog(client, peer, users: dict, chats: dict):
