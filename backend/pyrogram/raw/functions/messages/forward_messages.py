@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class ForwardMessages(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xd9fee60e``
 
     Parameters:
@@ -46,7 +45,6 @@ class ForwardMessages(TLObject):  # type: ignore
         silent (optional): ``bool``
         background (optional): ``bool``
         with_my_score (optional): ``bool``
-        grouped (optional): ``bool``
         schedule_date (optional): ``int`` ``32-bit``
 
     Returns:
@@ -54,15 +52,14 @@ class ForwardMessages(TLObject):  # type: ignore
     """
 
     __slots__: List[str] = ["from_peer", "id", "random_id", "to_peer", "silent", "background", "with_my_score",
-                            "grouped", "schedule_date"]
+                            "schedule_date"]
 
     ID = 0xd9fee60e
     QUALNAME = "functions.messages.ForwardMessages"
 
     def __init__(self, *, from_peer: "raw.base.InputPeer", id: List[int], random_id: List[int],
                  to_peer: "raw.base.InputPeer", silent: Union[None, bool] = None, background: Union[None, bool] = None,
-                 with_my_score: Union[None, bool] = None, grouped: Union[None, bool] = None,
-                 schedule_date: Union[None, int] = None) -> None:
+                 with_my_score: Union[None, bool] = None, schedule_date: Union[None, int] = None) -> None:
         self.from_peer = from_peer  # InputPeer
         self.id = id  # Vector<int>
         self.random_id = random_id  # Vector<long>
@@ -70,7 +67,6 @@ class ForwardMessages(TLObject):  # type: ignore
         self.silent = silent  # flags.5?true
         self.background = background  # flags.6?true
         self.with_my_score = with_my_score  # flags.8?true
-        self.grouped = grouped  # flags.9?true
         self.schedule_date = schedule_date  # flags.10?int
 
     @staticmethod
@@ -80,7 +76,6 @@ class ForwardMessages(TLObject):  # type: ignore
         silent = True if flags & (1 << 5) else False
         background = True if flags & (1 << 6) else False
         with_my_score = True if flags & (1 << 8) else False
-        grouped = True if flags & (1 << 9) else False
         from_peer = TLObject.read(data)
 
         id = TLObject.read(data, Int)
@@ -91,8 +86,7 @@ class ForwardMessages(TLObject):  # type: ignore
 
         schedule_date = Int.read(data) if flags & (1 << 10) else None
         return ForwardMessages(from_peer=from_peer, id=id, random_id=random_id, to_peer=to_peer, silent=silent,
-                               background=background, with_my_score=with_my_score, grouped=grouped,
-                               schedule_date=schedule_date)
+                               background=background, with_my_score=with_my_score, schedule_date=schedule_date)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -102,7 +96,6 @@ class ForwardMessages(TLObject):  # type: ignore
         flags |= (1 << 5) if self.silent is not None else 0
         flags |= (1 << 6) if self.background is not None else 0
         flags |= (1 << 8) if self.with_my_score is not None else 0
-        flags |= (1 << 9) if self.grouped is not None else 0
         flags |= (1 << 10) if self.schedule_date is not None else 0
         data.write(Int(flags))
 

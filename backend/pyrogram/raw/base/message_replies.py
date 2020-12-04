@@ -16,13 +16,6 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from io import BytesIO
-
-from pyrogram.raw.core.primitives import Int, Long, Int128, Int256, Bool, Bytes, String, Double, Vector
-from pyrogram.raw.core import TLObject
-from pyrogram import raw
-from typing import List, Union, Any
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -31,19 +24,20 @@ from typing import List, Union, Any
 
 from typing import Union
 from pyrogram import raw
+from pyrogram.raw.core import TLObject
 
-MessageReplies = Union[raw.types.MessageReplies,]
+MessageReplies = Union[raw.types.MessageReplies]
 
 
 # noinspection PyRedeclaration
 class MessageReplies:  # type: ignore
-    """This base type has 1 constructors available.
+    """This base type has 1 constructor available.
 
     Constructors:
         .. hlist::
             :columns: 2
 
-            - :obj:`Message <pyrogram.raw.types.MessageReplies>`
+            - :obj:`MessageReplies <pyrogram.raw.types.MessageReplies>`
     """
 
     QUALNAME = "pyrogram.raw.base.MessageReplies"
@@ -52,4 +46,4 @@ class MessageReplies:  # type: ignore
         raise TypeError("Base types can only be used for type checking purposes: "
                         "you tried to use a base type instance as argument, "
                         "but you need to instantiate one of its constructors instead. "
-                        "More info: https://docs.pyrogram.org/telegram/base/message")
+                        "More info: https://docs.pyrogram.org/telegram/base/message-replies")

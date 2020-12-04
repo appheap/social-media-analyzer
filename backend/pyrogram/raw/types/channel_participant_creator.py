@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,21 +34,24 @@ class ChannelParticipantCreator(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChannelParticipant`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x808d15a4``
+        - Layer: ``120``
+        - ID: ``0x447dca4b``
 
     Parameters:
         user_id: ``int`` ``32-bit``
+        admin_rights: :obj:`ChatAdminRights <pyrogram.raw.base.ChatAdminRights>`
         rank (optional): ``str``
     """
 
-    __slots__: List[str] = ["user_id", "rank"]
+    __slots__: List[str] = ["user_id", "admin_rights", "rank"]
 
-    ID = 0x808d15a4
+    ID = 0x447dca4b
     QUALNAME = "types.ChannelParticipantCreator"
 
-    def __init__(self, *, user_id: int, rank: Union[None, str] = None) -> None:
+    def __init__(self, *, user_id: int, admin_rights: "raw.base.ChatAdminRights",
+                 rank: Union[None, str] = None) -> None:
         self.user_id = user_id  # int
+        self.admin_rights = admin_rights  # ChatAdminRights
         self.rank = rank  # flags.0?string
 
     @staticmethod
@@ -58,8 +60,10 @@ class ChannelParticipantCreator(TLObject):  # type: ignore
 
         user_id = Int.read(data)
 
+        admin_rights = TLObject.read(data)
+
         rank = String.read(data) if flags & (1 << 0) else None
-        return ChannelParticipantCreator(user_id=user_id, rank=rank)
+        return ChannelParticipantCreator(user_id=user_id, admin_rights=admin_rights, rank=rank)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -70,6 +74,8 @@ class ChannelParticipantCreator(TLObject):  # type: ignore
         data.write(Int(flags))
 
         data.write(Int(self.user_id))
+
+        data.write(self.admin_rights.write())
 
         if self.rank is not None:
             data.write(String(self.rank))

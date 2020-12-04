@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,11 +34,11 @@ class Unblock(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xe54100bd``
+        - Layer: ``120``
+        - ID: ``0xbea65d50``
 
     Parameters:
-        id: :obj:`InputUser <pyrogram.raw.base.InputUser>`
+        id: :obj:`InputPeer <pyrogram.raw.base.InputPeer>`
 
     Returns:
         ``bool``
@@ -47,11 +46,11 @@ class Unblock(TLObject):  # type: ignore
 
     __slots__: List[str] = ["id"]
 
-    ID = 0xe54100bd
+    ID = 0xbea65d50
     QUALNAME = "functions.contacts.Unblock"
 
-    def __init__(self, *, id: "raw.base.InputUser") -> None:
-        self.id = id  # InputUser
+    def __init__(self, *, id: "raw.base.InputPeer") -> None:
+        self.id = id  # InputPeer
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "Unblock":

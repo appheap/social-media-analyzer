@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 ChannelParticipant = Union[
-    raw.types.ChannelParticipant, raw.types.ChannelParticipantAdmin, raw.types.ChannelParticipantBanned, raw.types.ChannelParticipantCreator, raw.types.ChannelParticipantSelf]
+    raw.types.ChannelParticipant, raw.types.ChannelParticipantAdmin, raw.types.ChannelParticipantBanned, raw.types.ChannelParticipantCreator, raw.types.ChannelParticipantLeft, raw.types.ChannelParticipantSelf]
 
 
 # noinspection PyRedeclaration
 class ChannelParticipant:  # type: ignore
-    """This base type has 5 constructors available.
+    """This base type has 6 constructors available.
 
     Constructors:
         .. hlist::
@@ -42,6 +42,7 @@ class ChannelParticipant:  # type: ignore
             - :obj:`ChannelParticipantAdmin <pyrogram.raw.types.ChannelParticipantAdmin>`
             - :obj:`ChannelParticipantBanned <pyrogram.raw.types.ChannelParticipantBanned>`
             - :obj:`ChannelParticipantCreator <pyrogram.raw.types.ChannelParticipantCreator>`
+            - :obj:`ChannelParticipantLeft <pyrogram.raw.types.ChannelParticipantLeft>`
             - :obj:`ChannelParticipantSelf <pyrogram.raw.types.ChannelParticipantSelf>`
     """
 

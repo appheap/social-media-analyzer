@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -32,10 +31,10 @@ from typing import List, Union, Any
 
 
 class PhotoSizeProgressive(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhotoSizeProgressive`.
+    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhotoSize`.
 
     Details:
-        - Layer: ``121``
+        - Layer: ``120``
         - ID: ``0x5aa86a51``
 
     Parameters:
@@ -70,7 +69,7 @@ class PhotoSizeProgressive(TLObject):  # type: ignore
 
         h = Int.read(data)
 
-        sizes = TLObject.read(data)
+        sizes = TLObject.read(data, Int)
 
         return PhotoSizeProgressive(type=type, location=location, w=w, h=h, sizes=sizes)
 
@@ -88,6 +87,6 @@ class PhotoSizeProgressive(TLObject):  # type: ignore
 
         data.write(Int(self.h))
 
-        data.write(Vector(self.sizes))
+        data.write(Vector(self.sizes, Int))
 
         return data.getvalue()

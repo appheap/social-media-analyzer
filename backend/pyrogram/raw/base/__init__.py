@@ -67,8 +67,6 @@ from .chat_photo import ChatPhoto
 from .message import Message
 from .message_media import MessageMedia
 from .message_action import MessageAction
-from .message_reply_header import MessageReplyHeader
-from .message_replies import MessageReplies
 from .dialog import Dialog
 from .photo import Photo
 from .photo_size import PhotoSize
@@ -82,7 +80,6 @@ from .report_reason import ReportReason
 from .user_full import UserFull
 from .contact import Contact
 from .imported_contact import ImportedContact
-from .contact_blocked import ContactBlocked
 from .contact_status import ContactStatus
 from .messages_filter import MessagesFilter
 from .update import Update
@@ -249,5 +246,9 @@ from .stats_group_top_poster import StatsGroupTopPoster
 from .stats_group_top_admin import StatsGroupTopAdmin
 from .stats_group_top_inviter import StatsGroupTopInviter
 from .global_privacy_settings import GlobalPrivacySettings
+from .message_views import MessageViews
+from .message_reply_header import MessageReplyHeader
+from .message_replies import MessageReplies
+from .peer_blocked import PeerBlocked
 from . import help, storage, auth, contacts, messages, updates, photos, upload, account, channels, payments, phone, \
     stats

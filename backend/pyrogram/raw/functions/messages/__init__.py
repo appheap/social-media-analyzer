@@ -145,3 +145,7 @@ from .get_suggested_dialog_filters import GetSuggestedDialogFilters
 from .update_dialog_filter import UpdateDialogFilter
 from .update_dialog_filters_order import UpdateDialogFiltersOrder
 from .get_old_featured_stickers import GetOldFeaturedStickers
+from .get_replies import GetReplies
+from .get_discussion_message import GetDiscussionMessage
+from .read_discussion import ReadDiscussion
+from .unpin_all_messages import UnpinAllMessages

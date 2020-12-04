@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,13 +34,12 @@ class Message(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Message`.
 
     Details:
-        - Layer: ``121``
+        - Layer: ``120``
         - ID: ``0x58ae39c9``
 
     Parameters:
         id: ``int`` ``32-bit``
-        from_id (optional): :obj:`Peer <pyrogram.raw.base.Peer>`
-        to_id: :obj:`Peer <pyrogram.raw.base.Peer>`
+        peer_id: :obj:`Peer <pyrogram.raw.base.Peer>`
         date: ``int`` ``32-bit``
         message: ``str``
         out (optional): ``bool``
@@ -53,6 +51,7 @@ class Message(TLObject):  # type: ignore
         legacy (optional): ``bool``
         edit_hide (optional): ``bool``
         pinned (optional): ``bool``
+        from_id (optional): :obj:`Peer <pyrogram.raw.base.Peer>`
         fwd_from (optional): :obj:`MessageFwdHeader <pyrogram.raw.base.MessageFwdHeader>`
         via_bot_id (optional): ``int`` ``32-bit``
         reply_to (optional): :obj:`MessageReplyHeader <pyrogram.raw.base.MessageReplyHeader>`
@@ -68,53 +67,31 @@ class Message(TLObject):  # type: ignore
         restriction_reason (optional): List of :obj:`RestrictionReason <pyrogram.raw.base.RestrictionReason>`
     """
 
-    __slots__: List[str] = ["out", "mentioned", "media_unread", "silent", "post", "from_scheduled", "legacy",
-                            "edit_hide", "pinned", "id", "from_id", "to_id", "fwd_from", "via_bot_id", "reply_to",
-                            "date", "message", "media", "reply_markup", "entities", "views", "forwards", "replies",
-                            "edit_date", "post_author", "grouped_id", "restriction_reason",
-                            ]
+    __slots__: List[str] = ["id", "peer_id", "date", "message", "out", "mentioned", "media_unread", "silent", "post",
+                            "from_scheduled", "legacy", "edit_hide", "pinned", "from_id", "fwd_from", "via_bot_id",
+                            "reply_to", "media", "reply_markup", "entities", "views", "forwards", "replies",
+                            "edit_date", "post_author", "grouped_id", "restriction_reason"]
+
     ID = 0x58ae39c9
     QUALNAME = "types.Message"
 
-    def __init__(
-            self, *,
-            id: int,
-            from_id: Union[None, "raw.base.Peer"] = None,
-            to_id: "raw.base.Peer" = None,
-            date: int = None,
-            message: str = None,
-
-            out: Union[None, bool] = None,
-            mentioned: Union[None, bool] = None,
-            media_unread: Union[None, bool] = None,
-            silent: Union[None, bool] = None,
-            post: Union[None, bool] = None,
-            from_scheduled: Union[None, bool] = None,
-            legacy: Union[None, bool] = None,
-            edit_hide: Union[None, bool] = None,
-            pinned: Union[None, bool] = None,
-            fwd_from: Union[None, "raw.base.MessageFwdHeader"] = None,
-            via_bot_id: Union[None, int] = None,
-            reply_to: Union[None, "raw.base.MessageReplyHeader"] = None,
-            media: Union[None, "raw.base.MessageMedia"] = None,
-            reply_markup: Union[None, "raw.base.ReplyMarkup"] = None,
-            entities: Union[None, List["raw.base.MessageEntity"]] = None,
-            views: Union[None, int] = None,
-            forwards: Union[None, int] = None,
-            replies: Union[None, "raw.base.MessageReplies"] = None,
-            edit_date: Union[None, int] = None,
-            post_author: Union[None, str] = None,
-            grouped_id: Union[None, int] = None,
-            restriction_reason: Union[None, List["raw.base.RestrictionReason"]] = None,
-
-    ) -> None:
-
+    def __init__(self, *, id: int, peer_id: "raw.base.Peer", date: int, message: str, out: Union[None, bool] = None,
+                 mentioned: Union[None, bool] = None, media_unread: Union[None, bool] = None,
+                 silent: Union[None, bool] = None, post: Union[None, bool] = None,
+                 from_scheduled: Union[None, bool] = None, legacy: Union[None, bool] = None,
+                 edit_hide: Union[None, bool] = None, pinned: Union[None, bool] = None, from_id: "raw.base.Peer" = None,
+                 fwd_from: "raw.base.MessageFwdHeader" = None, via_bot_id: Union[None, int] = None,
+                 reply_to: "raw.base.MessageReplyHeader" = None, media: "raw.base.MessageMedia" = None,
+                 reply_markup: "raw.base.ReplyMarkup" = None,
+                 entities: Union[None, List["raw.base.MessageEntity"]] = None, views: Union[None, int] = None,
+                 forwards: Union[None, int] = None, replies: "raw.base.MessageReplies" = None,
+                 edit_date: Union[None, int] = None, post_author: Union[None, str] = None,
+                 grouped_id: Union[None, int] = None,
+                 restriction_reason: Union[None, List["raw.base.RestrictionReason"]] = None) -> None:
         self.id = id  # int
-        self.from_id = from_id  # flags.8?Peer
-        self.to_id = to_id  # Peer
+        self.peer_id = peer_id  # Peer
         self.date = date  # int
         self.message = message  # string
-
         self.out = out  # flags.1?true
         self.mentioned = mentioned  # flags.4?true
         self.media_unread = media_unread  # flags.5?true
@@ -124,6 +101,7 @@ class Message(TLObject):  # type: ignore
         self.legacy = legacy  # flags.19?true
         self.edit_hide = edit_hide  # flags.21?true
         self.pinned = pinned  # flags.24?true
+        self.from_id = from_id  # flags.8?Peer
         self.fwd_from = fwd_from  # flags.2?MessageFwdHeader
         self.via_bot_id = via_bot_id  # flags.11?int
         self.reply_to = reply_to  # flags.3?MessageReplyHeader
@@ -151,15 +129,17 @@ class Message(TLObject):  # type: ignore
         legacy = True if flags & (1 << 19) else False
         edit_hide = True if flags & (1 << 21) else False
         pinned = True if flags & (1 << 24) else False
-
         id = Int.read(data)
+
         from_id = TLObject.read(data) if flags & (1 << 8) else None
-        to_id = TLObject.read(data)
+
+        peer_id = TLObject.read(data)
 
         fwd_from = TLObject.read(data) if flags & (1 << 2) else None
 
         via_bot_id = Int.read(data) if flags & (1 << 11) else None
         reply_to = TLObject.read(data) if flags & (1 << 3) else None
+
         date = Int.read(data)
 
         message = String.read(data)
@@ -172,41 +152,19 @@ class Message(TLObject):  # type: ignore
 
         views = Int.read(data) if flags & (1 << 10) else None
         forwards = Int.read(data) if flags & (1 << 10) else None
-        replies = TLObject.read(data) if flags & (1 << 23) else []
+        replies = TLObject.read(data) if flags & (1 << 23) else None
+
         edit_date = Int.read(data) if flags & (1 << 15) else None
         post_author = String.read(data) if flags & (1 << 16) else None
         grouped_id = Long.read(data) if flags & (1 << 17) else None
         restriction_reason = TLObject.read(data) if flags & (1 << 22) else []
 
-        return Message(
-            id=id,
-            from_id=from_id,
-            to_id=to_id,
-            date=date,
-            message=message,
-            out=out,
-            mentioned=mentioned,
-            media_unread=media_unread,
-            silent=silent,
-            post=post,
-            from_scheduled=from_scheduled,
-            legacy=legacy,
-            edit_hide=edit_hide,
-            pinned=pinned,
-            fwd_from=fwd_from,
-            via_bot_id=via_bot_id,
-            reply_to=reply_to,
-            media=media,
-            reply_markup=reply_markup,
-            entities=entities,
-            views=views,
-            forwards=forwards,
-            replies=replies,
-            edit_date=edit_date,
-            post_author=post_author,
-            grouped_id=grouped_id,
-            restriction_reason=restriction_reason,
-        )
+        return Message(id=id, peer_id=peer_id, date=date, message=message, out=out, mentioned=mentioned,
+                       media_unread=media_unread, silent=silent, post=post, from_scheduled=from_scheduled,
+                       legacy=legacy, edit_hide=edit_hide, pinned=pinned, from_id=from_id, fwd_from=fwd_from,
+                       via_bot_id=via_bot_id, reply_to=reply_to, media=media, reply_markup=reply_markup,
+                       entities=entities, views=views, forwards=forwards, replies=replies, edit_date=edit_date,
+                       post_author=post_author, grouped_id=grouped_id, restriction_reason=restriction_reason)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -229,7 +187,9 @@ class Message(TLObject):  # type: ignore
         flags |= (1 << 9) if self.media is not None else 0
         flags |= (1 << 6) if self.reply_markup is not None else 0
         flags |= (1 << 7) if self.entities is not None else 0
-        flags |= (1 << 10) if self.views is not None and self.forwards is not None else 0
+        flags |= (1 << 10) if self.views is not None else 0
+        flags |= (1 << 10) if self.forwards is not None else 0
+        flags |= (1 << 23) if self.replies is not None else 0
         flags |= (1 << 15) if self.edit_date is not None else 0
         flags |= (1 << 16) if self.post_author is not None else 0
         flags |= (1 << 17) if self.grouped_id is not None else 0
@@ -239,9 +199,9 @@ class Message(TLObject):  # type: ignore
         data.write(Int(self.id))
 
         if self.from_id is not None:
-            data.write(Int(self.from_id))
+            data.write(self.from_id.write())
 
-        data.write(self.to_id.write())
+        data.write(self.peer_id.write())
 
         if self.fwd_from is not None:
             data.write(self.fwd_from.write())

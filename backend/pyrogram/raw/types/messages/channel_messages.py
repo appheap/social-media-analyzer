@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,8 +34,8 @@ class ChannelMessages(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.Messages`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x99262e37``
+        - Layer: ``120``
+        - ID: ``0x64479808``
 
     Parameters:
         pts: ``int`` ``32-bit``
@@ -45,9 +44,10 @@ class ChannelMessages(TLObject):  # type: ignore
         chats: List of :obj:`Chat <pyrogram.raw.base.Chat>`
         users: List of :obj:`User <pyrogram.raw.base.User>`
         inexact (optional): ``bool``
+        offset_id_offset (optional): ``int`` ``32-bit``
 
     See Also:
-        This object can be returned by 9 methods:
+        This object can be returned by 11 methods:
 
         .. hlist::
             :columns: 2
@@ -60,7 +60,9 @@ class ChannelMessages(TLObject):  # type: ignore
             - :obj:`messages.GetRecentLocations <pyrogram.raw.functions.messages.GetRecentLocations>`
             - :obj:`messages.GetScheduledHistory <pyrogram.raw.functions.messages.GetScheduledHistory>`
             - :obj:`messages.GetScheduledMessages <pyrogram.raw.functions.messages.GetScheduledMessages>`
+            - :obj:`messages.GetReplies <pyrogram.raw.functions.messages.GetReplies>`
             - :obj:`channels.GetMessages <pyrogram.raw.functions.channels.GetMessages>`
+            - :obj:`stats.GetMessagePublicForwards <pyrogram.raw.functions.stats.GetMessagePublicForwards>`
     """
 
     __slots__: List[str] = ["pts", "count", "messages", "chats", "users", "inexact", "offset_id_offset"]
@@ -89,7 +91,6 @@ class ChannelMessages(TLObject):  # type: ignore
         count = Int.read(data)
 
         offset_id_offset = Int.read(data) if flags & (1 << 2) else None
-
         messages = TLObject.read(data)
 
         chats = TLObject.read(data)
@@ -105,6 +106,7 @@ class ChannelMessages(TLObject):  # type: ignore
 
         flags = 0
         flags |= (1 << 1) if self.inexact is not None else 0
+        flags |= (1 << 2) if self.offset_id_offset is not None else 0
         data.write(Int(flags))
 
         data.write(Int(self.pts))

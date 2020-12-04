@@ -31,45 +31,60 @@ from typing import List, Union, Any
 # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class UpdateUserPinnedMessage(TLObject):  # type: ignore
+class UpdateChannelUserTyping(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x4c43da18``
+        - Layer: ``120``
+        - ID: ``0xff2abe9f``
 
     Parameters:
+        channel_id: ``int`` ``32-bit``
         user_id: ``int`` ``32-bit``
-        id: ``int`` ``32-bit``
+        action: :obj:`SendMessageAction <pyrogram.raw.base.SendMessageAction>`
+        top_msg_id (optional): ``int`` ``32-bit``
     """
 
-    __slots__: List[str] = ["user_id", "id"]
+    __slots__: List[str] = ["channel_id", "user_id", "action", "top_msg_id"]
 
-    ID = 0x4c43da18
-    QUALNAME = "types.UpdateUserPinnedMessage"
+    ID = 0xff2abe9f
+    QUALNAME = "types.UpdateChannelUserTyping"
 
-    def __init__(self, *, user_id: int, id: int) -> None:
+    def __init__(self, *, channel_id: int, user_id: int, action: "raw.base.SendMessageAction",
+                 top_msg_id: Union[None, int] = None) -> None:
+        self.channel_id = channel_id  # int
         self.user_id = user_id  # int
-        self.id = id  # int
+        self.action = action  # SendMessageAction
+        self.top_msg_id = top_msg_id  # flags.0?int
 
     @staticmethod
-    def read(data: BytesIO, *args: Any) -> "UpdateUserPinnedMessage":
-        # No flags
+    def read(data: BytesIO, *args: Any) -> "UpdateChannelUserTyping":
+        flags = Int.read(data)
 
+        channel_id = Int.read(data)
+
+        top_msg_id = Int.read(data) if flags & (1 << 0) else None
         user_id = Int.read(data)
 
-        id = Int.read(data)
+        action = TLObject.read(data)
 
-        return UpdateUserPinnedMessage(user_id=user_id, id=id)
+        return UpdateChannelUserTyping(channel_id=channel_id, user_id=user_id, action=action, top_msg_id=top_msg_id)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.top_msg_id is not None else 0
+        data.write(Int(flags))
+
+        data.write(Int(self.channel_id))
+
+        if self.top_msg_id is not None:
+            data.write(Int(self.top_msg_id))
 
         data.write(Int(self.user_id))
 
-        data.write(Int(self.id))
+        data.write(self.action.write())
 
         return data.getvalue()

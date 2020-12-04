@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class AffectedHistory(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.AffectedHistory`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0xb45c69d1``
 
     Parameters:
@@ -44,13 +43,14 @@ class AffectedHistory(TLObject):  # type: ignore
         offset: ``int`` ``32-bit``
 
     See Also:
-        This object can be returned by 3 methods:
+        This object can be returned by 4 methods:
 
         .. hlist::
             :columns: 2
 
             - :obj:`messages.DeleteHistory <pyrogram.raw.functions.messages.DeleteHistory>`
             - :obj:`messages.ReadMentions <pyrogram.raw.functions.messages.ReadMentions>`
+            - :obj:`messages.UnpinAllMessages <pyrogram.raw.functions.messages.UnpinAllMessages>`
             - :obj:`channels.DeleteUserHistory <pyrogram.raw.functions.channels.DeleteUserHistory>`
     """
 

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,45 +34,51 @@ class SendEncrypted(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xa9776773``
+        - Layer: ``120``
+        - ID: ``0x44fa7a15``
 
     Parameters:
         peer: :obj:`InputEncryptedChat <pyrogram.raw.base.InputEncryptedChat>`
         random_id: ``int`` ``64-bit``
         data: ``bytes``
+        silent (optional): ``bool``
 
     Returns:
         :obj:`messages.SentEncryptedMessage <pyrogram.raw.base.messages.SentEncryptedMessage>`
     """
 
-    __slots__: List[str] = ["peer", "random_id", "data"]
+    __slots__: List[str] = ["peer", "random_id", "data", "silent"]
 
-    ID = 0xa9776773
+    ID = 0x44fa7a15
     QUALNAME = "functions.messages.SendEncrypted"
 
-    def __init__(self, *, peer: "raw.base.InputEncryptedChat", random_id: int, data: bytes) -> None:
+    def __init__(self, *, peer: "raw.base.InputEncryptedChat", random_id: int, data: bytes,
+                 silent: Union[None, bool] = None) -> None:
         self.peer = peer  # InputEncryptedChat
         self.random_id = random_id  # long
         self.data = data  # bytes
+        self.silent = silent  # flags.0?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "SendEncrypted":
-        # No flags
+        flags = Int.read(data)
 
+        silent = True if flags & (1 << 0) else False
         peer = TLObject.read(data)
 
         random_id = Long.read(data)
 
         data = Bytes.read(data)
 
-        return SendEncrypted(peer=peer, random_id=random_id, data=data)
+        return SendEncrypted(peer=peer, random_id=random_id, data=data, silent=silent)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.silent is not None else 0
+        data.write(Int(flags))
 
         data.write(self.peer.write())
 

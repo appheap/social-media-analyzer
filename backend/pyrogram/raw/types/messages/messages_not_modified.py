@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,14 +34,14 @@ class MessagesNotModified(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.Messages`.
 
     Details:
-        - Layer: ``117``
+        - Layer: ``120``
         - ID: ``0x74535f21``
 
     Parameters:
         count: ``int`` ``32-bit``
 
     See Also:
-        This object can be returned by 9 methods:
+        This object can be returned by 11 methods:
 
         .. hlist::
             :columns: 2
@@ -55,7 +54,9 @@ class MessagesNotModified(TLObject):  # type: ignore
             - :obj:`messages.GetRecentLocations <pyrogram.raw.functions.messages.GetRecentLocations>`
             - :obj:`messages.GetScheduledHistory <pyrogram.raw.functions.messages.GetScheduledHistory>`
             - :obj:`messages.GetScheduledMessages <pyrogram.raw.functions.messages.GetScheduledMessages>`
+            - :obj:`messages.GetReplies <pyrogram.raw.functions.messages.GetReplies>`
             - :obj:`channels.GetMessages <pyrogram.raw.functions.channels.GetMessages>`
+            - :obj:`stats.GetMessagePublicForwards <pyrogram.raw.functions.stats.GetMessagePublicForwards>`
     """
 
     __slots__: List[str] = ["count"]

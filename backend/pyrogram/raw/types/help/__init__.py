@@ -40,3 +40,7 @@ from .user_info_empty import UserInfoEmpty
 from .user_info import UserInfo
 from .promo_data_empty import PromoDataEmpty
 from .promo_data import PromoData
+from .country_code import CountryCode
+from .country import Country
+from .countries_list_not_modified import CountriesListNotModified
+from .countries_list import CountriesList

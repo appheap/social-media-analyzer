@@ -40,13 +40,14 @@ class AffectedHistory:  # type: ignore
             - :obj:`messages.AffectedHistory <pyrogram.raw.types.messages.AffectedHistory>`
 
     See Also:
-        This object can be returned by 3 methods:
+        This object can be returned by 4 methods:
 
         .. hlist::
             :columns: 2
 
             - :obj:`messages.DeleteHistory <pyrogram.raw.functions.messages.DeleteHistory>`
             - :obj:`messages.ReadMentions <pyrogram.raw.functions.messages.ReadMentions>`
+            - :obj:`messages.UnpinAllMessages <pyrogram.raw.functions.messages.UnpinAllMessages>`
             - :obj:`channels.DeleteUserHistory <pyrogram.raw.functions.channels.DeleteUserHistory>`
     """
 

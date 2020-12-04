@@ -31,45 +31,53 @@ from typing import List, Union, Any
 # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class UpdateUserBlocked(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
+class GetMessageStats(TLObject):  # type: ignore
+    """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x80ece81a``
+        - Layer: ``120``
+        - ID: ``0xb6e0a3f5``
 
     Parameters:
-        user_id: ``int`` ``32-bit``
-        blocked: ``bool``
+        channel: :obj:`InputChannel <pyrogram.raw.base.InputChannel>`
+        msg_id: ``int`` ``32-bit``
+        dark (optional): ``bool``
+
+    Returns:
+        :obj:`stats.MessageStats <pyrogram.raw.base.stats.MessageStats>`
     """
 
-    __slots__: List[str] = ["user_id", "blocked"]
+    __slots__: List[str] = ["channel", "msg_id", "dark"]
 
-    ID = 0x80ece81a
-    QUALNAME = "types.UpdateUserBlocked"
+    ID = 0xb6e0a3f5
+    QUALNAME = "functions.stats.GetMessageStats"
 
-    def __init__(self, *, user_id: int, blocked: bool) -> None:
-        self.user_id = user_id  # int
-        self.blocked = blocked  # Bool
+    def __init__(self, *, channel: "raw.base.InputChannel", msg_id: int, dark: Union[None, bool] = None) -> None:
+        self.channel = channel  # InputChannel
+        self.msg_id = msg_id  # int
+        self.dark = dark  # flags.0?true
 
     @staticmethod
-    def read(data: BytesIO, *args: Any) -> "UpdateUserBlocked":
-        # No flags
+    def read(data: BytesIO, *args: Any) -> "GetMessageStats":
+        flags = Int.read(data)
 
-        user_id = Int.read(data)
+        dark = True if flags & (1 << 0) else False
+        channel = TLObject.read(data)
 
-        blocked = Bool.read(data)
+        msg_id = Int.read(data)
 
-        return UpdateUserBlocked(user_id=user_id, blocked=blocked)
+        return GetMessageStats(channel=channel, msg_id=msg_id, dark=dark)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.dark is not None else 0
+        data.write(Int(flags))
 
-        data.write(Int(self.user_id))
+        data.write(self.channel.write())
 
-        data.write(Bool(self.blocked))
+        data.write(Int(self.msg_id))
 
         return data.getvalue()

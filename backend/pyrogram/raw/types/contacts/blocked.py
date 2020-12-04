@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,11 +34,12 @@ class Blocked(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.contacts.Blocked`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x1c138d15``
+        - Layer: ``120``
+        - ID: ``0xade1591``
 
     Parameters:
-        blocked: List of :obj:`ContactBlocked <pyrogram.raw.base.ContactBlocked>`
+        blocked: List of :obj:`PeerBlocked <pyrogram.raw.base.PeerBlocked>`
+        chats: List of :obj:`Chat <pyrogram.raw.base.Chat>`
         users: List of :obj:`User <pyrogram.raw.base.User>`
 
     See Also:
@@ -51,13 +51,15 @@ class Blocked(TLObject):  # type: ignore
             - :obj:`contacts.GetBlocked <pyrogram.raw.functions.contacts.GetBlocked>`
     """
 
-    __slots__: List[str] = ["blocked", "users"]
+    __slots__: List[str] = ["blocked", "chats", "users"]
 
-    ID = 0x1c138d15
+    ID = 0xade1591
     QUALNAME = "types.contacts.Blocked"
 
-    def __init__(self, *, blocked: List["raw.base.ContactBlocked"], users: List["raw.base.User"]) -> None:
-        self.blocked = blocked  # Vector<ContactBlocked>
+    def __init__(self, *, blocked: List["raw.base.PeerBlocked"], chats: List["raw.base.Chat"],
+                 users: List["raw.base.User"]) -> None:
+        self.blocked = blocked  # Vector<PeerBlocked>
+        self.chats = chats  # Vector<Chat>
         self.users = users  # Vector<User>
 
     @staticmethod
@@ -66,9 +68,11 @@ class Blocked(TLObject):  # type: ignore
 
         blocked = TLObject.read(data)
 
+        chats = TLObject.read(data)
+
         users = TLObject.read(data)
 
-        return Blocked(blocked=blocked, users=users)
+        return Blocked(blocked=blocked, chats=chats, users=users)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -77,6 +81,8 @@ class Blocked(TLObject):  # type: ignore
         # No flags
 
         data.write(Vector(self.blocked))
+
+        data.write(Vector(self.chats))
 
         data.write(Vector(self.users))
 

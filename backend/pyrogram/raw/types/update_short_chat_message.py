@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,8 +34,8 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Updates`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x16812688``
+        - Layer: ``120``
+        - ID: ``0x402d5dbb``
 
     Parameters:
         id: ``int`` ``32-bit``
@@ -52,11 +51,11 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
         silent (optional): ``bool``
         fwd_from (optional): :obj:`MessageFwdHeader <pyrogram.raw.base.MessageFwdHeader>`
         via_bot_id (optional): ``int`` ``32-bit``
-        reply_to_msg_id (optional): ``int`` ``32-bit``
+        reply_to (optional): :obj:`MessageReplyHeader <pyrogram.raw.base.MessageReplyHeader>`
         entities (optional): List of :obj:`MessageEntity <pyrogram.raw.base.MessageEntity>`
 
     See Also:
-        This object can be returned by 46 methods:
+        This object can be returned by 47 methods:
 
         .. hlist::
             :columns: 2
@@ -66,6 +65,7 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
             - :obj:`contacts.AddContact <pyrogram.raw.functions.contacts.AddContact>`
             - :obj:`contacts.AcceptContact <pyrogram.raw.functions.contacts.AcceptContact>`
             - :obj:`contacts.GetLocated <pyrogram.raw.functions.contacts.GetLocated>`
+            - :obj:`contacts.BlockFromReplies <pyrogram.raw.functions.contacts.BlockFromReplies>`
             - :obj:`messages.SendMessage <pyrogram.raw.functions.messages.SendMessage>`
             - :obj:`messages.SendMedia <pyrogram.raw.functions.messages.SendMedia>`
             - :obj:`messages.ForwardMessages <pyrogram.raw.functions.messages.ForwardMessages>`
@@ -110,16 +110,16 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
     """
 
     __slots__: List[str] = ["id", "from_id", "chat_id", "message", "pts", "pts_count", "date", "out", "mentioned",
-                            "media_unread", "silent", "fwd_from", "via_bot_id", "reply_to_msg_id", "entities"]
+                            "media_unread", "silent", "fwd_from", "via_bot_id", "reply_to", "entities"]
 
-    ID = 0x16812688
+    ID = 0x402d5dbb
     QUALNAME = "types.UpdateShortChatMessage"
 
     def __init__(self, *, id: int, from_id: int, chat_id: int, message: str, pts: int, pts_count: int, date: int,
                  out: Union[None, bool] = None, mentioned: Union[None, bool] = None,
                  media_unread: Union[None, bool] = None, silent: Union[None, bool] = None,
                  fwd_from: "raw.base.MessageFwdHeader" = None, via_bot_id: Union[None, int] = None,
-                 reply_to_msg_id: Union[None, int] = None,
+                 reply_to: "raw.base.MessageReplyHeader" = None,
                  entities: Union[None, List["raw.base.MessageEntity"]] = None) -> None:
         self.id = id  # int
         self.from_id = from_id  # int
@@ -134,7 +134,7 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
         self.silent = silent  # flags.13?true
         self.fwd_from = fwd_from  # flags.2?MessageFwdHeader
         self.via_bot_id = via_bot_id  # flags.11?int
-        self.reply_to_msg_id = reply_to_msg_id  # flags.3?int
+        self.reply_to = reply_to  # flags.3?MessageReplyHeader
         self.entities = entities  # flags.7?Vector<MessageEntity>
 
     @staticmethod
@@ -162,13 +162,14 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
         fwd_from = TLObject.read(data) if flags & (1 << 2) else None
 
         via_bot_id = Int.read(data) if flags & (1 << 11) else None
-        reply_to_msg_id = Int.read(data) if flags & (1 << 3) else None
+        reply_to = TLObject.read(data) if flags & (1 << 3) else None
+
         entities = TLObject.read(data) if flags & (1 << 7) else []
 
         return UpdateShortChatMessage(id=id, from_id=from_id, chat_id=chat_id, message=message, pts=pts,
                                       pts_count=pts_count, date=date, out=out, mentioned=mentioned,
                                       media_unread=media_unread, silent=silent, fwd_from=fwd_from,
-                                      via_bot_id=via_bot_id, reply_to_msg_id=reply_to_msg_id, entities=entities)
+                                      via_bot_id=via_bot_id, reply_to=reply_to, entities=entities)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -181,7 +182,7 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
         flags |= (1 << 13) if self.silent is not None else 0
         flags |= (1 << 2) if self.fwd_from is not None else 0
         flags |= (1 << 11) if self.via_bot_id is not None else 0
-        flags |= (1 << 3) if self.reply_to_msg_id is not None else 0
+        flags |= (1 << 3) if self.reply_to is not None else 0
         flags |= (1 << 7) if self.entities is not None else 0
         data.write(Int(flags))
 
@@ -205,8 +206,8 @@ class UpdateShortChatMessage(TLObject):  # type: ignore
         if self.via_bot_id is not None:
             data.write(Int(self.via_bot_id))
 
-        if self.reply_to_msg_id is not None:
-            data.write(Int(self.reply_to_msg_id))
+        if self.reply_to is not None:
+            data.write(self.reply_to.write())
 
         if self.entities is not None:
             data.write(Vector(self.entities))

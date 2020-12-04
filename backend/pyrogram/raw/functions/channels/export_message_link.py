@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,50 +34,54 @@ class ExportMessageLink(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xceb77163``
+        - Layer: ``120``
+        - ID: ``0xe63fadeb``
 
     Parameters:
         channel: :obj:`InputChannel <pyrogram.raw.base.InputChannel>`
         id: ``int`` ``32-bit``
-        grouped: ``bool``
+        grouped (optional): ``bool``
+        thread (optional): ``bool``
 
     Returns:
         :obj:`ExportedMessageLink <pyrogram.raw.base.ExportedMessageLink>`
     """
 
-    __slots__: List[str] = ["channel", "id", "grouped"]
+    __slots__: List[str] = ["channel", "id", "grouped", "thread"]
 
-    ID = 0xceb77163
+    ID = 0xe63fadeb
     QUALNAME = "functions.channels.ExportMessageLink"
 
-    def __init__(self, *, channel: "raw.base.InputChannel", id: int, grouped: bool) -> None:
+    def __init__(self, *, channel: "raw.base.InputChannel", id: int, grouped: Union[None, bool] = None,
+                 thread: Union[None, bool] = None) -> None:
         self.channel = channel  # InputChannel
         self.id = id  # int
-        self.grouped = grouped  # Bool
+        self.grouped = grouped  # flags.0?true
+        self.thread = thread  # flags.1?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "ExportMessageLink":
-        # No flags
+        flags = Int.read(data)
 
+        grouped = True if flags & (1 << 0) else False
+        thread = True if flags & (1 << 1) else False
         channel = TLObject.read(data)
 
         id = Int.read(data)
 
-        grouped = Bool.read(data)
-
-        return ExportMessageLink(channel=channel, id=id, grouped=grouped)
+        return ExportMessageLink(channel=channel, id=id, grouped=grouped, thread=thread)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.grouped is not None else 0
+        flags |= (1 << 1) if self.thread is not None else 0
+        data.write(Int(flags))
 
         data.write(self.channel.write())
 
         data.write(Int(self.id))
-
-        data.write(Bool(self.grouped))
 
         return data.getvalue()

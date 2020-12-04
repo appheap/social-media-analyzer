@@ -34,3 +34,6 @@ from .passport_config import PassportConfig
 from .support_name import SupportName
 from .user_info import UserInfo
 from .promo_data import PromoData
+from .country_code import CountryCode
+from .country import Country
+from .countries_list import CountriesList

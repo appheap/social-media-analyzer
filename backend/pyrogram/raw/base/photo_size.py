@@ -27,15 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 PhotoSize = Union[
-    raw.types.PhotoCachedSize, raw.types.PhotoSize,
-    raw.types.PhotoSizeEmpty, raw.types.PhotoStrippedSize,
-    raw.types.PhotoSizeProgressive, raw.types.PhotoPathSize,
-]
+    raw.types.PhotoCachedSize, raw.types.PhotoSize, raw.types.PhotoSizeEmpty, raw.types.PhotoSizeProgressive, raw.types.PhotoStrippedSize]
 
 
 # noinspection PyRedeclaration
 class PhotoSize:  # type: ignore
-    """This base type has 4 constructors available.
+    """This base type has 5 constructors available.
 
     Constructors:
         .. hlist::
@@ -44,6 +41,7 @@ class PhotoSize:  # type: ignore
             - :obj:`PhotoCachedSize <pyrogram.raw.types.PhotoCachedSize>`
             - :obj:`PhotoSize <pyrogram.raw.types.PhotoSize>`
             - :obj:`PhotoSizeEmpty <pyrogram.raw.types.PhotoSizeEmpty>`
+            - :obj:`PhotoSizeProgressive <pyrogram.raw.types.PhotoSizeProgressive>`
             - :obj:`PhotoStrippedSize <pyrogram.raw.types.PhotoStrippedSize>`
     """
 

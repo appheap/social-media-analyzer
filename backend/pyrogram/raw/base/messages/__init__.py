@@ -48,3 +48,5 @@ from .found_sticker_sets import FoundStickerSets
 from .search_counter import SearchCounter
 from .inactive_chats import InactiveChats
 from .votes_list import VotesList
+from .message_views import MessageViews
+from .discussion_message import DiscussionMessage

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,41 +34,49 @@ class InputGeoPoint(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputGeoPoint`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xf3b7acc9``
+        - Layer: ``120``
+        - ID: ``0x48222faf``
 
     Parameters:
         lat: ``float`` ``64-bit``
         long: ``float`` ``64-bit``
+        accuracy_radius (optional): ``int`` ``32-bit``
     """
 
-    __slots__: List[str] = ["lat", "long"]
+    __slots__: List[str] = ["lat", "long", "accuracy_radius"]
 
-    ID = 0xf3b7acc9
+    ID = 0x48222faf
     QUALNAME = "types.InputGeoPoint"
 
-    def __init__(self, *, lat: float, long: float) -> None:
+    def __init__(self, *, lat: float, long: float, accuracy_radius: Union[None, int] = None) -> None:
         self.lat = lat  # double
         self.long = long  # double
+        self.accuracy_radius = accuracy_radius  # flags.0?int
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "InputGeoPoint":
-        # No flags
+        flags = Int.read(data)
 
         lat = Double.read(data)
 
         long = Double.read(data)
 
-        return InputGeoPoint(lat=lat, long=long)
+        accuracy_radius = Int.read(data) if flags & (1 << 0) else None
+        return InputGeoPoint(lat=lat, long=long, accuracy_radius=accuracy_radius)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.accuracy_radius is not None else 0
+        data.write(Int(flags))
 
         data.write(Double(self.lat))
 
         data.write(Double(self.long))
+
+        if self.accuracy_radius is not None:
+            data.write(Int(self.accuracy_radius))
 
         return data.getvalue()

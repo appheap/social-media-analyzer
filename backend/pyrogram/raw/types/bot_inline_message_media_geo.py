@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,23 +34,29 @@ class BotInlineMessageMediaGeo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.BotInlineMessage`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xb722de65``
+        - Layer: ``120``
+        - ID: ``0x51846fd``
 
     Parameters:
         geo: :obj:`GeoPoint <pyrogram.raw.base.GeoPoint>`
-        period: ``int`` ``32-bit``
+        heading (optional): ``int`` ``32-bit``
+        period (optional): ``int`` ``32-bit``
+        proximity_notification_radius (optional): ``int`` ``32-bit``
         reply_markup (optional): :obj:`ReplyMarkup <pyrogram.raw.base.ReplyMarkup>`
     """
 
-    __slots__: List[str] = ["geo", "period", "reply_markup"]
+    __slots__: List[str] = ["geo", "heading", "period", "proximity_notification_radius", "reply_markup"]
 
-    ID = 0xb722de65
+    ID = 0x51846fd
     QUALNAME = "types.BotInlineMessageMediaGeo"
 
-    def __init__(self, *, geo: "raw.base.GeoPoint", period: int, reply_markup: "raw.base.ReplyMarkup" = None) -> None:
+    def __init__(self, *, geo: "raw.base.GeoPoint", heading: Union[None, int] = None, period: Union[None, int] = None,
+                 proximity_notification_radius: Union[None, int] = None,
+                 reply_markup: "raw.base.ReplyMarkup" = None) -> None:
         self.geo = geo  # GeoPoint
-        self.period = period  # int
+        self.heading = heading  # flags.0?int
+        self.period = period  # flags.1?int
+        self.proximity_notification_radius = proximity_notification_radius  # flags.3?int
         self.reply_markup = reply_markup  # flags.2?ReplyMarkup
 
     @staticmethod
@@ -60,23 +65,36 @@ class BotInlineMessageMediaGeo(TLObject):  # type: ignore
 
         geo = TLObject.read(data)
 
-        period = Int.read(data)
-
+        heading = Int.read(data) if flags & (1 << 0) else None
+        period = Int.read(data) if flags & (1 << 1) else None
+        proximity_notification_radius = Int.read(data) if flags & (1 << 3) else None
         reply_markup = TLObject.read(data) if flags & (1 << 2) else None
 
-        return BotInlineMessageMediaGeo(geo=geo, period=period, reply_markup=reply_markup)
+        return BotInlineMessageMediaGeo(geo=geo, heading=heading, period=period,
+                                        proximity_notification_radius=proximity_notification_radius,
+                                        reply_markup=reply_markup)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
         flags = 0
+        flags |= (1 << 0) if self.heading is not None else 0
+        flags |= (1 << 1) if self.period is not None else 0
+        flags |= (1 << 3) if self.proximity_notification_radius is not None else 0
         flags |= (1 << 2) if self.reply_markup is not None else 0
         data.write(Int(flags))
 
         data.write(self.geo.write())
 
-        data.write(Int(self.period))
+        if self.heading is not None:
+            data.write(Int(self.heading))
+
+        if self.period is not None:
+            data.write(Int(self.period))
+
+        if self.proximity_notification_radius is not None:
+            data.write(Int(self.proximity_notification_radius))
 
         if self.reply_markup is not None:
             data.write(self.reply_markup.write())

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,8 +34,8 @@ class GetMessagesViews(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xc4c8a55d``
+        - Layer: ``120``
+        - ID: ``0x5784d3e1``
 
     Parameters:
         peer: :obj:`InputPeer <pyrogram.raw.base.InputPeer>`
@@ -44,12 +43,12 @@ class GetMessagesViews(TLObject):  # type: ignore
         increment: ``bool``
 
     Returns:
-        List of ``int`` ``32-bit``
+        :obj:`messages.MessageViews <pyrogram.raw.base.messages.MessageViews>`
     """
 
     __slots__: List[str] = ["peer", "id", "increment"]
 
-    ID = 0xc4c8a55d
+    ID = 0x5784d3e1
     QUALNAME = "functions.messages.GetMessagesViews"
 
     def __init__(self, *, peer: "raw.base.InputPeer", id: List[int], increment: bool) -> None:

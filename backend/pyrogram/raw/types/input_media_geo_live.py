@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,25 +34,30 @@ class InputMediaGeoLive(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputMedia`.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0xce4e82fd``
+        - Layer: ``120``
+        - ID: ``0x971fa843``
 
     Parameters:
         geo_point: :obj:`InputGeoPoint <pyrogram.raw.base.InputGeoPoint>`
         stopped (optional): ``bool``
+        heading (optional): ``int`` ``32-bit``
         period (optional): ``int`` ``32-bit``
+        proximity_notification_radius (optional): ``int`` ``32-bit``
     """
 
-    __slots__: List[str] = ["geo_point", "stopped", "period"]
+    __slots__: List[str] = ["geo_point", "stopped", "heading", "period", "proximity_notification_radius"]
 
-    ID = 0xce4e82fd
+    ID = 0x971fa843
     QUALNAME = "types.InputMediaGeoLive"
 
     def __init__(self, *, geo_point: "raw.base.InputGeoPoint", stopped: Union[None, bool] = None,
-                 period: Union[None, int] = None) -> None:
+                 heading: Union[None, int] = None, period: Union[None, int] = None,
+                 proximity_notification_radius: Union[None, int] = None) -> None:
         self.geo_point = geo_point  # InputGeoPoint
         self.stopped = stopped  # flags.0?true
+        self.heading = heading  # flags.2?int
         self.period = period  # flags.1?int
+        self.proximity_notification_radius = proximity_notification_radius  # flags.3?int
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "InputMediaGeoLive":
@@ -62,8 +66,11 @@ class InputMediaGeoLive(TLObject):  # type: ignore
         stopped = True if flags & (1 << 0) else False
         geo_point = TLObject.read(data)
 
+        heading = Int.read(data) if flags & (1 << 2) else None
         period = Int.read(data) if flags & (1 << 1) else None
-        return InputMediaGeoLive(geo_point=geo_point, stopped=stopped, period=period)
+        proximity_notification_radius = Int.read(data) if flags & (1 << 3) else None
+        return InputMediaGeoLive(geo_point=geo_point, stopped=stopped, heading=heading, period=period,
+                                 proximity_notification_radius=proximity_notification_radius)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -71,12 +78,20 @@ class InputMediaGeoLive(TLObject):  # type: ignore
 
         flags = 0
         flags |= (1 << 0) if self.stopped is not None else 0
+        flags |= (1 << 2) if self.heading is not None else 0
         flags |= (1 << 1) if self.period is not None else 0
+        flags |= (1 << 3) if self.proximity_notification_radius is not None else 0
         data.write(Int(flags))
 
         data.write(self.geo_point.write())
 
+        if self.heading is not None:
+            data.write(Int(self.heading))
+
         if self.period is not None:
             data.write(Int(self.period))
+
+        if self.proximity_notification_radius is not None:
+            data.write(Int(self.proximity_notification_radius))
 
         return data.getvalue()

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,8 +34,8 @@ class Search(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``117``
-        - ID: ``0x8614ef68``
+        - Layer: ``120``
+        - ID: ``0xc352eec``
 
     Parameters:
         peer: :obj:`InputPeer <pyrogram.raw.base.InputPeer>`
@@ -50,21 +49,22 @@ class Search(TLObject):  # type: ignore
         max_id: ``int`` ``32-bit``
         min_id: ``int`` ``32-bit``
         hash: ``int`` ``32-bit``
-        from_id (optional): :obj:`InputUser <pyrogram.raw.base.InputUser>`
+        from_id (optional): :obj:`InputPeer <pyrogram.raw.base.InputPeer>`
+        top_msg_id (optional): ``int`` ``32-bit``
 
     Returns:
         :obj:`messages.Messages <pyrogram.raw.base.messages.Messages>`
     """
 
     __slots__: List[str] = ["peer", "q", "filter", "min_date", "max_date", "offset_id", "add_offset", "limit", "max_id",
-                            "min_id", "hash", "from_id"]
+                            "min_id", "hash", "from_id", "top_msg_id"]
 
-    ID = 0x8614ef68
+    ID = 0xc352eec
     QUALNAME = "functions.messages.Search"
 
     def __init__(self, *, peer: "raw.base.InputPeer", q: str, filter: "raw.base.MessagesFilter", min_date: int,
                  max_date: int, offset_id: int, add_offset: int, limit: int, max_id: int, min_id: int, hash: int,
-                 from_id: "raw.base.InputUser" = None) -> None:
+                 from_id: "raw.base.InputPeer" = None, top_msg_id: Union[None, int] = None) -> None:
         self.peer = peer  # InputPeer
         self.q = q  # string
         self.filter = filter  # MessagesFilter
@@ -76,7 +76,8 @@ class Search(TLObject):  # type: ignore
         self.max_id = max_id  # int
         self.min_id = min_id  # int
         self.hash = hash  # int
-        self.from_id = from_id  # flags.0?InputUser
+        self.from_id = from_id  # flags.0?InputPeer
+        self.top_msg_id = top_msg_id  # flags.1?int
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "Search":
@@ -88,6 +89,7 @@ class Search(TLObject):  # type: ignore
 
         from_id = TLObject.read(data) if flags & (1 << 0) else None
 
+        top_msg_id = Int.read(data) if flags & (1 << 1) else None
         filter = TLObject.read(data)
 
         min_date = Int.read(data)
@@ -107,7 +109,8 @@ class Search(TLObject):  # type: ignore
         hash = Int.read(data)
 
         return Search(peer=peer, q=q, filter=filter, min_date=min_date, max_date=max_date, offset_id=offset_id,
-                      add_offset=add_offset, limit=limit, max_id=max_id, min_id=min_id, hash=hash, from_id=from_id)
+                      add_offset=add_offset, limit=limit, max_id=max_id, min_id=min_id, hash=hash, from_id=from_id,
+                      top_msg_id=top_msg_id)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -115,6 +118,7 @@ class Search(TLObject):  # type: ignore
 
         flags = 0
         flags |= (1 << 0) if self.from_id is not None else 0
+        flags |= (1 << 1) if self.top_msg_id is not None else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())
@@ -123,6 +127,9 @@ class Search(TLObject):  # type: ignore
 
         if self.from_id is not None:
             data.write(self.from_id.write())
+
+        if self.top_msg_id is not None:
+            data.write(Int(self.top_msg_id))
 
         data.write(self.filter.write())
 
