@@ -37,6 +37,7 @@ from .read_history import ReadHistory
 from .retract_vote import RetractVote
 from .search_global import SearchGlobal
 from .search_messages import SearchMessages
+from .search_counter import SearchCounter
 from .send_animation import SendAnimation
 from .send_audio import SendAudio
 from .send_cached_media import SendCachedMedia
@@ -97,6 +98,7 @@ class Messages(
     EditInlineMedia,
     EditInlineReplyMarkup,
     SendDice,
+    SearchCounter,
     SearchMessages,
     SearchGlobal
 ):
