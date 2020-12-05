@@ -31,6 +31,7 @@ from .get_history import GetHistory
 from .get_history_count import GetHistoryCount
 from .get_messages import GetMessages
 from .get_messages_views import GetMessagesViews
+from .get_stickerset import GetStickerSet
 from .iter_history import IterHistory
 from .read_history import ReadHistory
 from .retract_vote import RetractVote
@@ -67,6 +68,7 @@ class Messages(
     GetHistory,
     GetMessages,
     GetMessagesViews,
+    GetStickerSet,
     SendAudio,
     SendChatAction,
     SendContact,
