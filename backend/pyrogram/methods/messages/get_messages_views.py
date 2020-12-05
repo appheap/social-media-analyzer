@@ -59,7 +59,7 @@ class GetMessagesViews(Scaffold):
         Example:
             .. code-block:: python
 
-                # Get one message
+                # Get one message views
                 app.get_messages_views("pyrogramchat", 51110)
 
                 # Get more than one message views (list of message views)
