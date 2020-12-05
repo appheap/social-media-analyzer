@@ -39,7 +39,7 @@ class StickerSet(Object):
         self.hash = hash
 
     @staticmethod
-    def _parse(client, sticker_set):
+    def _parse(client, sticker_set: raw.base.StickerSet):
         if sticker_set is None:
             return None
 
@@ -60,3 +60,12 @@ class StickerSet(Object):
             count=getattr(sticker_set, 'count', None),
             hash=getattr(sticker_set, 'hash', None),
         )
+
+    @staticmethod
+    async def _parse_from_input_stickerset(client, input_stickerset: raw.base.StickerSet):
+        if input_stickerset is None:
+            return None
+
+        sticker_set = await client.get_stickerset(input_stickerset)
+
+        return sticker_set

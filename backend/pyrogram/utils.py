@@ -132,7 +132,25 @@ def get_input_media_from_file_id(
         raise ValueError(f"Unknown media type: {file_id_str}")
 
 
-async def parse_message_views(client, message_views: "raw.types.messages.MessageViews", message_ids: list):
+async def parse_admin_log_events(self, admin_log_results: raw.base.channels.AdminLogResults) \
+        -> List["types.ChannelAdminLogEvent"]:
+    users = {i.id: i for i in admin_log_results.users}
+    chats = {i.id: i for i in admin_log_results.chats}
+
+    if not admin_log_results.events:
+        return types.List()
+
+    parsed_events = []
+    for event in admin_log_results.events:
+        parsed_event = await types.ChannelAdminLogEvent._parse(self, event, users, chats)
+        if parsed_event:
+            parsed_events.append(parsed_event)
+
+    return types.List(parsed_events) if len(parsed_events) else types.List()
+
+
+async def parse_message_views(client, message_views: "raw.types.messages.MessageViews", message_ids: list) -> List[
+    "types.MessageViews"]:
     users = {i.id: i for i in message_views.users}
     chats = {i.id: i for i in message_views.chats}
 

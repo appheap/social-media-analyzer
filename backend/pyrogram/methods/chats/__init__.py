@@ -51,6 +51,9 @@ from .unban_chat_member import UnbanChatMember
 from .unpin_chat_message import UnpinChatMessage
 from .update_chat_username import UpdateChatUsername
 
+# added
+from .get_admin_log import GetAdminLog
+
 
 class Chats(
     GetChat,
@@ -86,6 +89,9 @@ class Chats(
     DeleteSupergroup,
     GetNearbyChats,
     SetAdministratorTitle,
-    SetSlowMode
+    SetSlowMode,
+
+    # added
+    GetAdminLog,
 ):
     pass
