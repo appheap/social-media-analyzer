@@ -271,60 +271,13 @@ class Message(Object, Update):
             self,
             *,
             client: "pyrogram.Client" = None,
-            message_id: int,
+
+            id: int,
             date: int = None,
             chat: "types.Chat" = None,
-            from_user: "types.User" = None,
-            forward_from: "types.User" = None,
-            forward_sender_name: str = None,
-            forward_from_chat: "types.Chat" = None,
-            forward_from_message_id: int = None,
-            forward_signature: str = None,
-            forward_date: int = None,
-            reply_to_message: "Message" = None,
-            mentioned: bool = None,
-            empty: bool = None,
-            service: bool = None,
-            scheduled: bool = None,
-            from_scheduled: bool = None,
-            media: bool = None,
-            edit_date: int = None,
-            media_group_id: str = None,
-            author_signature: str = None,
-            text: Str = None,
-            entities: List["types.MessageEntity"] = None,
-            caption_entities: List["types.MessageEntity"] = None,
-            audio: "types.Audio" = None,
-            document: "types.Document" = None,
-            photo: "types.Photo" = None,
-            sticker: "types.Sticker" = None,
-            animation: "types.Animation" = None,
-            game: "types.Game" = None,
-            video: "types.Video" = None,
-            voice: "types.Voice" = None,
-            video_note: "types.VideoNote" = None,
-            caption: Str = None,
-            contact: "types.Contact" = None,
-            location: "types.Location" = None,
-            venue: "types.Venue" = None,
-            web_page: "types.WebPage" = None,
-            poll: "types.Poll" = None,
-            dice: "types.Dice" = None,
-            new_chat_members: List["types.User"] = None,
-            left_chat_member: "types.User" = None,
-            new_chat_title: str = None,
-            new_chat_photo: "types.Photo" = None,
-            delete_chat_photo: bool = None,
-            group_chat_created: bool = None,
-            supergroup_chat_created: bool = None,
-            channel_chat_created: bool = None,
-            migrate_to_chat_id: int = None,
-            migrate_from_chat_id: int = None,
-            pinned_message: "Message" = None,
-            game_high_score: int = None,
-            views: int = None,
-            via_bot: "types.User" = None,
-            outgoing: bool = None,
+            type: str = None,  # `service` | `empty` | `message`
+            content: Union[None, "types.MessageNormal", "types.MessageService"] = None,
+
             matches: List[Match] = None,
             command: List[str] = None,
             reply_markup: Union[
@@ -336,60 +289,12 @@ class Message(Object, Update):
     ):
         super().__init__(client)
 
-        self.message_id = message_id
+        self.id = id
         self.date = date
         self.chat = chat
-        self.from_user = from_user
-        self.forward_from = forward_from
-        self.forward_sender_name = forward_sender_name
-        self.forward_from_chat = forward_from_chat
-        self.forward_from_message_id = forward_from_message_id
-        self.forward_signature = forward_signature
-        self.forward_date = forward_date
-        self.reply_to_message = reply_to_message
-        self.mentioned = mentioned
-        self.empty = empty
-        self.service = service
-        self.scheduled = scheduled
-        self.from_scheduled = from_scheduled
-        self.media = media
-        self.edit_date = edit_date
-        self.media_group_id = media_group_id
-        self.author_signature = author_signature
-        self.text = text
-        self.entities = entities
-        self.caption_entities = caption_entities
-        self.audio = audio
-        self.document = document
-        self.photo = photo
-        self.sticker = sticker
-        self.animation = animation
-        self.game = game
-        self.video = video
-        self.voice = voice
-        self.video_note = video_note
-        self.caption = caption
-        self.contact = contact
-        self.location = location
-        self.venue = venue
-        self.web_page = web_page
-        self.poll = poll
-        self.dice = dice
-        self.new_chat_members = new_chat_members
-        self.left_chat_member = left_chat_member
-        self.new_chat_title = new_chat_title
-        self.new_chat_photo = new_chat_photo
-        self.delete_chat_photo = delete_chat_photo
-        self.group_chat_created = group_chat_created
-        self.supergroup_chat_created = supergroup_chat_created
-        self.channel_chat_created = channel_chat_created
-        self.migrate_to_chat_id = migrate_to_chat_id
-        self.migrate_from_chat_id = migrate_from_chat_id
-        self.pinned_message = pinned_message
-        self.game_high_score = game_high_score
-        self.views = views
-        self.via_bot = via_bot
-        self.outgoing = outgoing
+        self.type = type
+        self.content = content
+
         self.matches = matches
         self.command = command
         self.reply_markup = reply_markup
@@ -404,277 +309,32 @@ class Message(Object, Update):
             replies: int = 1
     ):
         if isinstance(message, raw.types.MessageEmpty):
-            return Message(message_id=message.id, empty=True, client=client)
+            return Message(
+                client=client,
+
+                id=message.id,
+                type='empty',
+            )
 
         if isinstance(message, raw.types.MessageService):
-            action = message.action
-
-            new_chat_members = None
-            left_chat_member = None
-            new_chat_title = None
-            delete_chat_photo = None
-            migrate_to_chat_id = None
-            migrate_from_chat_id = None
-            group_chat_created = None
-            channel_chat_created = None
-            new_chat_photo = None
-
-            if isinstance(action, raw.types.MessageActionChatAddUser):
-                new_chat_members = [types.User._parse(client, users[i]) for i in action.users]
-            elif isinstance(action, raw.types.MessageActionChatJoinedByLink):
-                new_chat_members = [types.User._parse(client, users[message.from_id])]
-            elif isinstance(action, raw.types.MessageActionChatDeleteUser):
-                left_chat_member = types.User._parse(client, users[action.user_id])
-            elif isinstance(action, raw.types.MessageActionChatEditTitle):
-                new_chat_title = action.title
-            elif isinstance(action, raw.types.MessageActionChatDeletePhoto):
-                delete_chat_photo = True
-            elif isinstance(action, raw.types.MessageActionChatMigrateTo):
-                migrate_to_chat_id = action.channel_id
-            elif isinstance(action, raw.types.MessageActionChannelMigrateFrom):
-                migrate_from_chat_id = action.chat_id
-            elif isinstance(action, raw.types.MessageActionChatCreate):
-                group_chat_created = True
-            elif isinstance(action, raw.types.MessageActionChannelCreate):
-                channel_chat_created = True
-            elif isinstance(action, raw.types.MessageActionChatEditPhoto):
-                new_chat_photo = types.Photo._parse(client, action.photo)
-
-            parsed_message = Message(
-                message_id=message.id,
+            content = await types.MessageService._parse(client, message, users, chats)
+            return Message(
+                id=message.id,
                 date=message.date,
+                type='service',
                 chat=await types.Chat._parse(client, message, users, chats),
-                from_user=types.User._parse(client, users.get(message.from_id, None)),
-                service=True,
-                new_chat_members=new_chat_members,
-                left_chat_member=left_chat_member,
-                new_chat_title=new_chat_title,
-                new_chat_photo=new_chat_photo,
-                delete_chat_photo=delete_chat_photo,
-                migrate_to_chat_id=utils.get_channel_id(migrate_to_chat_id) if migrate_to_chat_id else None,
-                migrate_from_chat_id=-migrate_from_chat_id if migrate_from_chat_id else None,
-                group_chat_created=group_chat_created,
-                channel_chat_created=channel_chat_created,
-                client=client
-                # TODO: supergroup_chat_created
+                content=content
             )
-
-            if isinstance(action, raw.types.MessageActionPinMessage):
-                try:
-                    parsed_message.pinned_message = await client.get_messages(
-                        parsed_message.chat.id,
-                        reply_to_message_ids=message.id,
-                        replies=0
-                    )
-                except MessageIdsEmpty:
-                    pass
-
-            if isinstance(action, raw.types.MessageActionGameScore):
-                parsed_message.game_high_score = types.GameHighScore._parse_action(client, message, users)
-
-                if message.reply_to_msg_id and replies:
-                    try:
-                        parsed_message.reply_to_message = await client.get_messages(
-                            parsed_message.chat.id,
-                            reply_to_message_ids=message.id,
-                            replies=0
-                        )
-                    except MessageIdsEmpty:
-                        pass
-
-            return parsed_message
 
         if isinstance(message, raw.types.Message):
-            entities = [types.MessageEntity._parse(client, entity, users) for entity in message.entities]
-            entities = types.List(filter(lambda x: x is not None, entities))
-
-            forward_from = None
-            forward_sender_name = None
-            forward_from_chat = None
-            forward_from_message_id = None
-            forward_signature = None
-            forward_date = None
-
-            forward_header = message.fwd_from  # type: raw.types.MessageFwdHeader
-
-            if forward_header:
-                forward_date = forward_header.date
-
-                if forward_header.from_id:
-                    forward_from = types.User._parse(client, users[forward_header.from_id])
-                elif forward_header.from_name:
-                    forward_sender_name = forward_header.from_name
-                else:
-                    forward_from_chat = types.Chat._parse_channel_chat(client, chats[forward_header.channel_id])
-                    forward_from_message_id = forward_header.channel_post
-                    forward_signature = forward_header.post_author
-
-            photo = None
-            location = None
-            contact = None
-            venue = None
-            game = None
-            audio = None
-            voice = None
-            animation = None
-            video = None
-            video_note = None
-            sticker = None
-            document = None
-            web_page = None
-            poll = None
-            dice = None
-
-            media = message.media
-
-            if media:
-                if isinstance(media, raw.types.MessageMediaPhoto):
-                    photo = types.Photo._parse(client, media.photo, media.ttl_seconds)
-                elif isinstance(media, raw.types.MessageMediaGeo):
-                    location = types.Location._parse(client, media.geo)
-                elif isinstance(media, raw.types.MessageMediaContact):
-                    contact = types.Contact._parse(client, media)
-                elif isinstance(media, raw.types.MessageMediaVenue):
-                    venue = types.Venue._parse(client, media)
-                elif isinstance(media, raw.types.MessageMediaGame):
-                    game = types.Game._parse(client, message)
-                elif isinstance(media, raw.types.MessageMediaDocument):
-                    doc = media.document
-
-                    if isinstance(doc, raw.types.Document):
-                        attributes = {type(i): i for i in doc.attributes}
-
-                        file_name = getattr(
-                            attributes.get(
-                                raw.types.DocumentAttributeFilename, None
-                            ), "file_name", None
-                        )
-
-                        if raw.types.DocumentAttributeAudio in attributes:
-                            audio_attributes = attributes[raw.types.DocumentAttributeAudio]
-
-                            if audio_attributes.voice:
-                                voice = types.Voice._parse(client, doc, audio_attributes)
-                            else:
-                                audio = types.Audio._parse(client, doc, audio_attributes, file_name)
-                        elif raw.types.DocumentAttributeAnimated in attributes:
-                            video_attributes = attributes.get(raw.types.DocumentAttributeVideo, None)
-
-                            animation = types.Animation._parse(client, doc, video_attributes, file_name)
-                        elif raw.types.DocumentAttributeVideo in attributes:
-                            video_attributes = attributes[raw.types.DocumentAttributeVideo]
-
-                            if video_attributes.round_message:
-                                video_note = types.VideoNote._parse(client, doc, video_attributes)
-                            else:
-                                video = types.Video._parse(client, doc, video_attributes, file_name,
-                                                           media.ttl_seconds)
-                        elif raw.types.DocumentAttributeSticker in attributes:
-                            sticker = await types.Sticker._parse(
-                                client, doc,
-                                attributes.get(raw.types.DocumentAttributeImageSize, None),
-                                attributes[raw.types.DocumentAttributeSticker],
-                                file_name
-                            )
-                        else:
-                            document = types.Document._parse(client, doc, file_name)
-                elif isinstance(media, raw.types.MessageMediaWebPage):
-                    if isinstance(media.webpage, raw.types.WebPage):
-                        web_page = types.WebPage._parse(client, media.webpage)
-                    else:
-                        media = None
-                elif isinstance(media, raw.types.MessageMediaPoll):
-                    poll = types.Poll._parse(client, media)
-                elif isinstance(media, raw.types.MessageMediaDice):
-                    dice = types.Dice._parse(client, media)
-                else:
-                    media = None
-
-            reply_markup = message.reply_markup
-
-            if reply_markup:
-                if isinstance(reply_markup, raw.types.ReplyKeyboardForceReply):
-                    reply_markup = types.ForceReply.read(reply_markup)
-                elif isinstance(reply_markup, raw.types.ReplyKeyboardMarkup):
-                    reply_markup = types.ReplyKeyboardMarkup.read(reply_markup)
-                elif isinstance(reply_markup, raw.types.ReplyInlineMarkup):
-                    reply_markup = types.InlineKeyboardMarkup.read(reply_markup)
-                elif isinstance(reply_markup, raw.types.ReplyKeyboardHide):
-                    reply_markup = types.ReplyKeyboardRemove.read(reply_markup)
-                else:
-                    reply_markup = None
-
-            parsed_message = Message(
-                message_id=message.id,
+            content = await types.MessageNormal._parse(client, message, users, chats)
+            return Message(
+                id=message.id,
                 date=message.date,
+                type='message',
                 chat=await types.Chat._parse(client, message, users, chats),
-                from_user=types.User._parse(client, users.get(message.from_id, None)),
-                text=(
-                    Str(message.message).init(entities) or None
-                    if media is None or web_page is not None
-                    else None
-                ),
-                caption=(
-                    Str(message.message).init(entities) or None
-                    if media is not None and web_page is None
-                    else None
-                ),
-                entities=(
-                    entities or None
-                    if media is None or web_page is not None
-                    else None
-                ),
-                caption_entities=(
-                    entities or None
-                    if media is not None and web_page is None
-                    else None
-                ),
-                author_signature=message.post_author,
-                forward_from=forward_from,
-                forward_sender_name=forward_sender_name,
-                forward_from_chat=forward_from_chat,
-                forward_from_message_id=forward_from_message_id,
-                forward_signature=forward_signature,
-                forward_date=forward_date,
-                mentioned=message.mentioned,
-                scheduled=is_scheduled,
-                from_scheduled=message.from_scheduled,
-                media=bool(media) or None,
-                edit_date=message.edit_date,
-                media_group_id=message.grouped_id,
-                photo=photo,
-                location=location,
-                contact=contact,
-                venue=venue,
-                audio=audio,
-                voice=voice,
-                animation=animation,
-                game=game,
-                video=video,
-                video_note=video_note,
-                sticker=sticker,
-                document=document,
-                web_page=web_page,
-                poll=poll,
-                dice=dice,
-                views=message.views,
-                via_bot=types.User._parse(client, users.get(message.via_bot_id, None)),
-                outgoing=message.out,
-                reply_markup=reply_markup,
-                client=client
+                content=content
             )
-
-            if message.reply_to_msg_id and replies:
-                try:
-                    parsed_message.reply_to_message = await client.get_messages(
-                        parsed_message.chat.id,
-                        reply_to_message_ids=message.id,
-                        replies=replies - 1
-                    )
-                except MessageIdsEmpty:
-                    pass
-
-            return parsed_message
 
     @property
     def link(self) -> str:
@@ -1127,7 +787,7 @@ class Message(Object, Update):
             quote = self.chat.type != "private"
 
         if reply_to_message_id is None and quote:
-            reply_to_message_id = self.message_id
+            reply_to_message_id = self.id
 
         return await self._client.send_cached_media(
             chat_id=self.chat.id,
@@ -1250,7 +910,7 @@ class Message(Object, Update):
             quote = self.chat.type != "private"
 
         if reply_to_message_id is None and quote:
-            reply_to_message_id = self.message_id
+            reply_to_message_id = self.id
 
         return await self._client.send_contact(
             chat_id=self.chat.id,

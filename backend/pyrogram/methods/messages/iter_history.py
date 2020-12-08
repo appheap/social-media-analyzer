@@ -88,7 +88,7 @@ class IterHistory(Scaffold):
             if not messages:
                 return
 
-            offset_id = messages[-1].message_id + (1 if reverse else 0)
+            offset_id = messages[-1].id + (1 if reverse else 0)
 
             for message in messages:
                 yield message

@@ -178,32 +178,32 @@ async def parse_messages(client, messages: "raw.types.messages.Messages", replie
     for message in messages.messages:
         parsed_messages.append(await types.Message._parse(client, message, users, chats, replies=0))
 
-    if replies:
-        messages_with_replies = {i.id: getattr(i, "reply_to_msg_id", None) for i in messages.messages}
-        reply_message_ids = [i[0] for i in filter(lambda x: x[1] is not None, messages_with_replies.items())]
-
-        if reply_message_ids:
-            # We need a chat id, but some messages might be empty (no chat attribute available)
-            # Scan until we find a message with a chat available (there must be one, because we are fetching replies)
-            for m in parsed_messages:
-                if m.chat:
-                    chat_id = m.chat.id
-                    break
-            else:
-                chat_id = 0
-
-            reply_messages = await client.get_messages(
-                chat_id,
-                reply_to_message_ids=reply_message_ids,
-                replies=replies - 1
-            )
-
-            for message in parsed_messages:
-                reply_id = messages_with_replies[message.message_id]
-
-                for reply in reply_messages:
-                    if reply.message_id == reply_id:
-                        message.reply_to_message = reply
+    # if replies:
+    #     messages_with_replies = {i.id: getattr(i, "reply_to_msg_id", None) for i in messages.messages}
+    #     reply_message_ids = [i[0] for i in filter(lambda x: x[1] is not None, messages_with_replies.items())]
+    #
+    #     if reply_message_ids:
+    #         # We need a chat id, but some messages might be empty (no chat attribute available)
+    #         # Scan until we find a message with a chat available (there must be one, because we are fetching replies)
+    #         for m in parsed_messages:
+    #             if m.chat:
+    #                 chat_id = m.chat.id
+    #                 break
+    #         else:
+    #             chat_id = 0
+    #
+    #         reply_messages = await client.get_messages(
+    #             chat_id,
+    #             reply_to_message_ids=reply_message_ids,
+    #             replies=replies - 1
+    #         )
+    #
+    #         for message in parsed_messages:
+    #             reply_id = messages_with_replies[message.message_id]
+    #
+    #             for reply in reply_messages:
+    #                 if reply.message_id == reply_id:
+    #                     message.reply_to_message = reply
 
     return types.List(parsed_messages)
 
@@ -217,13 +217,14 @@ def parse_deleted_messages(client, update) -> List["types.Message"]:
     for message in messages:
         parsed_messages.append(
             types.Message(
-                message_id=message,
+                id=message,
                 chat=types.Chat(
                     id=get_channel_id(channel_id),
                     type="channel",
                     client=client
                 ) if channel_id is not None else None,
-                client=client
+                client=client,
+                type='empty',
             )
         )
 
@@ -261,6 +262,8 @@ def get_peer_id(peer: raw.base.Peer) -> int:
 
 
 def get_peer_type(peer_id: int) -> str:
+    if peer_id is None:
+        raise ValueError('peer_id is None')
     if peer_id < 0:
         if MIN_CHAT_ID <= peer_id:
             return "chat"
@@ -274,6 +277,8 @@ def get_peer_type(peer_id: int) -> str:
 
 
 def get_channel_id(peer_id: int) -> int:
+    if peer_id is None:
+        raise ValueError('peer_id is None')
     return MAX_CHANNEL_ID - peer_id
 
 
