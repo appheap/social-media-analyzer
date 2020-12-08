@@ -74,7 +74,7 @@ class SearchGlobal(Scaffold):
                         offset_peer=offset_peer,
                         offset_id=offset_id,
                         limit=limit
-                    ),
+                    ),  # fixme: update fields to the new layer
                     sleep_threshold=60
                 ),
                 replies=0
@@ -87,7 +87,7 @@ class SearchGlobal(Scaffold):
 
             offset_date = last.date
             offset_peer = await self.resolve_peer(last.chat.id)
-            offset_id = last.message_id
+            offset_id = last.id
 
             for message in messages:
                 yield message

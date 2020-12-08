@@ -18,7 +18,7 @@ class MessageReplies(Object):
             comments: Union[None, int] = None,
             replies: int = None,
             replies_pts: int = None,
-            recent_repliers: Union[None, List["types.User"]] = None,
+            recent_repliers: Union[None, List[Union["types.Chat", "types.User"]]] = None,
             channel_id: Union[None, int] = None,
             max_id: Union[None, int] = None,
             read_max_id: Union[None, int] = None,
@@ -40,13 +40,32 @@ class MessageReplies(Object):
 
         def get_replier(peer: "raw.base.Peer"):
             if peer is None:
-                return None
+                return None, None
             if isinstance(peer, raw.types.PeerUser):
-                return users.get(peer.user_id, None)
+                return users.get(peer.user_id, None), 'user'
             elif isinstance(peer, raw.types.PeerChat):
-                return chats.get(peer.chat_id, None)
+                return chats.get(peer.chat_id, None), 'group'
             elif isinstance(peer, raw.types.PeerChannel):
-                return chats.get(peer.channel_id, None)
+                return chats.get(peer.channel_id, None), 'channel'
+
+        recent_repliers = None
+        if message_replies.recent_repliers:
+            parsed_peers = []
+            for peer in message_replies.recent_repliers:
+                _peer, _type = get_replier(peer)
+                if peer is None and _type is None:
+                    continue
+
+                if _type == 'user':
+                    parsed_peer = types.User._parse(client, _peer)
+                else:
+                    parsed_peer = await types.Chat._parse_chat(client, _peer)
+
+                if parsed_peer:
+                    parsed_peers.append(parsed_peer)
+
+            if len(parsed_peers):
+                recent_repliers = types.List(parsed_peers)
 
         return MessageReplies(
             client=client,
@@ -54,9 +73,9 @@ class MessageReplies(Object):
             comments=getattr(message_replies, 'comments', None),
             replies=getattr(message_replies, 'replies', None),
             replies_pts=getattr(message_replies, 'replies_pts', None),
-            recent_repliers=types.List([types.User._parse(client, get_replier(peer)) for peer in
-                                        getattr(message_replies, 'recent_repliers', [])]) or None,
-            channel_id=getattr(message_replies, 'channel_id', None),
+            recent_repliers=recent_repliers,
+            channel_id=utils.get_channel_id(message_replies.channel_id) if getattr(message_replies, 'channel_id',
+                                                                                   None) else None,
             max_id=getattr(message_replies, 'max_id', None),
             read_max_id=getattr(message_replies, 'read_max_id', None),
         )
