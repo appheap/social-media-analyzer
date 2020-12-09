@@ -14,7 +14,6 @@ class UserFull(Object):
             phone_calls_private: bool = None,
             can_pin_message: bool = None,
             has_scheduled: bool = None,
-            user: "types.User" = None,
             about: str = None,
             settings: "types.PeerSettings" = None,
             profile_photo: "types.Photo" = None,
@@ -32,7 +31,6 @@ class UserFull(Object):
         self.phone_calls_private = phone_calls_private
         self.can_pin_message = can_pin_message
         self.has_scheduled = has_scheduled
-        self.user = user
         self.about = about
         self.settings = settings
         self.profile_photo = profile_photo
@@ -47,7 +45,6 @@ class UserFull(Object):
         return UserFull(
             client=client,
             blocked=getattr(user_full, 'blocked', None),
-            user=types.User._parse(client, user_full.user),
             phone_calls_available=getattr(user_full, 'phone_calls_available', None),
             video_calls_available=getattr(user_full, 'video_calls_available', None),
             phone_calls_private=getattr(user_full, 'phone_calls_private', None),
