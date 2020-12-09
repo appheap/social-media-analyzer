@@ -1,6 +1,6 @@
-from . import models
 from users.tests import BaseTestCase
 from utils.utils import prettify
+from .models import *
 
 
 # Create your tests here.
@@ -8,7 +8,7 @@ from utils.utils import prettify
 class TelegramTestCase(BaseTestCase):
 
     def create_telegram_account(self, user, blockage=None):
-        return models.TelegramAccount.objects.create(
+        return TelegramAccount.objects.create(
             user_id=100,
             first_name='sigma',
             last_name='phi',
@@ -25,7 +25,7 @@ class TelegramTestCase(BaseTestCase):
         )
 
     def create_telegram_channel(self, telegram_account, blockage=None):
-        return models.TelegramChannel.objects.create(
+        return TelegramChannel.objects.create(
             channel_id=1,
             is_public=True,
             telegram_account=telegram_account,
@@ -37,9 +37,9 @@ class TelegramTestCase(BaseTestCase):
 
         new_user = self.create_user()
         telegram_account = self.create_telegram_account(new_user)
-        self.assertEqual(models.TelegramAccount.objects.all().count(), 1)
-        self.assertEqual(models.TelegramAccount.objects.all()[0].user_id, 100)
-        self.assertEqual(models.TelegramAccount.objects.all()[0].first_name, 'sigma')
+        self.assertEqual(TelegramAccount.objects.all().count(), 1)
+        self.assertEqual(TelegramAccount.objects.all()[0].user_id, 100)
+        self.assertEqual(TelegramAccount.objects.all()[0].first_name, 'sigma')
 
         print(prettify(telegram_account))
 
@@ -50,8 +50,8 @@ class TelegramTestCase(BaseTestCase):
         telegram_account = self.create_telegram_account(new_user)
         telegram_channel = self.create_telegram_channel(telegram_account)
 
-        self.assertEqual(models.TelegramChannel.objects.all().count(), 1)
-        self.assertEqual(models.TelegramChannel.objects.all()[0].channel_id, 1)
+        self.assertEqual(TelegramChannel.objects.all().count(), 1)
+        self.assertEqual(TelegramChannel.objects.all()[0].channel_id, 1)
 
         print(prettify(telegram_channel))
 

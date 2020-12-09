@@ -148,6 +148,7 @@ class Chat(Object):
             id=peer_id,
             type="bot" if user.user.bot else "private",
             full_user=await types.UserFull._parse(client, user),
+            user=types.User._parse(client, user.user),
             is_full_type=True,
         )
 
@@ -185,6 +186,17 @@ class Chat(Object):
             group=await types.Group._parse(client, chats[chat_full.full_chat.id]),
             is_full_type=True,
         )
+
+    @property
+    def username(self):
+        username = None
+        if self.group:
+            username = None
+        elif self.channel:
+            username = self.channel.username
+        elif self.user:
+            username = self.user.username
+        return username
 
     @staticmethod
     async def _parse_channel_full_chat(client, chat_full: raw.types.messages.ChatFull, users: dict,

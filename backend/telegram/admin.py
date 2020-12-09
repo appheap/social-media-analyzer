@@ -1,31 +1,31 @@
 from django.contrib import admin
 
-from . import models
+from .models import *
 
 
 # Register your models here.
 class TelegramChannelInline(admin.TabularInline):
-    model = models.TelegramChannel
+    model = TelegramChannel
 
 
 class ChatsInline(admin.TabularInline):
-    model = models.Chat
+    model = Chat
 
 
 class AdminLogEventInline(admin.TabularInline):
-    model = models.AdminLogEvent
+    model = AdminLogEvent
 
 
 class MessageViewInline(admin.TabularInline):
-    model = models.MessageView
+    model = MessageView
 
 
 class MemberCountHistoryInline(admin.TabularInline):
-    model = models.ChatMemberCount
+    model = ChatMemberCount
 
 
 class SharedMediaHistoryInline(admin.TabularInline):
-    model = models.ChatSharedMedia
+    model = ChatSharedMedia
 
 
 class TelegramAccountAdmin(admin.ModelAdmin):
@@ -43,59 +43,59 @@ class TelegramAccountAdmin(admin.ModelAdmin):
 #################################################################################
 
 class TelegramAccountInline(admin.TabularInline):
-    model = models.TelegramAccount
+    model = TelegramAccount
 
 
 class ForwardedMessageInline(admin.TabularInline):
-    model = models.Message
+    model = Message
     fk_name = 'forward_from'
     verbose_name_plural = 'Forwarded Messages'
 
 
 class SentMessageInline(admin.TabularInline):
-    model = models.Message
+    model = Message
     fk_name = 'from_user'
     verbose_name_plural = 'Sent Messages'
 
 
 class ViaBotMessageInline(admin.TabularInline):
-    model = models.Message
+    model = Message
     fk_name = 'via_bot'
     verbose_name_plural = 'Inline Messages'
 
 
 class InvitedParticipantInline(admin.TabularInline):
-    model = models.ChannelParticipant
+    model = ChannelParticipant
     fk_name = 'invited_by'
     verbose_name_plural = 'Invited Participants'
 
 
 class PromotedParticipantInline(admin.TabularInline):
-    model = models.ChannelParticipant
+    model = ChannelParticipant
     fk_name = 'promoted_by'
     verbose_name_plural = 'Promoted Participants'
 
 
 class DemotedParticipantInline(admin.TabularInline):
-    model = models.ChannelParticipant
+    model = ChannelParticipant
     fk_name = 'demoted_by'
     verbose_name_plural = 'Demoted Participants'
 
 
 class KickedParticipantInline(admin.TabularInline):
-    model = models.ChannelParticipant
+    model = ChannelParticipant
     fk_name = 'kicked_by'
     verbose_name_plural = 'Kicked Participants'
 
 
 class MentionedInline(admin.TabularInline):
-    model = models.Entity
+    model = Entity
     fk_name = 'user'
     verbose_name_plural = 'Mentions'
 
 
 class MembershipInline(admin.TabularInline):
-    model = models.Membership
+    model = Membership
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -116,23 +116,23 @@ class UserAdmin(admin.ModelAdmin):
 #################################################################################
 
 class ChatMemberInline(admin.TabularInline):
-    model = models.User.chats.through
+    model = User.chats.through
     verbose_name_plural = 'Members'
 
 
 class LinkedChatInline(admin.TabularInline):
-    model = models.Chat
+    model = Chat
     verbose_name_plural = 'Linked Chats'
 
 
 class MessageInline(admin.TabularInline):
-    model = models.Message
+    model = Message
     fk_name = 'chat'
     verbose_name_plural = 'Messages'
 
 
 class ForwardedMessageChannelInline(admin.TabularInline):
-    model = models.Message
+    model = Message
     fk_name = 'forward_from_chat'
     verbose_name_plural = 'Forwarded Messages'
 
@@ -168,37 +168,37 @@ class SharedMediaAnalyzerMetaDataAdmin(admin.ModelAdmin):
 #################################################################################
 
 class EntityInline(admin.TabularInline):
-    model = models.Entity
+    model = Entity
 
 
 class EntityTypeInline(admin.TabularInline):
-    model = models.EntityType
+    model = EntityType
 
 
 class MessageReplyInline(admin.TabularInline):
-    model = models.Message
+    model = Message
     verbose_name_plural = 'Replies'
 
 
 class ActionMessagePinnedInline(admin.TabularInline):
-    model = models.AdminLogEventActionUpdatePinned
+    model = AdminLogEventActionUpdatePinned
     verbose_name_plural = 'Pinned Actions'
 
 
 class ActionMessageEditedPrevInline(admin.TabularInline):
-    model = models.AdminLogEventActionEditMessage
+    model = AdminLogEventActionEditMessage
     verbose_name_plural = 'Action Edit Prevs'
     fk_name = 'prev_message'
 
 
 class ActionMessageEditedNewInline(admin.TabularInline):
-    model = models.AdminLogEventActionEditMessage
+    model = AdminLogEventActionEditMessage
     verbose_name_plural = 'Action Edit News'
     fk_name = 'new_message'
 
 
 class ActionMessageStopPollInline(admin.TabularInline):
-    model = models.AdminLogEventActionStopPoll
+    model = AdminLogEventActionStopPoll
     verbose_name_plural = 'Action Stop Polls'
 
 
@@ -217,7 +217,7 @@ class MessageAdmin(admin.ModelAdmin):
 
 #################################################################################
 class ChannelParticipantInline(admin.TabularInline):
-    model = models.ChannelParticipant
+    model = ChannelParticipant
     fk_name = 'membership'
     verbose_name_plural = 'participant history'
     fields = (
@@ -236,49 +236,49 @@ class MembershipAdmin(admin.ModelAdmin):
 #################################################################################
 #################################################################################
 
-admin.site.register(models.TelegramAccount, TelegramAccountAdmin)
-admin.site.register(models.TelegramChannel)
-admin.site.register(models.AddChannelRequest)
+admin.site.register(TelegramAccount, TelegramAccountAdmin)
+admin.site.register(TelegramChannel)
+admin.site.register(AddChannelRequest)
 
-admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Dialog)
-admin.site.register(models.Chat, ChatAdmin)
-admin.site.register(models.Membership, MembershipAdmin)
-admin.site.register(models.Message, MessageAdmin)
-admin.site.register(models.MessageView)
-admin.site.register(models.Entity)
-admin.site.register(models.EntityType)
-admin.site.register(models.ChatMemberCount)
-admin.site.register(models.ChatSharedMedia)
-admin.site.register(models.Restriction)
-admin.site.register(models.AdminLogEvent)
-admin.site.register(models.AdminLogEventActionChangeTitle)
-admin.site.register(models.AdminLogEventActionChangeAbout)
-admin.site.register(models.AdminLogEventActionChangeUsername)
-admin.site.register(models.AdminLogEventActionChangePhoto)
-admin.site.register(models.AdminLogEventActionToggleInvites)
-admin.site.register(models.AdminLogEventActionToggleSignatures)
-admin.site.register(models.AdminLogEventActionUpdatePinned)
-admin.site.register(models.AdminLogEventActionEditMessage)
-admin.site.register(models.AdminLogEventActionDeleteMessage)
-admin.site.register(models.AdminLogEventActionParticipantJoin)
-admin.site.register(models.AdminLogEventActionParticipantLeave)
-admin.site.register(models.AdminLogEventActionParticipantInvite)
-admin.site.register(models.AdminLogEventActionToggleBan)
-admin.site.register(models.AdminLogEventActionToggleAdmin)
-admin.site.register(models.AdminLogEventActionChangeStickerSet)
-admin.site.register(models.AdminLogEventActionTogglePreHistoryHidden)
-admin.site.register(models.AdminLogEventActionDefaultBannedRights)
-admin.site.register(models.AdminLogEventActionStopPoll)
-admin.site.register(models.AdminLogEventActionChangeLinkedChat)
-admin.site.register(models.AdminLogEventActionChangeLocation)
-admin.site.register(models.AdminLogEventActionToggleSlowMode)
-admin.site.register(models.ChannelParticipant)
-admin.site.register(models.ChatBannedRight)
-admin.site.register(models.ChatPermissions)
-admin.site.register(models.AdminRights)
-admin.site.register(models.SharedMediaAnalyzerMetaData)
-admin.site.register(models.ChatMessageViewsAnalyzerMetaData)
-admin.site.register(models.ChatMemberCountAnalyzerMetaData)
-admin.site.register(models.ChatMembersAnalyzerMetaData)
-admin.site.register(models.AdminLogAnalyzerMetaData)
+admin.site.register(User, UserAdmin)
+admin.site.register(Dialog)
+admin.site.register(Chat, ChatAdmin)
+admin.site.register(Membership, MembershipAdmin)
+admin.site.register(Message, MessageAdmin)
+admin.site.register(MessageView)
+admin.site.register(Entity)
+admin.site.register(EntityType)
+admin.site.register(ChatMemberCount)
+admin.site.register(ChatSharedMedia)
+admin.site.register(Restriction)
+admin.site.register(AdminLogEvent)
+admin.site.register(AdminLogEventActionChangeTitle)
+admin.site.register(AdminLogEventActionChangeAbout)
+admin.site.register(AdminLogEventActionChangeUsername)
+admin.site.register(AdminLogEventActionChangePhoto)
+admin.site.register(AdminLogEventActionToggleInvites)
+admin.site.register(AdminLogEventActionToggleSignatures)
+admin.site.register(AdminLogEventActionUpdatePinned)
+admin.site.register(AdminLogEventActionEditMessage)
+admin.site.register(AdminLogEventActionDeleteMessage)
+admin.site.register(AdminLogEventActionParticipantJoin)
+admin.site.register(AdminLogEventActionParticipantLeave)
+admin.site.register(AdminLogEventActionParticipantInvite)
+admin.site.register(AdminLogEventActionToggleBan)
+admin.site.register(AdminLogEventActionToggleAdmin)
+admin.site.register(AdminLogEventActionChangeStickerSet)
+admin.site.register(AdminLogEventActionTogglePreHistoryHidden)
+admin.site.register(AdminLogEventActionDefaultBannedRights)
+admin.site.register(AdminLogEventActionStopPoll)
+admin.site.register(AdminLogEventActionChangeLinkedChat)
+admin.site.register(AdminLogEventActionChangeLocation)
+admin.site.register(AdminLogEventActionToggleSlowMode)
+admin.site.register(ChannelParticipant)
+admin.site.register(ChatBannedRight)
+admin.site.register(ChatPermissions)
+admin.site.register(AdminRights)
+admin.site.register(SharedMediaAnalyzerMetaData)
+admin.site.register(ChatMessageViewsAnalyzerMetaData)
+admin.site.register(ChatMemberCountAnalyzerMetaData)
+admin.site.register(ChatMembersAnalyzerMetaData)
+admin.site.register(AdminLogAnalyzerMetaData)
