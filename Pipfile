@@ -28,6 +28,7 @@ asgiref = "*"
 trio = "*"
 emoji = "*"
 django-debug-toolbar = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.6"

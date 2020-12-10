@@ -6,6 +6,7 @@ from .chat_permissions import ChatPermissions
 from .chat_banned_rights import ChatBannedRight
 
 from .admin_log_event import *
+from . import admin_log_event
 
 __all__ = [
     "Chat",
@@ -15,29 +16,5 @@ __all__ = [
     "ChatPermissions",
     "ChatBannedRight",
 
-    # admin log event package # fixme: alternative?
-    "AdminLogEvent",
-
-    "AdminLogEventActionChangeTitle",
-    "AdminLogEventActionChangeAbout",
-    "AdminLogEventActionChangeUsername",
-    "AdminLogEventActionChangePhoto",
-    "AdminLogEventActionToggleInvites",
-    "AdminLogEventActionToggleSignatures",
-    "AdminLogEventActionUpdatePinned",
-    "AdminLogEventActionEditMessage",
-    "AdminLogEventActionDeleteMessage",
-    "AdminLogEventActionParticipantJoin",
-    "AdminLogEventActionParticipantLeave",
-    "AdminLogEventActionParticipantInvite",
-    "AdminLogEventActionToggleBan",
-    "AdminLogEventActionToggleAdmin",
-    "AdminLogEventActionChangeStickerSet",
-    "AdminLogEventActionTogglePreHistoryHidden",
-    "AdminLogEventActionDefaultBannedRights",
-    "AdminLogEventActionStopPoll",
-    "AdminLogEventActionChangeLinkedChat",
-    "AdminLogEventActionChangeLocation",
-    "AdminLogEventActionToggleSlowMode",
-
+    *admin_log_event.__all__
 ]

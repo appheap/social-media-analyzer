@@ -98,17 +98,23 @@ class MembershipInline(admin.TabularInline):
     model = Membership
 
 
+class ProfilePhotoInline(admin.TabularInline):
+    model = Photo
+    verbose_name_plural = 'Profile Photos'
+
+
 class UserAdmin(admin.ModelAdmin):
     inlines = [
         TelegramAccountInline,
         MembershipInline,
+        ProfilePhotoInline,
         # ForwardedMessageInline,
         # SentMessageInline,
         # ViaBotMessageInline,
-        InvitedParticipantInline,
-        PromotedParticipantInline,
-        DemotedParticipantInline,
-        KickedParticipantInline,
+        # InvitedParticipantInline,
+        # PromotedParticipantInline,
+        # DemotedParticipantInline,
+        # KickedParticipantInline,
         # MentionedInline,
     ]
 
@@ -245,6 +251,7 @@ admin.site.register(Dialog)
 admin.site.register(Chat, ChatAdmin)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Message, MessageAdmin)
+admin.site.register(Photo)
 admin.site.register(MessageView)
 admin.site.register(Entity)
 admin.site.register(EntityType)
