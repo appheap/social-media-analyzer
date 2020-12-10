@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include
 from django.urls import path
+import debug_toolbar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,6 +25,7 @@ urlpatterns = [
     path('telegram/', include('telegram.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('', include('pages.urls')),
+    path('__debug__/', include(debug_toolbar.urls)),
 ]
 
 import django.conf.urls as urls

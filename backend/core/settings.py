@@ -29,6 +29,10 @@ DEBUG = config('DEBUG', cast=bool, default=True)
 
 ALLOWED_HOSTS = ['*', 'localhost']
 
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -42,6 +46,7 @@ INSTALLED_APPS = [
     # 3-rd party
     'django_celery_beat',
     'crispy_forms',
+    'debug_toolbar',
 
     # local
     'users',
@@ -61,6 +66,10 @@ MIDDLEWARE = [
 
     # debug in production
     'whitenoise.middleware.WhiteNoiseMiddleware',
+
+    # debug toolbar
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
 ]
 
 ROOT_URLCONF = 'core.urls'
