@@ -4,6 +4,19 @@ from ..base import BaseModel
 
 class User(BaseModel):
     user_id = models.BigIntegerField(primary_key=True)
+
+    # info from raw full_user
+    is_blocked = models.BooleanField(null=True, blank=True)
+    can_we_pin_message = models.BooleanField(null=True, blank=True)
+    about = models.TextField(max_length=256, null=True, blank=True)
+    common_chats_count = models.IntegerField(null=True, blank=True)
+
+    # info from both
+    # `profile_photos`
+
+    # info from raw user
+    is_empty = models.BooleanField(null=True, blank=True)
+    is_mutual_contact = models.BooleanField(null=True, blank=True)
     is_deleted = models.BooleanField(null=True, blank=True)
     is_bot = models.BooleanField(null=True, blank=True)
     is_verified = models.BooleanField(null=True, blank=True)
@@ -16,6 +29,9 @@ class User(BaseModel):
     language_code = models.CharField(max_length=20, null=True, blank=True)
     dc_id = models.IntegerField(null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
+    bot_inline_placeholder = models.CharField(max_length=256, null=True, blank=True)
+    bot_can_see_history = models.BooleanField(null=True, blank=True)
+    bot_can_request_geo = models.BooleanField(null=True, blank=True)
 
     ##############################################################
     deleted_at = models.BigIntegerField(null=True, blank=True)
@@ -33,6 +49,7 @@ class User(BaseModel):
     # `demoted_participants` : channel participants demoted by this user
     # `invited_participants` : channel participants invited by this user
     # `kicked_participants` : channel participants kicked by this user
+    # `profile_photos` : profile photos belonging to this user
 
     class Meta:
         ordering = ('created_at',)
