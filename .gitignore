@@ -166,3 +166,4 @@ dmypy.json
 /backend/telegram/tg_sessions/
 /backend/.env
 /Pipfile.lock
+/backend/media_files/
