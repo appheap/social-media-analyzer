@@ -1,13 +1,14 @@
 from pyrogram import raw
 
 from ..object import Object
+import pyrogram
 
 
 class BotCommand(Object):
     def __init__(
             self,
             *,
-            client: "Client" = None,
+            client: "pyrogram.Client" = None,
             command: str = None,
             description: str = None,
     ):
