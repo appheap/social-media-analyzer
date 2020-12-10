@@ -27,6 +27,7 @@ argh = "*"
 asgiref = "*"
 trio = "*"
 emoji = "*"
+django-debug-toolbar = "*"
 
 [requires]
 python_version = "3.6"

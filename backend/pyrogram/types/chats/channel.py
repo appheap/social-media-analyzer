@@ -13,6 +13,7 @@ class Channel(Object):
             id: int = None,
             title: str = None,
             is_forbidden: bool = None,
+            forbidden_until: int = None,
             username: str = None,
             photo: "types.ChatPhoto" = None,
             is_creator: bool = None,
@@ -42,6 +43,7 @@ class Channel(Object):
         self.id = id
         self.title = title
         self.is_forbidden = is_forbidden
+        self.forbidden_until = forbidden_until
         self.username = username
         self.photo = photo
         self.is_creator = is_creator
@@ -78,6 +80,7 @@ class Channel(Object):
             id=peer_id,
             title=getattr(channel, 'title', None),
             is_forbidden=isinstance(channel, raw.types.ChannelForbidden),
+            forbidden_until=getattr(channel, 'until_date', None),
             username=getattr(channel, 'username', None),
             photo=types.ChatPhoto._parse(client, getattr(channel, "photo", None), peer_id,
                                          getattr(channel, 'access_hash', 0)),
