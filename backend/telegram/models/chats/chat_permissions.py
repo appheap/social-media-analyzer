@@ -29,8 +29,14 @@ class ChatPermissions(BaseModel):
     # True, if the user is allowed to pin messages. Ignored in public supergroups.
     can_pin_messages = models.BooleanField(null=True, blank=True, )
 
+    until_date_ts = models.BigIntegerField(null=True, blank=True, )
+
     ###########################################
     # `chat` : chat this permissions belongs to
+    # `adminships` : adminship object this permissions belongs to
+    # `action_banned_rights_prev` : Action this Rights is the previous banned rights of it
+    # `action_banned_rights_new` : Action this Rights is the new banned rights of it
+    # `participant` : Participant this rights belongs to
 
     class Meta:
         verbose_name_plural = 'Chat permissions'

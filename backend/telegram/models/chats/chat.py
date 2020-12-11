@@ -20,45 +20,52 @@ class ChatTypes(models.TextChoices):
 
 
 class Chat(BaseModel):
-    chat_id = models.BigIntegerField(primary_key=True)
+    chat_id = models.BigIntegerField(primary_key=True)  # fixme: what about private/bot chats?
     type = models.CharField(
         ChatTypes.choices,
         max_length=15,
         default=ChatTypes.channel)
-    is_verified = models.BooleanField(null=True, blank=True)
-    is_restricted = models.BooleanField(null=True, blank=True)
-    is_scam = models.BooleanField(null=True, blank=True)
-    is_support = models.BooleanField(null=True, blank=True)
-    title = models.CharField(max_length=256, null=True, blank=True)
-    username = models.CharField(max_length=32, null=True, blank=True)
-    first_name = models.CharField(max_length=64, null=True, blank=True)
-    last_name = models.CharField(max_length=64, null=True, blank=True)
-    description = models.TextField(max_length=256, null=True, blank=True)
-    dc_id = models.IntegerField(null=True, blank=True)
-    invite_link = models.CharField(max_length=256, null=True, blank=True)
-    # Default chat member permissions, for groups and supergroups.
-    permissions = models.OneToOneField(
-        'telegram.ChatPermissions',
-        on_delete=models.SET_NULL,
+
+    channel = models.OneToOneField(
+        'telegram.Channel',
+        models.CASCADE,
         related_name='chat',
-        null=True, blank=True,
+        null=True,
+        blank=True,
     )
-    # the chat linked to the current chat
-    linked_chat = models.ForeignKey(
-        'self',
-        null=True, blank=True,
-        related_name='linked_chats_reverse',
-        on_delete=models.SET_NULL,
+
+    group = models.OneToOneField(
+        'telegram.Group',
+        models.CASCADE,
+        related_name='chat',
+        null=True,
+        blank=True,
+    )
+
+    user = models.ForeignKey(
+        'telegram.User',
+        models.CASCADE,
+        related_name='chat_peers',  # fixme: maybe a better name?
+        null=True,
+        blank=True,
     )
 
     #################################################
-    # telegram account which added this chat
-    logger_account = models.ForeignKey(
+    # telegram accounts which are peers of this chat
+    logger_accounts = models.ManyToManyField(
         'telegram.TelegramAccount',
-        on_delete=models.CASCADE,
         related_name='chats',
-        null=False,
-        verbose_name='logger account',
+        through='telegram.AdminShip',
+        through_fields=('chat', 'account'),
+        verbose_name='logger accounts',
+    )
+
+    # users who are/were member of this chat (including their state; currently member or left the chat)
+    members = models.ManyToManyField(
+        'telegram.User',
+        related_name='chats',
+        through='telegram.Membership',
+        through_fields=('chat', 'user'),
     )
 
     shared_media_analyzer = models.OneToOneField(
@@ -96,18 +103,8 @@ class Chat(BaseModel):
         related_name='chat',
     )
 
-    # users who are/were member of this chat (including their state; currently member or left the chat)
-    members = models.ManyToManyField(
-        'telegram.User',
-        related_name='chats',
-        through='telegram.Membership',
-        through_fields=('chat', 'user'),
-    )
-
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.BigIntegerField(null=True, blank=True)
-
-    is_public = models.BooleanField(default=False)
 
     #################################################
     # `restrictions` : restrictions of this chat
@@ -121,10 +118,23 @@ class Chat(BaseModel):
     # `shared_media_history` : shared media history of the chat
     # `message_views` : message views belonging to this chat
     # `dialogs` : dialogs this chat belongs to
+    # `migrated_to` : chat this group chat migrated to
+
+    @property
+    def title(self):
+        if self.type in ('channel', 'supergroup'):
+            return self.channel.title
+        elif self.type == 'group':
+            return self.group.title
+        elif self.type in ('private', 'bot'):
+            s = f"{self.user.first_name}" if self.user.first_name else ""
+            s += " : " if len(s) else ""
+            s += f"{self.user.last_name}" if self.user.last_name else ""
+            return s
+        else:
+            return str(self.chat_id)
 
     def __str__(self):
-        s = self.title if self.title else self.first_name if self.first_name else self.last_name
-        r = s if s else str(self.chat_id)
         _type = '📢'
         if self.type == 'channel':
             _type = '📢'
@@ -138,4 +148,4 @@ class Chat(BaseModel):
             _type = '🤖'
         else:
             pass
-        return f'{_type} {r}'
+        return f'{_type} {self.title}'

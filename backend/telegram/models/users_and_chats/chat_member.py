@@ -67,7 +67,7 @@ class ChannelParticipant(BaseModel):
     left = models.BooleanField(null=True, blank=True, )  # only for banned participant
     # Banned rights
     banned_rights = models.OneToOneField(
-        'telegram.ChatBannedRight',
+        'telegram.ChatPermissions',
         on_delete=models.CASCADE,
         related_name='participant',
         null=True, blank=True,

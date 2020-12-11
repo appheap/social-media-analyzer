@@ -6,7 +6,7 @@ from pyrogram import raw
 from pyrogram.utils import encode_file_id
 from ..object import Object
 from pyrogram import utils
-import telegram.client as tg
+
 
 
 class ChatPhoto(Object):
@@ -25,7 +25,7 @@ class ChatPhoto(Object):
     def __init__(
             self,
             *,
-            client: "tg.Client" = None,
+            client: "pyrogram.Client" = None,
             small_file_id: str,
             big_file_id: str
     ):
