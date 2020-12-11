@@ -3,14 +3,15 @@ from ..base import BaseModel
 
 
 class AdminRights(BaseModel):
-    change_info = models.BooleanField(null=True, blank=True)
-    post_messages = models.BooleanField(null=True, blank=True)
-    edit_messages = models.BooleanField(null=True, blank=True)
-    delete_messages = models.BooleanField(null=True, blank=True)
-    ban_users = models.BooleanField(null=True, blank=True)
-    invite_users = models.BooleanField(null=True, blank=True)
-    pin_messages = models.BooleanField(null=True, blank=True)
-    add_admins = models.BooleanField(null=True, blank=True)
+    can_change_info = models.BooleanField(null=True, blank=True)
+    can_post_messages = models.BooleanField(null=True, blank=True)
+    can_edit_messages = models.BooleanField(null=True, blank=True)
+    can_delete_messages = models.BooleanField(null=True, blank=True)
+    can_ban_users = models.BooleanField(null=True, blank=True)
+    can_invite_users = models.BooleanField(null=True, blank=True)
+    can_pin_messages = models.BooleanField(null=True, blank=True)
+    can_add_admins = models.BooleanField(null=True, blank=True)
+    is_anonymous = models.BooleanField(null=True, blank=True)
 
     # channel this rights belongs to
     telegram_channel = models.ForeignKey(
@@ -37,6 +38,7 @@ class AdminRights(BaseModel):
 
     #################################################
     # `participant` : Participant this rights belongs to
+    # `adminships` : adminship object this permissions belongs to
 
     class Meta:
         verbose_name_plural = 'Admin Rights'

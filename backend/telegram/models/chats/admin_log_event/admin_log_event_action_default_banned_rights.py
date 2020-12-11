@@ -9,7 +9,7 @@ class AdminLogEventActionDefaultBannedRights(BaseModel):
     """
     # Previous global banned rights
     prev_banned_rights = models.OneToOneField(
-        'telegram.ChatBannedRight',
+        'telegram.ChatPermissions',
         on_delete=models.CASCADE,
         related_name='action_banned_rights_prev',
         null=True, blank=True,
@@ -17,7 +17,7 @@ class AdminLogEventActionDefaultBannedRights(BaseModel):
 
     # New global banned rights.
     new_banned_rights = models.OneToOneField(
-        'telegram.ChatBannedRight',
+        'telegram.ChatPermissions',
         on_delete=models.CASCADE,
         related_name='action_banned_rights_new',
         null=True, blank=True,

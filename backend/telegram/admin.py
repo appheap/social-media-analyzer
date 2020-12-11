@@ -31,7 +31,6 @@ class SharedMediaHistoryInline(admin.TabularInline):
 class TelegramAccountAdmin(admin.ModelAdmin):
     inlines = [
         TelegramChannelInline,
-        ChatsInline,
         MemberCountHistoryInline,
         SharedMediaHistoryInline,
         MessageViewInline,
@@ -249,6 +248,8 @@ admin.site.register(AddChannelRequest)
 admin.site.register(User, UserAdmin)
 admin.site.register(Dialog)
 admin.site.register(Chat, ChatAdmin)
+admin.site.register(Channel)
+admin.site.register(Group)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Photo)
@@ -281,7 +282,6 @@ admin.site.register(AdminLogEventActionChangeLinkedChat)
 admin.site.register(AdminLogEventActionChangeLocation)
 admin.site.register(AdminLogEventActionToggleSlowMode)
 admin.site.register(ChannelParticipant)
-admin.site.register(ChatBannedRight)
 admin.site.register(ChatPermissions)
 admin.site.register(AdminRights)
 admin.site.register(SharedMediaAnalyzerMetaData)
