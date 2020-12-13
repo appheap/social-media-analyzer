@@ -148,7 +148,6 @@ class Chat(Object):
             id=peer_id,
             type="bot" if user.user.bot else "private",
             full_user=await types.UserFull._parse(client, user),
-            user=types.User._parse(client, user.user),
             is_full_type=True,
         )
 
