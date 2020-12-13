@@ -36,7 +36,7 @@ class TelegramAccountAdmin(admin.ModelAdmin):
         MessageViewInline,
         AdminLogEventInline,
     ]
-    list_display = ['first_name', 'username', 'created_at', 'modified_at']
+    list_display = ['first_name', 'username', 'created_ts', 'modified_ts']
 
 
 #################################################################################

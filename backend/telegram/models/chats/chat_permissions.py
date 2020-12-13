@@ -40,5 +40,3 @@ class ChatPermissions(BaseModel):
 
     class Meta:
         verbose_name_plural = 'Chat permissions'
-        ordering = ('-modified_at', '-created_at')
-        get_latest_by = ('-modified_at', '-created_at')
