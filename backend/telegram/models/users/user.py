@@ -55,7 +55,7 @@ class User(BaseModel):
     # `profile_photos` : profile photos belonging to this user
 
     class Meta:
-        ordering = ('created_at',)
+        pass
 
     def __str__(self):
         # return str(self.first_name if self.first_name else "") + str(self.last_name if self.last_name else "")
