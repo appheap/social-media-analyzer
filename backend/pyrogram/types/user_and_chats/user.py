@@ -134,6 +134,7 @@ class User(Object, Update):
             *,
             client: "pyrogram.Client" = None,
             id: int,
+            is_empty: bool = None,
             is_self: bool = None,
             is_contact: bool = None,
             is_mutual_contact: bool = None,
@@ -166,6 +167,7 @@ class User(Object, Update):
 
         self.id = id
         self.is_self = is_self
+        self.is_empty = is_empty
         self.is_contact = is_contact
         self.is_mutual_contact = is_mutual_contact
         self.is_deleted = is_deleted
@@ -198,30 +200,35 @@ class User(Object, Update):
         return Link(f"tg://user?id={self.id}", self.first_name, self._client.parse_mode)
 
     @staticmethod
-    def _parse(client, user: "raw.types.User") -> "User" or None:
+    def _parse(client, user: "raw.base.User") -> "User" or None:
         if user is None:
             return None
-
+        is_empty = isinstance(user, raw.types.UserEmpty)
+        status = User._parse_status(user.status, user.bot) if not is_empty else {}
         return User(
             id=user.id,
-            is_self=user.is_self,
-            is_contact=user.contact,
-            is_mutual_contact=user.mutual_contact,
-            is_deleted=user.deleted,
-            is_bot=user.bot,
-            is_verified=user.verified,
-            is_restricted=user.restricted,
-            is_scam=user.scam,
-            is_support=user.support,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            **User._parse_status(user.status, user.bot),
-            username=user.username,
-            language_code=user.lang_code,
+            is_empty=is_empty,
+            is_self=getattr(user, 'self', None),
+            is_contact=getattr(user, 'contact', None),
+            is_mutual_contact=getattr(user, 'mutual_contact', None),
+            is_deleted=getattr(user, 'deleted', None),
+            is_bot=getattr(user, 'bot', None),
+            is_verified=getattr(user, 'verified', None),
+            is_restricted=getattr(user, 'restricted', None),
+            is_scam=getattr(user, 'scam', None),
+            is_support=getattr(user, 'support', None),
+            first_name=getattr(user, 'first_name', None),
+            last_name=getattr(user, 'last_name', None),
+            **status,
+            username=getattr(user, 'username', None),
+            language_code=getattr(user, 'lang_code', None),
             dc_id=getattr(user.photo, "dc_id", None),
-            phone_number=user.phone,
-            photo=types.ChatPhoto._parse(client, user.photo, user.id, user.access_hash),
-            restrictions=types.List([types.Restriction._parse(r) for r in user.restriction_reason]) or None,
+            phone_number=getattr(user, 'phone', None),
+            photo=types.ChatPhoto._parse(client, user.photo, user.id, user.access_hash) if getattr(user, 'photo',
+                                                                                                   None) else None,
+            restrictions=(
+                    types.List([types.Restriction._parse(r) for r in user.restriction_reason]) or None) if getattr(
+                user, 'restriction_reason', None) else None,
 
             # added
             bot_info_version=getattr(user, 'bot_info_version', None),
