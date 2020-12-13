@@ -337,6 +337,13 @@ class Message(Object, Update):
             )
 
     @property
+    def media_type(self):
+        if self.type == 'message':
+            return self.media_type
+        else:
+            return None
+
+    @property
     def link(self) -> str:
         if self.chat.type in ("group", "supergroup", "channel") and self.chat.username:
             return f"https://t.me/{self.chat.username}/{self.message_id}"
