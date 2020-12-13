@@ -121,15 +121,19 @@ class MessageNormal(Object):
 
         raw_media = message.media
         media = None
+        media_type = None
         if raw_media:
             if isinstance(raw_media, raw.types.MessageMediaPhoto):
                 media = types.Photo._parse(client, raw_media.photo, raw_media.ttl_seconds)
+                media_type = 'photo'
 
             elif isinstance(raw_media, raw.types.MessageMediaGeo):
                 media = types.Geo._parse(client, raw_media)
+                media_type = 'location'
 
             elif isinstance(raw_media, raw.types.MessageMediaContact):
                 media = types.Contact._parse(client, raw_media)
+                media_type = 'contact'
 
             elif isinstance(raw_media, raw.types.MessageMediaDocument):
                 doc = raw_media.document
@@ -148,20 +152,25 @@ class MessageNormal(Object):
 
                         if audio_attributes.voice:
                             media = types.Voice._parse(client, doc, audio_attributes)
+                            media_type = 'voice'
                         else:
                             media = types.Audio._parse(client, doc, audio_attributes, file_name)
+                            media_type = 'audio'
                     elif raw.types.DocumentAttributeAnimated in attributes:
                         video_attributes = attributes.get(raw.types.DocumentAttributeVideo, None)
 
                         media = types.Animation._parse(client, doc, video_attributes, file_name)
+                        media_type = 'animation'
                     elif raw.types.DocumentAttributeVideo in attributes:
                         video_attributes = attributes[raw.types.DocumentAttributeVideo]
 
                         if video_attributes.round_message:
                             media = types.VideoNote._parse(client, doc, video_attributes)
+                            media_type = 'video_note'
                         else:
                             media = types.Video._parse(client, doc, video_attributes, file_name,
                                                        raw_media.ttl_seconds)
+                            media_type = 'video'
                     elif raw.types.DocumentAttributeSticker in attributes:
                         media = await types.Sticker._parse(
                             client, doc,
@@ -169,32 +178,41 @@ class MessageNormal(Object):
                             attributes[raw.types.DocumentAttributeSticker],
                             file_name
                         )
+                        media_type = 'sticker'
                     else:
                         media = types.Document._parse(client, doc, file_name)
+                        media_type = 'document'
 
             elif isinstance(raw_media, raw.types.MessageMediaWebPage):
                 if isinstance(raw_media.webpage, raw.types.WebPage):
                     media = types.WebPage._parse(client, raw_media.webpage)
+                    media_type = 'webpage'
                 else:
                     media = None
 
             elif isinstance(raw_media, raw.types.MessageMediaVenue):
                 media = types.Venue._parse(client, raw_media)
+                media_type = 'venue'
 
             elif isinstance(raw_media, raw.types.MessageMediaGame):
                 media = types.Game._parse(client, message)
+                media_type = 'game'
 
             elif isinstance(raw_media, raw.types.MessageMediaInvoice):
                 media = types.Invoice._parse(client, raw_media)
+                media_type = 'invoice'
 
             elif isinstance(raw_media, raw.types.MessageMediaGeoLive):
                 media = types.GeoLive._parse(client, raw_media)
+                media_type = 'live_location'
 
             elif isinstance(raw_media, raw.types.MessageMediaPoll):
                 media = types.Poll._parse(client, raw_media)
+                media_type = 'poll'
 
             elif isinstance(raw_media, raw.types.MessageMediaDice):
                 media = types.Dice._parse(client, raw_media)
+                media_type = 'dice'
 
             else:
                 media = None
@@ -221,7 +239,7 @@ class MessageNormal(Object):
             reply_header=types.MessageReplyHeader._parse(client, getattr(message, 'reply_to', None), users, chats),
             text=types.Str(message.message).init(entities) or None,
             media=media,
-            media_type=None,
+            media_type=media_type,
             reply_markup=reply_markup,
             entities=entities,
             views=await types.MessageViews._parse_from_message(client, message.id, message, users, chats),

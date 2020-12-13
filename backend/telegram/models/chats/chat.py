@@ -113,7 +113,10 @@ class Chat(BaseModel):
     # `admin_log_events` : admin log events belonging to this chat
     # `linked_chats_reverse` : Chats this chat is linked to
     # `messages` : messages of this channel
-    # `forwarded_messages` : forwarded messages from this channel
+    # `forwarded_messages` : forwarded messages from this chat
+    # `saved_messages` : saved messages from this chat
+    # `sent_messages` : sent messages from this chat
+    # `message_replies` : replies to this chat
     # `member_count_history` : member count history of the chat
     # `shared_media_history` : shared media history of the chat
     # `message_views` : message views belonging to this chat
