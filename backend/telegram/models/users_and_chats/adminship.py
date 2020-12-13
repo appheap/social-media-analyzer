@@ -73,6 +73,7 @@ class AdminShip(BaseModel):
     # `is_creator`
 
     class Meta:
+        verbose_name_plural = 'Adminships'
         unique_together = [
             ('chat', 'account'),
         ]

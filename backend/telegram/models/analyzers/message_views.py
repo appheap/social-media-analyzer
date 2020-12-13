@@ -6,9 +6,22 @@ import arrow
 class MessageView(BaseModel):
     id = models.CharField(max_length=256, primary_key=True)  # `chat_id:message_id:date`
 
-    views = models.BigIntegerField()
     date = models.BigIntegerField()
 
+    views = models.BigIntegerField()
+    forwards = models.BigIntegerField()
+    # info from replies
+    replies = models.BigIntegerField()
+    # `recent_repliers`
+    discussion_chat = models.ForeignKey(
+        'telegram.Chat',
+        on_delete=models.CASCADE,
+        related_name='discussion_message_views',
+        null=True,
+        blank=True,
+    )
+
+    message_id_orig = models.BigIntegerField()
     # message this view belongs to
     message = models.ForeignKey(
         'telegram.Message',
@@ -32,6 +45,9 @@ class MessageView(BaseModel):
         null=True, blank=True,
         related_name='message_views',
     )
+
+    ###################################################
+    # `recent_repliers` : last few comment posters for a specific thread
 
     class Meta:
         ordering = ['-date', 'message', ]
