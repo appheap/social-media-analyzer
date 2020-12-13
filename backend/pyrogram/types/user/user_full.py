@@ -22,6 +22,7 @@ class UserFull(Object):
             pinned_message: "types.Message" = None,
             common_chats_count: int = None,
             folder_id: int = None,
+            user: "types.User" = None,
     ):
         super().__init__(client)
 
@@ -39,6 +40,7 @@ class UserFull(Object):
         self.pinned_message = pinned_message
         self.common_chats_count = common_chats_count
         self.folder_id = folder_id
+        self.user = user
 
     @staticmethod
     async def _parse(client, user_full: "raw.types.UserFull"):
@@ -66,4 +68,5 @@ class UserFull(Object):
             ) if getattr(user_full, 'pinned_msg_id', None) else None,
             common_chats_count=getattr(user_full, 'common_chats_count', None),
             folder_id=getattr(user_full, 'folder_id', None),
+            user=types.User._parse(client, user_full.user)
         )
