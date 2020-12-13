@@ -152,7 +152,7 @@ USE_TZ = True
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000
 
 # added settings
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'users.SiteUser'
 
 LOGIN_REDIRECT_URL = 'dashboard:main'
 LOGOUT_REDIRECT_URL = 'pages:home'

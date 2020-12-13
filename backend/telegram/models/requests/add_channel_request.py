@@ -32,8 +32,8 @@ class AddChannelRequest(BaseModel):
     )
 
     # User who added made this request
-    custom_user = models.ForeignKey(
-        'users.CustomUser',
+    site_user = models.ForeignKey(
+        'users.SiteUser',
         on_delete=models.CASCADE,
         verbose_name='Owner',
         related_name='telegram_channel_add_requests',

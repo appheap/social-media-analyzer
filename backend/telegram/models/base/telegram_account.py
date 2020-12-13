@@ -37,8 +37,8 @@ class TelegramAccount(BaseModel):
     # `dialogs` : dialogs belonging to this account
 
     # User who is the owner of this telegram account
-    custom_user = models.ForeignKey(
-        'users.CustomUser',
+    site_user = models.ForeignKey(
+        'users.SiteUser',
         on_delete=models.CASCADE,
         related_name='telegram_accounts',
         null=True, blank=True,
@@ -49,7 +49,7 @@ class TelegramAccount(BaseModel):
         'telegram.User',
         related_name='telegram_accounts',
         null=True, blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
     )
 
     # the blockage object

@@ -23,8 +23,8 @@ class TelegramChannel(BaseModel):
     deleted_at = models.BigIntegerField(null=True, blank=True)
 
     # User who added this telegram channel
-    user = models.ForeignKey(
-        'users.CustomUser',
+    site_user = models.ForeignKey(
+        'users.SiteUser',
         on_delete=models.CASCADE,
         related_name='telegram_channels',
         null=True, blank=True,

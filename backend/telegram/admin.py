@@ -180,9 +180,9 @@ class EntityTypeInline(admin.TabularInline):
     model = EntityType
 
 
-class MessageReplyInline(admin.TabularInline):
-    model = Message
-    verbose_name_plural = 'Replies'
+# class MessageReplyInline(admin.TabularInline):
+#     model = Message
+#     verbose_name_plural = 'Replies'
 
 
 class ActionMessagePinnedInline(admin.TabularInline):
@@ -209,7 +209,7 @@ class ActionMessageStopPollInline(admin.TabularInline):
 
 class MessageAdmin(admin.ModelAdmin):
     inlines = [
-        MessageReplyInline,
+        # MessageReplyInline,
         EntityInline,
         EntityTypeInline,
         MessageViewInline,
@@ -250,6 +250,7 @@ admin.site.register(Dialog)
 admin.site.register(Chat, ChatAdmin)
 admin.site.register(Channel)
 admin.site.register(Group)
+admin.site.register(AdminShip)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Message, MessageAdmin)
 admin.site.register(Photo)
