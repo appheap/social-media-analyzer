@@ -6,7 +6,7 @@ from users import models as user_models
 def full_user(request):
     try:
         if hasattr(request, 'user'):
-            user = user_models.CustomUser.objects.get(pk=request.user.pk)
+            user = user_models.SiteUser.objects.get(pk=request.user.pk)
         else:
             user = AnonymousUser()
     except Exception as e:

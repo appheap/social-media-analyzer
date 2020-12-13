@@ -15,7 +15,7 @@ class BlockageTypes(models.TextChoices):
     SPAM = 'SPAM'
 
 
-class CustomUser(AbstractUser):
+class SiteUser(AbstractUser):
     is_email_verified = models.BooleanField(default=False)
     is_deleted = models.BooleanField(null=True, blank=True)
     deleted_at = models.BigIntegerField(null=True, blank=True)
@@ -45,7 +45,7 @@ class CustomUser(AbstractUser):
         if not self.created_at:
             self.created = arrow.utcnow().timestamp
         self.modified = arrow.utcnow().timestamp
-        return super(CustomUser, self).save(*args, **kwargs)
+        return super(SiteUser, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.username

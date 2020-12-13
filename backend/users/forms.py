@@ -1,7 +1,7 @@
 from django import forms
 
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser
+from .models import SiteUser
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -21,7 +21,7 @@ class CustomUserCreationForm(UserCreationForm):
         )
 
     class Meta(UserCreationForm.Meta):
-        model = CustomUser
+        model = SiteUser
         fields = ('username', 'email', 'timezone')
 
         widgets = {
@@ -51,7 +51,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
-        model = CustomUser
+        model = SiteUser
         fields = ('username', 'email', 'first_name', 'last_name', 'timezone')
 
 

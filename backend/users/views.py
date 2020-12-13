@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.views import generic
 from .forms import CustomUserCreationForm, LoginForm
-from users.models import CustomUser
+from users.models import SiteUser
 from django.http import JsonResponse
 
 
@@ -35,7 +35,7 @@ class LoginView(generic.FormView):
 def validate_username(request):
     username = request.GET.get('username', None)
     data = {
-        'is_taken': CustomUser.objects.filter(username__iexact=username).exists()
+        'is_taken': SiteUser.objects.filter(username__iexact=username).exists()
     }
     if data['is_taken']:
         data['error_message'] = 'A user with this username already exists.'
