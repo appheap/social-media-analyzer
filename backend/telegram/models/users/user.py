@@ -1,5 +1,138 @@
+import arrow
+from django.db import DatabaseError, transaction
 from django.db import models
+
+from pyrogram import types
+from telegram import models as tg_models
+from telegram.globals import logger
 from ..base import BaseModel
+
+
+class UserQuerySet(models.QuerySet):
+    def filter_by_user_id(self, user_id: int):
+        return self.filter(user_id=user_id)
+
+    def get_by_user_id(self, *, user_id: int) -> "User":
+        try:
+            instance = self.get(user_id=user_id)
+        except User.DoesNotExist:
+            instance = None
+        except Exception as e:
+            logger.exception(e)
+            instance = None
+        return instance
+
+    def user_exists(self, *, user_id: int):
+        return self.filter_by_user_id(user_id=user_id).exists()
+
+    def update_or_create_user(self, **kwargs):
+        try:
+            return self.update_or_create(
+                **kwargs
+            )
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return None
+
+    def create_user(self, **kwargs):
+        try:
+            return self.create(
+                **kwargs
+            )
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return None
+
+    def user_deleted_account(self, *, user_id: int, delete_ts: int):
+        try:
+            self.filter_by_user_id(user_id=user_id).update(user_deleted_ts=delete_ts)
+            return True
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return False
+
+
+class UserManager(models.Manager):
+    def get_queryset(self) -> "UserQuerySet":
+        return UserQuerySet(self.model, using=self._db)
+
+    def update_or_create_user(self, *, raw_user: types.User):
+        parsed_user = self._parse_user(raw_user)
+        if parsed_user is None:
+            return None
+        with transaction.atomic():
+            user = self.get_queryset().update_or_create_user(**parsed_user)
+            self.create_restrictions(raw_user, user)
+        return user
+
+    def update_or_create_user_from_full_user(self, *, full_user: types.UserFull):
+        parsed_full_user = self._parse_full_user(full_user)
+        if not parsed_full_user:
+            return None
+        with transaction.atomic():
+            user = self.get_queryset().update_or_create_user(**parsed_full_user)
+            self.create_restrictions(full_user.user, user)
+        return user
+
+    def user_deleted_account(self, *, user_id: int, delete_ts: int):
+        if user_id is None or delete_ts is None:
+            return False
+        return self.get_queryset().user_deleted_account(user_id=user_id, delete_ts=delete_ts)
+
+    @staticmethod
+    def create_restrictions(raw_user, user):
+        if user and raw_user.restrictions:
+            tg_models.Restriction.objects.bulk_create_restrictions(
+                restrictions=raw_user.restrictions,
+                user=user
+            )
+
+    @staticmethod
+    def _parse_full_user(full_user: types.UserFull):  # todo: profile photo?
+        if full_user is None:
+            return None
+
+        return {
+            'is_blocked': full_user.blocked,
+            'can_we_pin_message': full_user.can_pin_message,
+            'about': full_user.about,
+            'common_chats_count': full_user.common_chats_count,
+            **(UserManager._parse_user(full_user.user) if full_user.user else {})
+        }
+
+    @staticmethod
+    def _parse_user(user: types.User):  # todo: profile photo?
+        if user is None:
+            return None
+
+        return {
+            'id': user.id,
+            'is_empty': user.is_empty,
+            'is_mutual_contact': user.is_mutual_contact,
+            'is_deleted': user.is_deleted,
+            'is_bot': user.is_bot,
+            'is_verified': user.is_verified,
+            'is_restricted': user.is_restricted,
+            'is_scam': user.is_scam,
+            'is_support': user.is_support,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'username': user.last_name,
+            'language_code': user.language_code,
+            'dc_id': user.dc_id,
+            'phone_number': user.phone_number,
+            'bot_inline_placeholder': user.bot_inline_placeholder,
+            'bot_can_see_history': user.bot_can_see_history,
+            'bot_can_request_geo': user.bot_can_request_geo,
+        }
 
 
 class User(BaseModel):
@@ -34,7 +167,9 @@ class User(BaseModel):
     bot_can_request_geo = models.BooleanField(null=True, blank=True)
 
     ##############################################################
-    deleted_at = models.BigIntegerField(null=True, blank=True)
+    user_deleted_ts = models.BigIntegerField(null=True, blank=True)
+
+    users = UserManager()
 
     # `telegram_accounts` : telegram accounts connected to this user
     # `restrictions` : restrictions of this user if it's a bot
@@ -60,3 +195,7 @@ class User(BaseModel):
     def __str__(self):
         # return str(self.first_name if self.first_name else "") + str(self.last_name if self.last_name else "")
         return f"{self.first_name if self.first_name else self.last_name if self.last_name else ''} `@{self.username if self.username else self.user_id}`"
+
+    def user_deleted_account(self, *, delete_ts: int = None):
+        self.user_deleted_ts = delete_ts if delete_ts else arrow.now().utcnow()
+        self.save()
