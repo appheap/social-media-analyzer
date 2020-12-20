@@ -240,7 +240,7 @@ class UserUpdater:
             raw_user: Union[types.User, types.UserFull]
     ):
         field = getattr(model, field_name, None)
-        if not isinstance(field, User):
+        if field and not isinstance(field, User):
             return
 
         if field:
