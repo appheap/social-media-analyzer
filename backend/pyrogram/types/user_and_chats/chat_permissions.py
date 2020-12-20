@@ -72,7 +72,8 @@ class ChatPermissions(Object):
             can_send_polls: bool = None,
             can_change_info: bool = None,
             can_invite_users: bool = None,
-            can_pin_messages: bool = None
+            can_pin_messages: bool = None,
+            until_date: int = None
     ):
         super().__init__(None)
 
@@ -88,6 +89,7 @@ class ChatPermissions(Object):
         self.can_change_info = can_change_info
         self.can_invite_users = can_invite_users
         self.can_pin_messages = can_pin_messages
+        self.until_date = until_date
 
     @staticmethod
     def _parse(denied_permissions: "raw.types.ChatBannedRights") -> "ChatPermissions":
@@ -104,5 +106,6 @@ class ChatPermissions(Object):
                 can_send_polls=not denied_permissions.send_polls,
                 can_change_info=not denied_permissions.change_info,
                 can_invite_users=not denied_permissions.invite_users,
-                can_pin_messages=not denied_permissions.pin_messages
+                can_pin_messages=not denied_permissions.pin_messages,
+                until_date=denied_permissions.until_date
             )

@@ -1,8 +1,150 @@
-from django.db import models
+from django.db import models, transaction
 from ..base import BaseModel
+from pyrogram import types
+from typing import Optional
+from django.db import DatabaseError
+from telegram.globals import logger
+from telegram import models as tg_models
 
 
-class Channel(BaseModel):
+class ChannelQuerySet(models.QuerySet):
+    def update_or_create_channel(self, **kwargs) -> Optional["Channel"]:
+        try:
+            return self.update_or_create(**kwargs)
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
+    def filter_by_id(self, *, id: int) -> "ChannelQuerySet":
+        return self.filter(id=id)
+
+
+class ChannelManager(models.Manager):
+    def get_queryset(self) -> ChannelQuerySet:
+        return ChannelQuerySet(self.model, using=self._db)
+
+    def update_from_raw_chat(
+            self,
+            *,
+            id: int,
+            raw_chat: types.Chat
+    ) -> bool:
+
+        if not id or not raw_chat:
+            return False
+
+        updated = False
+        channel_qs = self.get_queryset().filter_by_id(id=id)
+        parsed_full_channel = self._parse_full_channel(channel=raw_chat.full_channel)
+        parsed_channel = self._parse_channel(channel=raw_chat.channel)
+        if parsed_full_channel or parsed_channel:
+            with transaction.atomic():
+                updated = bool(
+                    channel_qs.update(
+                        **{
+                            **parsed_full_channel,
+                            **parsed_channel,
+                        }
+                    )
+                )
+                if updated:
+                    db_channel = channel_qs[0]
+                    if db_channel:
+                        db_channel.update_or_create_chat_permissions_from_raw(
+                            model=self,
+                            field_name='default_banned_rights',
+                            raw_chat_permissions=raw_chat.channel.default_banned_rights
+                        )
+                        if len(parsed_full_channel):
+                            db_channel.update_or_create_from_raw(
+                                model=self,
+                                field_name='migrated_from',
+                                raw_chat=raw_chat.full_channel.migrated_from
+                            )
+                            db_channel.update_or_create_from_raw(
+                                model=self,
+                                field_name='linked_chat',
+                                raw_chat=raw_chat.full_channel.linked_chat
+                            )
+        return updated
+
+    def update_or_create_from_raw(
+            self,
+            *,
+            full_channel: types.ChannelFull,
+            channel: types.Channel,
+            creator: types.User = None
+    ):
+        if full_channel is None and channel is None:
+            return None
+        parsed_full_channel = self._parse_full_channel(channel=full_channel)
+        parsed_channel = self._parse_channel(channel=channel)
+        if parsed_full_channel or parsed_channel:
+            with transaction.atomic():
+                db_channel = self.get_queryset().update_or_create_channel(
+                    **{
+                        **parsed_full_channel,
+                        **parsed_channel,
+                        'creator': creator,  # fixme: what about creator?
+                    }
+                )
+                if db_channel:
+                    db_channel.update_or_create_chat_permissions_from_raw(
+                        model=self,
+                        field_name='default_banned_rights',
+                        raw_chat_permissions=channel.default_banned_rights
+                    )
+                    if full_channel:
+                        db_channel.update_or_create_from_raw(
+                            model=self,
+                            field_name='migrated_from',
+                            raw_chat=full_channel.migrated_from
+                        )
+                        db_channel.update_or_create_from_raw(
+                            model=self,
+                            field_name='linked_chat',
+                            raw_chat=full_channel.linked_chat
+                        )
+        else:
+            return None
+
+    @staticmethod
+    def _parse_channel(*, channel: types.Channel) -> Optional[dict]:
+        if channel is None:
+            return {}
+        return {
+            'has_private_join_link': channel.has_private_join_link,
+            'has_geo': channel.has_geo,
+            'is_restricted': channel.is_restricted,
+            'is_scam': channel.is_scam,
+            'is_verified': channel.is_verified,
+            'signatures_enabled': channel.signatures_enabled,
+            'slow_mode_enabled': channel.slow_mode,
+            'create_date_ts': channel.date if channel.left else None,
+        }
+
+    @staticmethod
+    def _parse_full_channel(*, channel: types.ChannelFull) -> Optional[dict]:
+        if channel is None:
+            return {}
+        return {
+            'is_anonymous_admin_blocked': channel.is_blocked,
+            'members_count': channel.members_count,
+            'admins_count': channel.admins_count,
+            'kicked_count': channel.kicked_count,
+            'banned_count': channel.banned_count,
+            'about': channel.about,
+            'invite_link': channel.invite_link,
+            'migrated_from_message_id': channel.migrated_from_max_id,
+            'min_available_message_id': channel.min_available_message_id,
+            'slow_mode_seconds': channel.slowmode_seconds,
+            'stats_dc': channel.stats_dc,
+        }
+
+
+class Channel(BaseModel, tg_models.ChatPermissionsUpdater, tg_models.ChatUpdater):
     id = models.BigIntegerField(primary_key=True)
 
     # info from full_channel
@@ -60,5 +202,12 @@ class Channel(BaseModel):
     # `admin_rights`
     # `banned_rights`
 
+    objects = ChannelManager()
+
     ############################################
     # `chat` : chat this channel belongs to
+
+    def update_fields_from_raw_chat(self, *, raw_chat: types.Chat) -> bool:
+        if not raw_chat:
+            return False
+        return self.objects.update_from_raw_chat(id=self.id, raw_chat=raw_chat)

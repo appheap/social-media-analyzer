@@ -1,5 +1,11 @@
 from django.db import models
 from ..base import BaseModel
+from typing import Optional
+from db.models import SoftDeletableBaseModel, SoftDeletableQS
+from django.db import DatabaseError
+from telegram.globals import logger
+from telegram import models as tg_models
+from pyrogram import types
 
 
 class ChatTypes(models.TextChoices):
@@ -19,7 +25,134 @@ class ChatTypes(models.TextChoices):
             return ChatTypes.undefined
 
 
-class Chat(BaseModel):
+class ChatQuerySet(SoftDeletableQS):
+    def get_chat_by_id(self, *, chat_id: int) -> "Chat":
+        try:
+            return self.get(chat_id=chat_id)
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
+    def filter_by_id(self, *, chat_id: int) -> "ChatQuerySet":
+        return self.filter(chat_id=chat_id)
+
+    def chat_exists(self, *, chat_id: int) -> bool:
+        return self.filter(chat_id=chat_id).exists()
+
+    def channels(self) -> "ChatQuerySet":
+        return self.filter(type=ChatTypes.channel)
+
+    def supergroups(self) -> "ChatQuerySet":
+        return self.filter(type=ChatTypes.supergroup)
+
+    def groups(self) -> "ChatQuerySet":
+        return self.filter(type=ChatTypes.group)
+
+    def update_or_create_chat(self, **kwargs) -> Optional["Chat"]:
+        try:
+            return self.update_or_create(**kwargs)[0]
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
+
+class BaseChatManager(models.Manager):
+    def get_queryset(self) -> ChatQuerySet:
+        return ChatQuerySet(self.model, using=self._db)
+
+    def update_chat_from_raw(self, *, chat_id: int, raw_chat: types.Chat) -> bool:
+        logger.info(f'running the base method in {self}')
+        return False
+
+    def update_or_create_from_raw(self, *, raw_chat: types.Chat, creator: tg_models.User = None) -> Optional["Chat"]:
+        if raw_chat is None:
+            return None
+        db_chat = None
+        if raw_chat.type in ('channel', 'supergroup'):
+            db_channel = tg_models.Channel.objects.update_or_create()
+            if db_channel:
+                db_chat = self.get_queryset().update_or_create_chat(
+                    chat_id=raw_chat.id,
+                    type=ChatTypes.channel if raw_chat.type == 'channel' else ChatTypes.supergroup,
+                    channel=db_channel,
+                )
+            else:
+                db_chat = None
+
+        elif raw_chat.type == 'group':
+            db_group = tg_models.Group.objects.update_or_create_group_from_raw(
+                full_group=raw_chat.full_group,
+                group=raw_chat.group,
+                creator=creator
+            )
+
+            if db_group:
+                db_chat = self.get_queryset().update_or_create_chat(
+                    chat_id=raw_chat.id,
+                    type=ChatTypes.group,
+                    group=db_group,
+                )
+        else:
+            pass
+        return db_chat
+
+
+class ChannelsManager(BaseChatManager):
+    def get_queryset(self):
+        return super().get_queryset().channels()
+
+    def update_chat_from_raw(self, *, chat_id: int, raw_chat: types.Chat) -> bool:
+        if not chat_id or not raw_chat:
+            return False
+
+        chat: Chat = self.get_queryset().get_chat_by_id(chat_id=chat_id)
+        if chat:
+            return chat.channel.update_fields_from_raw_chat(
+                raw_chat=raw_chat
+            )
+
+        return False
+
+
+class GroupsManager(BaseChatManager):
+    def get_queryset(self):
+        return super().get_queryset().groups()
+
+    def update_chat_from_raw(self, *, chat_id: int, raw_chat: types.Chat) -> bool:
+        if not chat_id or not raw_chat:
+            return False
+
+        chat: Chat = self.get_queryset().get_chat_by_id(chat_id=chat_id)
+        if chat:
+            return chat.group.update_fields_from_raw_chat(
+                raw_chat=raw_chat
+            )
+
+        return False
+
+
+class SupergroupsManger(BaseChatManager):
+    def get_queryset(self):
+        return super().get_queryset().supergroups()
+
+    def update_chat_from_raw(self, *, chat_id: int, raw_chat: types.Chat) -> bool:
+        if not chat_id or not raw_chat:
+            return False
+
+        chat: Chat = self.get_queryset().get_chat_by_id(chat_id=chat_id)
+        if chat:
+            return chat.channel.update_fields_from_raw_chat(
+                raw_chat=raw_chat
+            )
+
+        return False
+
+
+class Chat(BaseModel, SoftDeletableBaseModel):
     chat_id = models.BigIntegerField(primary_key=True)  # fixme: what about private/bot chats?
     type = models.CharField(
         ChatTypes.choices,
@@ -49,6 +182,11 @@ class Chat(BaseModel):
         null=True,
         blank=True,
     )
+
+    channels = ChannelsManager()
+    supergroups = SupergroupsManger()
+    groups = GroupsManager()
+    chats = BaseChatManager()
 
     #################################################
     # telegram accounts which are peers of this chat
@@ -103,9 +241,6 @@ class Chat(BaseModel):
         related_name='chat',
     )
 
-    is_deleted = models.BooleanField(default=False)
-    deleted_at = models.BigIntegerField(null=True, blank=True)
-
     #################################################
     # `restrictions` : restrictions of this chat
     # `telegram_channels` : telegram channels connected to this chat
@@ -121,7 +256,18 @@ class Chat(BaseModel):
     # `shared_media_history` : shared media history of the chat
     # `message_views` : message views belonging to this chat
     # `dialogs` : dialogs this chat belongs to
-    # `migrated_to` : chat this group chat migrated to
+    # `migrated_to` : supergroup this group chat migrated to
+
+    @property
+    def manager(self) -> BaseChatManager:
+        if self.type == ChatTypes.channel:
+            return self.channels
+        elif self.type == ChatTypes.supergroup:
+            return self.supergroups
+        elif self.type == ChatTypes.group:
+            return self.groups
+        else:
+            return BaseChatManager()
 
     @property
     def title(self):
@@ -152,3 +298,36 @@ class Chat(BaseModel):
         else:
             pass
         return f'{_type} {self.title}'
+
+    def update_fields_from_raw(self, *, raw_chat: types.Chat):
+        self.manager.update_chat_from_raw(chat_id=self.chat_id, raw_chat=raw_chat)
+
+
+class ChatUpdater:
+
+    @staticmethod
+    def update_or_create_from_raw(
+            *,
+            model: models.Model,
+            field_name: str,
+            raw_chat: types.Chat
+    ):
+        field = getattr(model, field_name, None)
+        if field and not isinstance(field, Chat):
+            return
+
+        if field:
+            if raw_chat:
+                field.update_fields_from_raw(raw_chat=raw_chat)
+            else:
+                setattr(model, field_name, None)
+                model.save(model)
+        else:
+            setattr(
+                model,
+                field_name,
+                Chat.chats.update_or_create_from_raw(
+                    raw_chat=raw_chat
+                )
+            )
+            model.save(model)
