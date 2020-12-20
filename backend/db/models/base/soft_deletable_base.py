@@ -11,14 +11,14 @@ class SoftDeletableQS(models.QuerySet):
     def hard_delete(self):
         super().delete()
 
-    def not_deleted(self):
+    def not_deleted(self) -> "SoftDeletableQS":
         return self.filter(deleted_ts__isnull=True)
 
 
 class SoftDeletableManager(models.Manager):
     """Manager that filters out soft-deleted objects"""
 
-    def get_queryset(self):
+    def get_queryset(self) -> "SoftDeletableQS":
         return SoftDeletableQS(
             model=self.model, using=self._db, hints=self._hints
         ).not_deleted()

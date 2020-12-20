@@ -1,3 +1,5 @@
+from typing import Union, Optional
+
 import arrow
 from django.db import DatabaseError, transaction
 from django.db import models
@@ -9,7 +11,7 @@ from ..base import BaseModel
 
 
 class UserQuerySet(models.QuerySet):
-    def filter_by_user_id(self, user_id: int):
+    def filter_by_user_id(self, user_id: int) -> "UserQuerySet":
         return self.filter(user_id=user_id)
 
     def get_by_user_id(self, *, user_id: int) -> "User":
@@ -22,14 +24,14 @@ class UserQuerySet(models.QuerySet):
             instance = None
         return instance
 
-    def user_exists(self, *, user_id: int):
+    def user_exists(self, *, user_id: int) -> bool:
         return self.filter_by_user_id(user_id=user_id).exists()
 
-    def update_or_create_user(self, **kwargs):
+    def update_or_create_user(self, **kwargs) -> "User":
         try:
             return self.update_or_create(
                 **kwargs
-            )
+            )[0]
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -37,7 +39,21 @@ class UserQuerySet(models.QuerySet):
 
         return None
 
-    def create_user(self, **kwargs):
+    def update_user(self, **kwargs) -> bool:
+        try:
+            return bool(
+                self.update(
+                    **kwargs
+                )
+            )
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return False
+
+    def create_user(self, **kwargs) -> "User":
         try:
             return self.create(
                 **kwargs
@@ -49,10 +65,11 @@ class UserQuerySet(models.QuerySet):
 
         return None
 
-    def user_deleted_account(self, *, user_id: int, delete_ts: int):
+    def user_deleted_account(self, *, user_id: int, delete_ts: int) -> bool:
         try:
-            self.filter_by_user_id(user_id=user_id).update(user_deleted_ts=delete_ts)
-            return True
+            return bool(
+                self.filter_by_user_id(user_id=user_id).update(user_deleted_ts=delete_ts)
+            )
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -64,31 +81,40 @@ class UserManager(models.Manager):
     def get_queryset(self) -> "UserQuerySet":
         return UserQuerySet(self.model, using=self._db)
 
-    def update_or_create_user(self, *, raw_user: types.User):
-        parsed_user = self._parse_user(raw_user)
-        if parsed_user is None:
+    def update_from_raw(self, *, user_id: int, raw_user: Union[types.User, types.UserFull]) -> bool:
+        if not user_id or not user_id:
+            return False
+
+        is_full_type = isinstance(raw_user, types.UserFull)
+        parsed_object = self._parse_full_user(raw_user) if is_full_type else self._parse_user(raw_user)
+        if parsed_object is None:
+            return None
+        updated = False
+        with transaction.atomic():
+            user = self.get_queryset().filter_by_user_id(user_id=user_id)
+            updated = user.update_user(**parsed_object)
+            self.create_restrictions(raw_user.user if is_full_type else raw_user, user)
+        return updated
+
+    def update_or_create_from_raw(self, *, raw_user: Union[types.User, types.UserFull]) -> Optional["User"]:
+        if not raw_user:
+            return None
+        is_full_type = isinstance(raw_user, types.UserFull)
+        parsed_object = self._parse_full_user(raw_user) if is_full_type else self._parse_user(raw_user)
+        if parsed_object is None:
             return None
         with transaction.atomic():
-            user = self.get_queryset().update_or_create_user(**parsed_user)
-            self.create_restrictions(raw_user, user)
+            user = self.get_queryset().update_or_create_user(**parsed_object)
+            self.create_restrictions(raw_user.user if is_full_type else raw_user, user)
         return user
 
-    def update_or_create_user_from_full_user(self, *, full_user: types.UserFull):
-        parsed_full_user = self._parse_full_user(full_user)
-        if not parsed_full_user:
-            return None
-        with transaction.atomic():
-            user = self.get_queryset().update_or_create_user(**parsed_full_user)
-            self.create_restrictions(full_user.user, user)
-        return user
-
-    def user_deleted_account(self, *, user_id: int, delete_ts: int):
+    def user_deleted_account(self, *, user_id: int, delete_ts: int) -> bool:
         if user_id is None or delete_ts is None:
             return False
         return self.get_queryset().user_deleted_account(user_id=user_id, delete_ts=delete_ts)
 
     @staticmethod
-    def create_restrictions(raw_user, user):
+    def create_restrictions(raw_user: types.User, user: "User"):
         if user and raw_user.restrictions:
             tg_models.Restriction.objects.bulk_create_restrictions(
                 restrictions=raw_user.restrictions,
@@ -199,3 +225,37 @@ class User(BaseModel):
     def user_deleted_account(self, *, delete_ts: int = None):
         self.user_deleted_ts = delete_ts if delete_ts else arrow.now().utcnow()
         self.save()
+
+    def update_fields_from_raw(self, *, raw_user: Union[types.User, types.UserFull]) -> bool:
+        return self.users.update_from_raw(user_id=self.user_id, raw_user=raw_user)
+
+
+class UserUpdater:
+
+    @staticmethod
+    def update_or_create_user_from_raw(
+            *,
+            model: models.Model,
+            field_name: str,
+            raw_user: Union[types.User, types.UserFull]
+    ):
+        field = getattr(model, field_name, None)
+        if not isinstance(field, User):
+            return
+
+        if field:
+            if raw_user:
+                field.update_fields_from_raw(raw_user=raw_user)
+            else:
+                setattr(model, field_name, None)
+                model.save(model)
+        else:
+            if raw_user:
+                setattr(
+                    model,
+                    field_name,
+                    User.users.update_or_create_from_raw(
+                        raw_user=raw_user
+                    )
+                )
+                model.save(model)
