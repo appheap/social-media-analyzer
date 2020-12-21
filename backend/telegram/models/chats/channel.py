@@ -1,10 +1,13 @@
-from django.db import models, transaction
-from ..base import BaseModel
-from pyrogram import types
 from typing import Optional
+
 from django.db import DatabaseError
+from django.db import models, transaction
+
+from pyrogram import types
 from telegram.globals import logger
-from telegram import models as tg_models
+from .chat_permissions_updater import ChatPermissionsUpdater
+from .chat_updater import ChatUpdater
+from ..base import BaseModel
 
 
 class ChannelQuerySet(models.QuerySet):
@@ -144,7 +147,7 @@ class ChannelManager(models.Manager):
         }
 
 
-class Channel(BaseModel, tg_models.ChatPermissionsUpdater, tg_models.ChatUpdater):
+class Channel(BaseModel, ChatPermissionsUpdater, ChatUpdater):
     id = models.BigIntegerField(primary_key=True)
 
     # info from full_channel

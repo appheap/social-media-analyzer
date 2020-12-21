@@ -1,10 +1,13 @@
-from django.db import models
-from ..base import BaseModel
-from pyrogram import types
-from typing import Optional, Union
+from typing import Optional
+
 from django.db import DatabaseError
-from telegram.globals import logger
+from django.db import models
+
+from pyrogram import types
 from telegram import models as tg_models
+from telegram.globals import logger
+from .chat_permissions_updater import ChatPermissionsUpdater
+from ..base import BaseModel
 
 
 class GroupQuerySet(models.QuerySet):
@@ -78,7 +81,7 @@ class GroupManager(models.Manager):
             *,
             full_group: types.GroupFull,
             group: types.Group,
-            creator: tg_models.User = None
+            creator: "tg_models.User" = None
     ) -> Optional["Group"]:
         if full_group is None and group is None:
             return None
@@ -127,7 +130,7 @@ class GroupManager(models.Manager):
         }
 
 
-class Group(BaseModel, tg_models.ChatPermissionsUpdater):
+class Group(BaseModel, ChatPermissionsUpdater):
     id = models.BigIntegerField(primary_key=True)
 
     # info from full_group

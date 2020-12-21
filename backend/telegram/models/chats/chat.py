@@ -68,7 +68,7 @@ class BaseChatManager(models.Manager):
         logger.info(f'running the base method in {self}')
         return False
 
-    def update_or_create_from_raw(self, *, raw_chat: types.Chat, creator: tg_models.User = None) -> Optional["Chat"]:
+    def update_or_create_from_raw(self, *, raw_chat: types.Chat, creator: "tg_models.User" = None) -> Optional["Chat"]:
         if raw_chat is None:
             return None
         db_chat = None
@@ -303,31 +303,3 @@ class Chat(BaseModel, SoftDeletableBaseModel):
         self.manager.update_chat_from_raw(chat_id=self.chat_id, raw_chat=raw_chat)
 
 
-class ChatUpdater:
-
-    @staticmethod
-    def update_or_create_from_raw(
-            *,
-            model: models.Model,
-            field_name: str,
-            raw_chat: types.Chat
-    ):
-        field = getattr(model, field_name, None)
-        if field and not isinstance(field, Chat):
-            return
-
-        if field:
-            if raw_chat:
-                field.update_fields_from_raw(raw_chat=raw_chat)
-            else:
-                setattr(model, field_name, None)
-                model.save(model)
-        else:
-            setattr(
-                model,
-                field_name,
-                Chat.chats.update_or_create_from_raw(
-                    raw_chat=raw_chat
-                )
-            )
-            model.save(model)
