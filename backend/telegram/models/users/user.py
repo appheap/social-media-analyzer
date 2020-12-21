@@ -228,34 +228,3 @@ class User(BaseModel):
 
     def update_fields_from_raw(self, *, raw_user: Union[types.User, types.UserFull]) -> bool:
         return self.users.update_from_raw(user_id=self.user_id, raw_user=raw_user)
-
-
-class UserUpdater:
-
-    @staticmethod
-    def update_or_create_user_from_raw(
-            *,
-            model: models.Model,
-            field_name: str,
-            raw_user: Union[types.User, types.UserFull]
-    ):
-        field = getattr(model, field_name, None)
-        if field and not isinstance(field, User):
-            return
-
-        if field:
-            if raw_user:
-                field.update_fields_from_raw(raw_user=raw_user)
-            else:
-                setattr(model, field_name, None)
-                model.save(model)
-        else:
-            if raw_user:
-                setattr(
-                    model,
-                    field_name,
-                    User.users.update_or_create_from_raw(
-                        raw_user=raw_user
-                    )
-                )
-                model.save(model)

@@ -5,7 +5,7 @@ from pyrogram import types
 from telegram import models as tg_models
 from telegram.globals import logger
 from ..base import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class RestrictionQuerySet(models.QuerySet):
@@ -24,9 +24,9 @@ class RestrictionQuerySet(models.QuerySet):
     def clear_restrictions(
             self,
             *,
-            user: tg_models.User = None,
-            chat: tg_models.Chat = None,
-            message: tg_models.Message = None
+            user: "tg_models.User" = None,
+            chat: "tg_models.Chat" = None,
+            message: "tg_models.Message" = None
     ):
         try:
             self.filter(
@@ -48,10 +48,11 @@ class RestrictionManager(models.Manager):
             self,
             *,
             restriction: types.Restriction,
-            user: tg_models.User = None,
-            chat: tg_models.Chat = None,
-            message: tg_models.Message = None
-    ):
+            user: "tg_models.User" = None,
+            chat: "tg_models.Chat" = None,
+            message: "tg_models.Message" = None
+    ) -> Optional["Restriction"]:
+
         if restriction is None:
             return None
         parsed_object = RestrictionManager._parse_restriction(restriction)
@@ -67,9 +68,9 @@ class RestrictionManager(models.Manager):
             self,
             *,
             restrictions: List['types.Restriction'],
-            user: tg_models.User = None,
-            chat: tg_models.Chat = None,
-            message: tg_models.Message = None
+            user: "tg_models.User" = None,
+            chat: "tg_models.Chat" = None,
+            message: "tg_models.Message" = None
     ):
         if restrictions is None:
             return
@@ -96,9 +97,10 @@ class RestrictionManager(models.Manager):
     @staticmethod
     def _parse_restriction(
             restriction: types.Restriction,
-            user: tg_models.User = None,
-            chat: tg_models.Chat = None,
-            message: tg_models.Message = None):
+            user: "tg_models.User" = None,
+            chat: "tg_models.Chat" = None,
+            message: "tg_models.Message" = None
+    ):
 
         if restriction is None:
             return None
