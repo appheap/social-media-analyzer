@@ -25,7 +25,7 @@ class SoftDeletableManager(models.Manager):
 
 
 class SoftDeletableBaseModel(models.Model):
-    deleted_ts = models.BigIntegerField(null=True)
+    deleted_ts = models.BigIntegerField(null=True, blank=True)
 
     objects = SoftDeletableManager()
     archived_objects = models.Manager()
