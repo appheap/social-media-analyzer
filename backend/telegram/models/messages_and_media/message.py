@@ -1,6 +1,8 @@
 from django.db import models
 from ..base import BaseModel
 from pyrogram import types
+from db.models import SoftDeletableBaseModel
+from db.models import SoftDeletableQS
 
 
 class ChatMediaTypes(models.TextChoices):
@@ -42,11 +44,24 @@ class MessageTypes(models.TextChoices):
     undefined = 'undefined'
 
 
-class Message(BaseModel):
-    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:message_id`
+class MessageQuerySet(SoftDeletableQS):
+    def filter_by_message_id(self, *, message_id: int) -> "MessageQuerySet":
+        return self.filter(message_id=message_id)
+
+    def filter_by_id(self, *, id: str) -> "MessageQuerySet":
+        return self.filter(id=id)
+
+
+class MessageManager(models.Manager):
+    def get_queryset(self) -> "MessageQuerySet":
+        return MessageQuerySet(self.model, using=self._db)
+
+
+class Message(BaseModel, SoftDeletableBaseModel):
+    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:message_id:edit_date_ts|0`
 
     message_id = models.BigIntegerField()
-    date = models.BigIntegerField()
+    date_ts = models.BigIntegerField()
     type = models.CharField(
         MessageTypes.choices,
         max_length=20,
@@ -62,7 +77,7 @@ class Message(BaseModel):
     )
 
     # info from message_normal
-    edit_date = models.BigIntegerField(null=True, blank=True)
+    edit_date_ts = models.BigIntegerField(null=True, blank=True)
     is_outgoing = models.BooleanField(null=True, blank=True)
     mentioned = models.BooleanField(null=True, blank=True)
     is_silent = models.BooleanField(null=True, blank=True)
@@ -85,7 +100,7 @@ class Message(BaseModel):
         on_delete=models.CASCADE,
     )
     # info from forward_header
-    forward_date = models.BigIntegerField(null=True, blank=True)
+    forward_date_ts = models.BigIntegerField(null=True, blank=True)
     # For messages forwarded from channels, original channel of the message.
     forward_from_chat = models.ForeignKey(
         'telegram.Chat',
@@ -169,7 +184,6 @@ class Message(BaseModel):
     )
     # end of info from reply_header
 
-    delete_date = models.BigIntegerField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False, null=False, )
 
     has_media = models.BooleanField(default=False, null=False)
@@ -197,9 +211,11 @@ class Message(BaseModel):
         related_name='logged_messages',
     )
 
+    objects = MessageManager()
+
     class Meta:
-        ordering = ('-date', 'chat',)
-        get_latest_by = ('-date', 'chat',)
+        ordering = ('-date_ts', 'chat',)
+        get_latest_by = ('-date_ts', 'chat',)
 
     def __str__(self):
         return f"message {self.message_id} from {self.chat}"
