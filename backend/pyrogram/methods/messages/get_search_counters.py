@@ -17,9 +17,11 @@
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Union, List
+from typing import Union, List, Optional
 
+from pyrogram import types
 from pyrogram import raw
+from pyrogram import utils
 from pyrogram.scaffold import Scaffold
 from pyrogram.raw.types import (
     InputMessagesFilterPhotos, InputMessagesFilterDocument, InputMessagesFilterUrl,
@@ -55,12 +57,12 @@ _filter_names = {'InputMessagesFilterPhotos': 'photo', 'InputMessagesFilterVideo
                  'InputMessagesFilterGeo': 'location', 'InputMessagesFilterContacts': 'contact'}
 
 
-class SearchCounter(Scaffold):
-    async def search_counter(
+class GetSearchCounters(Scaffold):
+    async def get_search_counters(
             self,
             chat_id: Union[int, str],
             filters: List["str"] = None
-    ) -> int:
+    ) -> Optional[List["types.SearchCounter"]]:
         """Indicates how many results would be found by a ``messages.search`` call with the same parameters
 
         Parameters:
@@ -96,10 +98,6 @@ class SearchCounter(Scaffold):
         )
 
         if not r:
-            return {}
+            return None
 
-        counter_dict = {}
-        for counter in r:
-            counter_dict[_filter_names[counter.filter.__class__.__name__]] = counter.count
-
-        return counter_dict
+        return utils.parse_search_counters(r)

@@ -79,6 +79,8 @@ from .document_attributes import (
     DocumentAttributeHasStickers,
 )
 
+from .search_counter import SearchCounter
+
 __all__ = [
     "Animation", "Audio", "Contact", "Document", "Game", "Location", "Message", "MessageEntity", "Photo", "Thumbnail",
     "StrippedThumbnail", "Poll", "PollOption", "Sticker", "Venue", "Video", "VideoNote", "Voice", "WebPage", "Dice",
@@ -139,5 +141,7 @@ __all__ = [
     "DocumentAttributeHasStickers",
 
     "FileLocation",
+
+    "SearchCounter"
 
 ]
