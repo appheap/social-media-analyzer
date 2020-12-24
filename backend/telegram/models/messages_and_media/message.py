@@ -1,8 +1,15 @@
+from typing import Optional
+
 from django.db import models
 from ..base import BaseModel
 from pyrogram import types
 from db.models import SoftDeletableBaseModel
 from db.models import SoftDeletableQS
+from django.db import DatabaseError
+from telegram.globals import logger
+from ..chats import ChatUpdater
+from ..users import UserUpdater
+from telegram import models as tg_models
 
 
 class ChatMediaTypes(models.TextChoices):
@@ -26,12 +33,12 @@ class ChatMediaTypes(models.TextChoices):
     undefined = 'undefined'
 
     @staticmethod
-    def get_type(message: "types.Message"):
-        if message.media_type is None:
+    def get_type(raw_media_type: str):
+        if raw_media_type is None:
             return ChatMediaTypes.undefined
 
         for choice in ChatMediaTypes.choices:
-            if message.media_type == choice[0]:
+            if raw_media_type == choice[0]:
                 return getattr(ChatMediaTypes, str(choice[0]).lower())
         else:
             return ChatMediaTypes.undefined
@@ -51,17 +58,150 @@ class MessageQuerySet(SoftDeletableQS):
     def filter_by_id(self, *, id: str) -> "MessageQuerySet":
         return self.filter(id=id)
 
+    def update_or_create_message(self, **kwargs) -> Optional["Message"]:
+        try:
+            return self.update_or_create(
+                **kwargs
+            )[0]
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
 
 class MessageManager(models.Manager):
     def get_queryset(self) -> "MessageQuerySet":
         return MessageQuerySet(self.model, using=self._db)
 
+    def update_or_create_from_raw(
+            self,
+            *,
+            chat_id: int,
+            raw_message: types.Message,
+            logger_account: "tg_models.TelegramAccount"
+    ) -> Optional["Message"]:
 
-class Message(BaseModel, SoftDeletableBaseModel):
+        if chat_id is None or not raw_message or not logger_account:
+            return None
+        parsed_msg = self._parse_normal(
+            chat_id=chat_id,
+            raw_message=raw_message
+        )
+
+        if parsed_msg and len(parsed_msg):
+            db_message = self.get_queryset().update_or_create_message(
+                **{
+                    **parsed_msg,
+                    'logged_by': logger_account,
+                }
+            )
+
+            if db_message:
+                db_message.update_or_create_chat_from_raw(
+                    model=db_message,
+                    field_name='from_chat',
+                    raw_chat=raw_message.content.from_chat
+                )
+                db_message.update_or_create_user_from_raw(
+                    model=db_message,
+                    field_name='from_user',
+                    raw_user=raw_message.content.from_user
+                )
+                if raw_message.content.forward_header:
+                    db_message.update_or_create_chat_from_raw(
+                        model=db_message,
+                        field_name='forward_from_chat',
+                        raw_chat=raw_message.content.forward_header.forward_from_chat
+                    )
+                    db_message.update_or_create_user_from_raw(
+                        model=db_message,
+                        field_name='forward_from_user',
+                        raw_user=raw_message.content.forward_header.forward_from_user
+                    )
+
+                    # fixme: forward_from_message ?
+
+                    db_message.update_or_create_chat_from_raw(
+                        model=db_message,
+                        field_name='saved_from_chat',
+                        raw_chat=raw_message.content.forward_header.saved_from_chat
+                    )
+                    db_message.update_or_create_user_from_raw(
+                        model=db_message,
+                        field_name='saved_from_user',
+                        raw_user=raw_message.content.forward_header.saved_from_user
+                    )
+
+                if raw_message.content.reply_header:
+                    # fixme: `reply_to_message` and `reply_to_top_message`?
+                    db_message.update_or_create_chat_from_raw(
+                        model=db_message,
+                        field_name='reply_to_chat',
+                        raw_chat=raw_message.content.reply_header.reply_to_chat
+                    )
+                    db_message.update_or_create_user_from_raw(
+                        model=db_message,
+                        field_name='reply_to_user',
+                        raw_user=raw_message.content.reply_header.reply_to_user
+                    )
+
+            return db_message
+
+        return None
+
+    @staticmethod
+    def _parse_normal(*, chat_id, raw_message: types.Message) -> dict:
+        if not raw_message:
+            return {}
+
+        content = raw_message.content
+        if not content or raw_message.type != 'message':
+            return {}
+
+        r = {
+            'id': f"{chat_id}:{raw_message.id}:{getattr(raw_message.content, 'edit_date', 0)}",
+            'message_id': raw_message.id,
+            'date_ts': raw_message.date,
+            'type': MessageTypes.message,
+            "edit_date_ts": content.edit_date,
+            "is_outgoing": content.is_outgoing,
+            "mentioned": content.mentioned,
+            "is_silent": content.is_silent,
+            "is_post": content.is_post,
+            "post_author": content.post_author,
+            "from_scheduled": content.from_scheduled,
+            "edit_hide": content.edit_hide,
+            "media_group_id": content.media_group_id,
+            "text": content.text,
+            "media_type": ChatMediaTypes.get_type(content.media_type)
+        }
+        if content.forward_header:
+            r.update(
+                {
+                    "forward_date_ts": content.forward_header.date,
+                    "forward_sender_name": content.forward_header.forward_sender_name,
+                    "forward_from_message_id_orig": content.forward_header.forward_from_message_id,
+                    "forward_signature": content.forward_header.forward_signature,
+                    "saved_from_message_id_orig": content.forward_header.saved_from_message_id,
+                }
+            )
+
+        if content.reply_header:
+            r.update(
+                {
+                    'reply_to_message_id_orig': content.reply_header.reply_to_message_id,
+                    'reply_to_top_message_id_orig': content.reply_header.reply_to_top_id,
+                }
+            )
+        return
+
+
+class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
     id = models.CharField(max_length=256, primary_key=True)  # `chat_id:message_id:edit_date_ts|0`
 
     message_id = models.BigIntegerField()
-    date_ts = models.BigIntegerField()
+    date_ts = models.BigIntegerField(null=True, blank=True)
     type = models.CharField(
         MessageTypes.choices,
         max_length=20,
@@ -185,8 +325,6 @@ class Message(BaseModel, SoftDeletableBaseModel):
     # end of info from reply_header
 
     is_deleted = models.BooleanField(default=False, null=False, )
-
-    has_media = models.BooleanField(default=False, null=False)
 
     ##########################################################
     # `all_replies` : replies to this message (whole thread)
