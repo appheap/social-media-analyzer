@@ -5,10 +5,10 @@ from ..base import BaseModel
 
 
 class ChatSharedMedia(BaseModel):
-    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:logged_by_id:date`
+    id = models.CharField(max_length=256, primary_key=True)  # `chat__chat_id:date_ts`
 
     # date of getting this query
-    date = models.BigIntegerField()
+    date_ts = models.BigIntegerField()
 
     photo = models.IntegerField(default=0)
     video = models.IntegerField(default=0)
@@ -40,8 +40,8 @@ class ChatSharedMedia(BaseModel):
     )
 
     class Meta:
-        ordering = ('-date',)
-        get_latest_by = ('-date',)
+        ordering = ('-date_ts',)
+        get_latest_by = ('-date_ts',)
 
     def __str__(self):
-        return f"{self.chat} @ {arrow.get(self.date)}"
+        return f"{self.chat} @ {arrow.get(self.date_ts)}"
