@@ -26,6 +26,7 @@ class SoftDeletableManager(models.Manager):
 
 class SoftDeletableBaseModel(models.Model):
     deleted_ts = models.BigIntegerField(null=True, blank=True)
+    is_exact_ts = models.BooleanField(null=True, blank=True)
 
     objects = SoftDeletableManager()
     archived_objects = models.Manager()
@@ -33,6 +34,10 @@ class SoftDeletableBaseModel(models.Model):
     def delete(self, **kwargs):
         """Softly delete the entry"""
         self.deleted_ts = kwargs.get('deleted_ts', arrow.now().timestamp)
+        self.is_exact_ts = 'deleted_ts' in kwargs
+        for k, v in kwargs:
+            if hasattr(self, k):
+                setattr(self, k, v)
         self.save()
 
     def hard_delete(self):
