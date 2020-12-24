@@ -8,7 +8,7 @@ class EntityType(BaseModel):
     """
 
     """
-    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:message_id:type`
+    id = models.CharField(max_length=256, primary_key=True)  # `chat__chat_id:message__id:type`
 
     # Type of the entity
     type = models.CharField(
