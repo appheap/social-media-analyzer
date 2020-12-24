@@ -1,4 +1,7 @@
 from .entity import Entity
+from .entity import EntityQuerySet
+from .entity import EntityManager
+
 from .entity_type import EntityType
 from .entity_types import EntityTypes
 from .entity_types import EntitySourceTypes
