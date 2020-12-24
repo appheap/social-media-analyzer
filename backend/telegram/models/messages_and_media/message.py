@@ -1,6 +1,6 @@
 from typing import Optional
 
-from django.db import models
+from django.db import models, transaction
 from ..base import BaseModel
 from pyrogram import types
 from db.models import SoftDeletableBaseModel
@@ -104,14 +104,15 @@ class MessageManager(models.Manager):
         )
 
         if parsed_msg and len(parsed_msg):
-            db_message = self.get_queryset().update_or_create_message(
-                **{
-                    **parsed_msg,
-                    'logged_by': logger_account,
-                }
-            )
+            with transaction.atomic():
+                db_message = self.get_queryset().update_or_create_message(
+                    **{
+                        **parsed_msg,
+                        'logged_by': logger_account,
+                    }
+                )
 
-            self._update_message_related_models(db_message, raw_message)
+                self._update_message_related_models(db_message, raw_message)
 
             return db_message
 
