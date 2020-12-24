@@ -69,6 +69,20 @@ class MessageQuerySet(SoftDeletableQS):
             logger.exception(e)
         return None
 
+    def update_message(self, **kwargs) -> bool:
+        try:
+            return bool(
+                self.update(
+                    **kwargs
+                )
+            )
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return False
+
 
 class MessageManager(models.Manager):
     def get_queryset(self) -> "MessageQuerySet":
@@ -97,58 +111,88 @@ class MessageManager(models.Manager):
                 }
             )
 
-            if db_message:
-                db_message.update_or_create_chat_from_raw(
-                    model=db_message,
-                    field_name='from_chat',
-                    raw_chat=raw_message.content.from_chat
-                )
-                db_message.update_or_create_user_from_raw(
-                    model=db_message,
-                    field_name='from_user',
-                    raw_user=raw_message.content.from_user
-                )
-                if raw_message.content.forward_header:
-                    db_message.update_or_create_chat_from_raw(
-                        model=db_message,
-                        field_name='forward_from_chat',
-                        raw_chat=raw_message.content.forward_header.forward_from_chat
-                    )
-                    db_message.update_or_create_user_from_raw(
-                        model=db_message,
-                        field_name='forward_from_user',
-                        raw_user=raw_message.content.forward_header.forward_from_user
-                    )
-
-                    # fixme: forward_from_message ?
-
-                    db_message.update_or_create_chat_from_raw(
-                        model=db_message,
-                        field_name='saved_from_chat',
-                        raw_chat=raw_message.content.forward_header.saved_from_chat
-                    )
-                    db_message.update_or_create_user_from_raw(
-                        model=db_message,
-                        field_name='saved_from_user',
-                        raw_user=raw_message.content.forward_header.saved_from_user
-                    )
-
-                if raw_message.content.reply_header:
-                    # fixme: `reply_to_message` and `reply_to_top_message`?
-                    db_message.update_or_create_chat_from_raw(
-                        model=db_message,
-                        field_name='reply_to_chat',
-                        raw_chat=raw_message.content.reply_header.reply_to_chat
-                    )
-                    db_message.update_or_create_user_from_raw(
-                        model=db_message,
-                        field_name='reply_to_user',
-                        raw_user=raw_message.content.reply_header.reply_to_user
-                    )
+            self._update_message_related_models(db_message, raw_message)
 
             return db_message
 
         return None
+
+    def update_from_raw(
+            self,
+            *,
+            chat_id: int,
+            id: str,
+            raw_message: types.Message,
+            logger_account: "tg_models.TelegramAccount"
+    ) -> Optional["Message"]:
+
+        if chat_id is None or id is None or raw_message is None or logger_account is None:
+            return None
+
+        parsed_msg = self._parse_normal(
+            chat_id=chat_id,
+            raw_message=raw_message
+        )
+
+        if parsed_msg and len(parsed_msg):
+            del parsed_msg['id']
+            db_message = self.get_queryset().filter_by_id(id=id).update_message(
+                **parsed_msg
+            )
+
+            self._update_message_related_models(db_message, raw_message)
+            return db_message
+
+    @staticmethod
+    def _update_message_related_models(db_message, raw_message):
+        if db_message and raw_message:
+            db_message.update_or_create_chat_from_raw(
+                model=db_message,
+                field_name='from_chat',
+                raw_chat=raw_message.content.from_chat
+            )
+            db_message.update_or_create_user_from_raw(
+                model=db_message,
+                field_name='from_user',
+                raw_user=raw_message.content.from_user
+            )
+            if raw_message.content.forward_header:
+                db_message.update_or_create_chat_from_raw(
+                    model=db_message,
+                    field_name='forward_from_chat',
+                    raw_chat=raw_message.content.forward_header.forward_from_chat
+                )
+                db_message.update_or_create_user_from_raw(
+                    model=db_message,
+                    field_name='forward_from_user',
+                    raw_user=raw_message.content.forward_header.forward_from_user
+                )
+
+                # fixme: forward_from_message ?
+
+                db_message.update_or_create_chat_from_raw(
+                    model=db_message,
+                    field_name='saved_from_chat',
+                    raw_chat=raw_message.content.forward_header.saved_from_chat
+                )
+                db_message.update_or_create_user_from_raw(
+                    model=db_message,
+                    field_name='saved_from_user',
+                    raw_user=raw_message.content.forward_header.saved_from_user
+                )
+
+            if raw_message.content.reply_header:
+                # fixme: `reply_to_message` and `reply_to_top_message`?
+                db_message.update_or_create_chat_from_raw(
+                    model=db_message,
+                    field_name='reply_to_chat',
+                    raw_chat=raw_message.content.reply_header.reply_to_chat
+                )
+                db_message.update_or_create_user_from_raw(
+                    model=db_message,
+                    field_name='reply_to_user',
+                    raw_user=raw_message.content.reply_header.reply_to_user
+                )
 
     @staticmethod
     def _parse_normal(*, chat_id, raw_message: types.Message) -> dict:

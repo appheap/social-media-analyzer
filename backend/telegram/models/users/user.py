@@ -27,7 +27,7 @@ class UserQuerySet(models.QuerySet):
     def user_exists(self, *, user_id: int) -> bool:
         return self.filter_by_user_id(user_id=user_id).exists()
 
-    def update_or_create_user(self, **kwargs) -> "User":
+    def update_or_create_user(self, **kwargs) -> Optional["User"]:
         try:
             return self.update_or_create(
                 **kwargs
