@@ -35,7 +35,7 @@ class ChatSharedMediaQuerySet(models.QuerySet):
         return None
 
 
-class ChatShardMediaManager(models.Manager):
+class ChatSharedMediaManager(models.Manager):
     def get_queryset(self) -> ChatSharedMediaQuerySet:
         return ChatSharedMediaQuerySet(self.model, using=self._db)
 
@@ -103,7 +103,7 @@ class ChatSharedMedia(BaseModel):
         related_name='shared_media_history',
     )
 
-    objects = ChatShardMediaManager()
+    objects = ChatSharedMediaManager()
 
     class Meta:
         ordering = ('-date_ts',)
