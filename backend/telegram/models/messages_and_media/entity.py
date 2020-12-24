@@ -1,6 +1,6 @@
 from typing import Optional
 
-from django.db import models, DatabaseError
+from django.db import models, DatabaseError, transaction
 
 from .message import ChatMediaTypes
 from ..users import UserUpdater
@@ -60,19 +60,21 @@ class EntityManager(models.Manager):
             message__has_media=bool(db_message.media_type != ChatMediaTypes.undefined)
         )
         if parsed_entity:
-            db_entity = self.get_queryset().update_or_create_entity(
-                **{
-                    'id': f"{db_message.id}:{raw_entity.offset}",
-                    'message': db_message,
-                    **parsed_entity,
-                },
-            )
-            if db_entity:
-                db_entity.update_or_create_user_from_raw(
-                    model=db_entity,
-                    field_name='user',
-                    raw_user=raw_entity.user
+            with transaction.atomic():
+                db_entity = self.get_queryset().update_or_create_entity(
+                    **{
+                        'id': f"{db_message.id}:{raw_entity.offset}",
+                        'message': db_message,
+                        **parsed_entity,
+                    },
                 )
+                if db_entity:
+                    db_entity.update_or_create_user_from_raw(
+                        model=db_entity,
+                        field_name='user',
+                        raw_user=raw_entity.user
+                    )
+                    return db_entity
 
         return None
 
