@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser, UserManager as AbstractUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -22,7 +23,7 @@ class SiteUserQuerySet(db_models.SoftDeletableQS):
         return self.filter(is_superuser=True)
 
 
-class SiteUserManager(models.Manager):
+class SiteUserManager(AbstractUserManager):
     def get_user_by_id(self, user_id: int) -> "SiteUser":
         site_user = None
         try:
