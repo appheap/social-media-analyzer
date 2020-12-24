@@ -339,7 +339,7 @@ class Message(Object, Update):
     @property
     def media_type(self):
         if self.type == 'message':
-            return self.media_type
+            return self.content.media_type
         else:
             return None
 
