@@ -15,7 +15,7 @@ class MessageReplies(Object):
             *,
             client: "pyrogram.Client" = None,
 
-            comments: Union[None, int] = None,
+            comments: Union[None, bool] = None,
             replies: int = None,
             replies_pts: int = None,
             recent_repliers: Union[None, List[Union["types.Chat", "types.User"]]] = None,

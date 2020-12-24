@@ -6,7 +6,10 @@ from .message_views_analyzer import ChatMessageViewsAnalyzerMetaData
 
 from .chat_member_count import ChatMemberCount
 from .chat_shared_media import ChatSharedMedia
+
 from .message_views import MessageView
+from .message_views import MessageViewQuerySet
+from .message_views import MessageViewManager
 
 __all__ = [
     "AdminLogAnalyzerMetaData",
@@ -17,6 +20,9 @@ __all__ = [
 
     "ChatMemberCount",
     "ChatSharedMedia",
+
     "MessageView",
+    "MessageViewQuerySet",
+    "MessageViewManager",
 
 ]
