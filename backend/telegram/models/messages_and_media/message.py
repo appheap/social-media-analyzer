@@ -123,11 +123,11 @@ class MessageManager(models.Manager):
             chat_id: int,
             id: str,
             raw_message: types.Message,
-            logger_account: "tg_models.TelegramAccount"
-    ) -> Optional["Message"]:
+            logger_account: "tg_models.TelegramAccount" = None
+    ) -> bool:
 
-        if chat_id is None or id is None or raw_message is None or logger_account is None:
-            return None
+        if chat_id is None or id is None or raw_message is None:
+            return False
 
         parsed_msg = self._parse_normal(
             chat_id=chat_id,
@@ -136,12 +136,17 @@ class MessageManager(models.Manager):
 
         if parsed_msg and len(parsed_msg):
             del parsed_msg['id']
+            if logger_account:
+                parsed_msg['logged_by'] = logger_account
+
             db_message = self.get_queryset().filter_by_id(id=id).update_message(
                 **parsed_msg
             )
 
             self._update_message_related_models(db_message, raw_message)
             return db_message
+
+        return False
 
     @staticmethod
     def _update_message_related_models(db_message, raw_message):
@@ -394,6 +399,20 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
     )
 
     objects = MessageManager()
+
+    def update_fields_from_raw(
+            self,
+            *,
+            raw_message: types.Message,
+            chat_id: int,
+            logger_account: "tg_models.TelegramAccount" = None
+    ) -> bool:
+        return self.objects.update_from_raw(
+            chat_id=chat_id,
+            id=self.id,
+            raw_message=raw_message,
+            logger_account=logger_account
+        )
 
     class Meta:
         ordering = ('-date_ts', 'chat',)

@@ -7,6 +7,7 @@ from .message import Message
 from .message import MessageManager
 from .message import MessageQuerySet
 from .message import ChatMediaTypes
+from .message_updater import MessageUpdater
 
 from .photo import Photo
 
@@ -20,6 +21,7 @@ __all__ = [
     "MessageManager",
     "MessageQuerySet",
     "ChatMediaTypes",
+    "MessageUpdater",
 
     "Photo",
 ]
