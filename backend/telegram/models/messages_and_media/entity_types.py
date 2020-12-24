@@ -1,7 +1,5 @@
 from django.db import models
 
-from pyrogram import types
-
 
 class EntitySourceTypes(models.TextChoices):
     text = "text"
@@ -25,9 +23,9 @@ class EntityTypes(models.TextChoices):
     undefined = 'undefined'
 
     @staticmethod
-    def get_type(entity: "types.MessageEntity"):
+    def get_type(entity_type: str):
         for choice in EntityTypes.choices:
-            if choice[0] == entity.type:
+            if choice[0] == entity_type:
                 return getattr(EntityTypes, str(choice[0]).lower())
         else:
             return EntityTypes.undefined
