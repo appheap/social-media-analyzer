@@ -5,7 +5,7 @@ from .entity_types import EntitySourceTypes
 
 
 class Entity(BaseModel):
-    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:message_id:offset`
+    id = models.CharField(max_length=256, primary_key=True)  # `chat__chat_id:message__id:offset`
 
     type = models.CharField(
         EntityTypes.choices,
