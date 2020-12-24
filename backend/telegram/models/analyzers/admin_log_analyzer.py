@@ -4,12 +4,12 @@ from ..base import BaseModel
 
 
 class AdminLogAnalyzerMetaData(BaseModel):
-    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:created_at`
+    id = models.CharField(max_length=256, primary_key=True)  # `chat__chat_id`
 
     enabled = models.BooleanField()
-    first_analyzed_at = models.BigIntegerField(null=True, blank=True)
-    last_analyzed_at = models.BigIntegerField(null=True, blank=True)
-    disabled_at = models.BigIntegerField(null=True, blank=True)
+    first_analyzed_ts = models.BigIntegerField(null=True, blank=True)
+    last_analyzed_ts = models.BigIntegerField(null=True, blank=True)
+    disable_date_ts = models.BigIntegerField(null=True, blank=True)
     disable_reason = models.CharField(max_length=256, null=True, blank=True, )
 
     ######################################
