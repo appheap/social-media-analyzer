@@ -27,9 +27,9 @@ class EntityTypeQuerySet(models.QuerySet):
 
     def update_or_create_entity(self, **kwargs) -> Optional["EntityType"]:
         try:
-            self.update_or_create(
+            return self.update_or_create(
                 **kwargs
-            )
+            )[0]
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
