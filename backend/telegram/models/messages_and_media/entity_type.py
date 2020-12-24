@@ -1,14 +1,86 @@
-from django.db import models
+from typing import Optional
 
+from django.db import models, DatabaseError
+
+from pyrogram import types
+from telegram import models as tg_models
+from telegram.globals import logger
 from .entity_types import EntityTypes
 from ..base import BaseModel
+
+
+class EntityTypeQuerySet(models.QuerySet):
+    def filter_by_id(self, *, id: str) -> "EntityTypeQuerySet":
+        return self.filter(id=id)
+
+    def get_by_id(self, *, id: str) -> Optional["EntityType"]:
+        try:
+            return self.get(id=id)
+        except EntityType.DoesNotExist as e:
+            pass
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return None
+
+    def update_or_create_entity(self, **kwargs) -> Optional["EntityType"]:
+        try:
+            self.update_or_create(
+                **kwargs
+            )
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return None
+
+
+class EntityTypeManager(models.Manager):
+    def get_queryset(self) -> EntityTypeQuerySet:
+        return EntityTypeQuerySet(self.model, using=self._db)
+
+    def update_or_create_from_raw(
+            self,
+            *,
+            raw_entity: types.MessageEntity,
+            db_message: "tg_models.Message",
+    ) -> Optional["EntityType"]:
+
+        if raw_entity is None or db_message is None:
+            return None
+
+        parsed_entity = self._parse(
+            raw_entity=raw_entity,
+        )
+        if parsed_entity:
+            db_entity = self.get_queryset().update_or_create_entity(
+                **{
+                    'id': f"{db_message.id}:{raw_entity.type}",
+                    'message': db_message,
+                    **parsed_entity,
+                },
+            )
+            return db_entity
+
+        return None
+
+    @staticmethod
+    def _parse(*, raw_entity: types.MessageEntity) -> dict:
+        if raw_entity is None:
+            return {}
+        return {
+            'type': EntityTypes.get_type(raw_entity.type),
+        }
 
 
 class EntityType(BaseModel):
     """
 
     """
-    id = models.CharField(max_length=256, primary_key=True)  # `chat__chat_id:message__id:type`
+    id = models.CharField(max_length=256, primary_key=True)  # `message__id:type`
 
     # Type of the entity
     type = models.CharField(
@@ -24,6 +96,8 @@ class EntityType(BaseModel):
         null=False,
         related_name='entity_types',
     )
+
+    objects = EntityTypeManager()
 
     class Meta:
         verbose_name_plural = 'Entity Types'
