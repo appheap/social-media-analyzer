@@ -61,12 +61,12 @@ class ChannelManager(models.Manager):
                             raw_chat_permissions=raw_chat.channel.default_banned_rights
                         )
                         if len(parsed_full_channel):
-                            db_channel.update_or_create_from_raw(
+                            db_channel.update_or_create_chat_from_raw(
                                 model=self,
                                 field_name='migrated_from',
                                 raw_chat=raw_chat.full_channel.migrated_from
                             )
-                            db_channel.update_or_create_from_raw(
+                            db_channel.update_or_create_chat_from_raw(
                                 model=self,
                                 field_name='linked_chat',
                                 raw_chat=raw_chat.full_channel.linked_chat
@@ -100,12 +100,12 @@ class ChannelManager(models.Manager):
                         raw_chat_permissions=channel.default_banned_rights
                     )
                     if full_channel:
-                        db_channel.update_or_create_from_raw(
+                        db_channel.update_or_create_chat_from_raw(
                             model=self,
                             field_name='migrated_from',
                             raw_chat=full_channel.migrated_from
                         )
-                        db_channel.update_or_create_from_raw(
+                        db_channel.update_or_create_chat_from_raw(
                             model=self,
                             field_name='linked_chat',
                             raw_chat=full_channel.linked_chat

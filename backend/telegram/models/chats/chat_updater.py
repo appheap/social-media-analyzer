@@ -7,7 +7,7 @@ from .chat import Chat
 class ChatUpdater:
 
     @staticmethod
-    def update_or_create_from_raw(
+    def update_or_create_chat_from_raw(
             *,
             model: models.Model,
             field_name: str,
