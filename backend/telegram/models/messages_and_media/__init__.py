@@ -3,6 +3,9 @@ from .entity import EntityQuerySet
 from .entity import EntityManager
 
 from .entity_type import EntityType
+from .entity_type import EntityTypeQuerySet
+from .entity_type import EntityTypeManager
+
 from .entity_types import EntityTypes
 from .entity_types import EntitySourceTypes
 
@@ -16,7 +19,13 @@ from .photo import Photo
 
 __all__ = [
     "Entity",
+    "EntityManager",
+    "EntityQuerySet",
+
     "EntityType",
+    "EntityTypeQuerySet",
+    "EntityTypeManager",
+
     "EntityTypes",
     "EntitySourceTypes",
 
