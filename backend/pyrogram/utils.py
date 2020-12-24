@@ -363,3 +363,14 @@ def compute_password_check(r: raw.types.account.Password, password: str) -> raw.
     )
 
     return raw.types.InputCheckPasswordSRP(srp_id=srp_id, A=A_bytes, M1=M1_bytes)
+
+
+def parse_search_counters(r: List["raw.types.messages.SearchCounter"]) -> List["types.SearchCounter"]:
+    parsed_objects = []
+    for raw_search_counter in r:
+        parsed_objects.append(
+            types.SearchCounter._parse(
+                raw_obj=raw_search_counter
+            )
+        )
+    return list(filter(lambda obj: obj is not None, parsed_objects))
