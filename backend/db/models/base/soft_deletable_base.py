@@ -35,7 +35,7 @@ class SoftDeletableBaseModel(models.Model):
         """Softly delete the entry"""
         self.deleted_ts = kwargs.get('deleted_ts', arrow.now().timestamp)
         self.is_exact_ts = 'deleted_ts' in kwargs
-        for k, v in kwargs:
+        for k, v in kwargs.items():
             if hasattr(self, k):
                 setattr(self, k, v)
         self.save()
