@@ -50,7 +50,7 @@ class ChatMember(BaseModel):
 
     ### participant (user_id, join_date, demoted_by?, )
     # Date joined
-    join_date = models.BigIntegerField(null=True, blank=True, )  # null for the creator
+    join_date_ts = models.BigIntegerField(null=True, blank=True, )  # null for the creator
 
     #### participantSelf (user_id,inviter_id,join_date)
 
@@ -73,7 +73,7 @@ class ChatMember(BaseModel):
 
     #### participantBanned (user_id, join_date, inviter_id, left, kicked_by, banned_rights, )
     # Whether the user has left the group
-    left = models.BooleanField(null=True, blank=True, )  # only for banned participant
+    has_left = models.BooleanField(null=True, blank=True, )  # only for banned participant
     # Banned rights
     banned_rights = models.OneToOneField(
         'telegram.ChatPermissions',
@@ -83,7 +83,7 @@ class ChatMember(BaseModel):
     )  # only for banned participant
 
     ### participantLeft (user_id, left_date, ?)
-    left_date = models.BigIntegerField(null=True, blank=True, )
+    left_date_ts = models.BigIntegerField(null=True, blank=True, )
 
     #################################################
     # `action_participant_invite` : Action that this participant is the invited participant
@@ -125,13 +125,13 @@ class ChatMember(BaseModel):
     )
 
     # the time of event happened to this participant (from adminLogs)
-    event_date = models.BigIntegerField(null=True, blank=True, )
+    event_date_ts = models.BigIntegerField(null=True, blank=True, )
     is_previous = models.BooleanField(null=True, blank=True, )
 
     objects = ChatMemberManager()
 
     class Meta:
-        ordering = ['-event_date', 'is_previous']
+        ordering = ['-event_date_ts', 'is_previous']
 
     def __str__(self):
         return f"participant {self.id} of type :{self.type}"
