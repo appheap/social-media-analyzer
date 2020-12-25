@@ -5,7 +5,7 @@ from ..object import Object
 from pyrogram import raw, types
 
 
-class ChatParticipant(Object):
+class ChatMember(Object):
     def __init__(
             self,
             *,
@@ -46,7 +46,7 @@ class ChatParticipant(Object):
             client: "pyrogram.Client",
             participant: Union[raw.base.ChannelParticipant, raw.base.ChatParticipant],
             users: dict,
-    ) -> "ChatParticipant":
+    ) -> "ChatMember":
 
         if participant is None:
             return None
@@ -64,7 +64,7 @@ class ChatParticipant(Object):
         elif isinstance(participant, raw.types.ChannelParticipantBanned):
             status = "kicked" if participant.banned_rights.view_messages else "restricted",
 
-        return ChatParticipant(
+        return ChatMember(
             client=client,
 
             user=types.User._parse(client, users.get(getattr(participant, 'user_id', None), None)),

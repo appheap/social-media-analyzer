@@ -30,14 +30,14 @@ class Membership(BaseModel):
         ordering = ['chat', 'user']
 
     current_status = models.OneToOneField(
-        'telegram.ChannelParticipant',
+        'telegram.ChatMember',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name='+'
     )
     previous_status = models.OneToOneField(
-        'telegram.ChannelParticipant',
+        'telegram.ChatMember',
         on_delete=models.CASCADE,
         null=True,
         blank=True,

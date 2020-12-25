@@ -8,8 +8,8 @@ class TelegramChannelInline(admin.TabularInline):
     model = TelegramChannel
 
 
-class ChatsInline(admin.TabularInline):
-    model = Chat
+# class ChatsInline(admin.TabularInline):
+#     model = Chat
 
 
 class AdminLogEventInline(admin.TabularInline):
@@ -31,7 +31,7 @@ class SharedMediaHistoryInline(admin.TabularInline):
 class TelegramAccountAdmin(admin.ModelAdmin):
     inlines = [
         TelegramChannelInline,
-        ChatsInline,
+        # ChatsInline,
         MemberCountHistoryInline,
         SharedMediaHistoryInline,
         MessageViewInline,
@@ -65,25 +65,25 @@ class ViaBotMessageInline(admin.TabularInline):
 
 
 class InvitedParticipantInline(admin.TabularInline):
-    model = ChannelParticipant
+    model = ChatMember
     fk_name = 'invited_by'
     verbose_name_plural = 'Invited Participants'
 
 
 class PromotedParticipantInline(admin.TabularInline):
-    model = ChannelParticipant
+    model = ChatMember
     fk_name = 'promoted_by'
     verbose_name_plural = 'Promoted Participants'
 
 
 class DemotedParticipantInline(admin.TabularInline):
-    model = ChannelParticipant
+    model = ChatMember
     fk_name = 'demoted_by'
     verbose_name_plural = 'Demoted Participants'
 
 
 class KickedParticipantInline(admin.TabularInline):
-    model = ChannelParticipant
+    model = ChatMember
     fk_name = 'kicked_by'
     verbose_name_plural = 'Kicked Participants'
 
@@ -223,7 +223,7 @@ class MessageAdmin(admin.ModelAdmin):
 
 #################################################################################
 class ChannelParticipantInline(admin.TabularInline):
-    model = ChannelParticipant
+    model = ChatMember
     fk_name = 'membership'
     verbose_name_plural = 'participant history'
     fields = (
@@ -283,7 +283,7 @@ admin.site.register(AdminLogEventActionStopPoll)
 admin.site.register(AdminLogEventActionChangeLinkedChat)
 admin.site.register(AdminLogEventActionChangeLocation)
 admin.site.register(AdminLogEventActionToggleSlowMode)
-admin.site.register(ChannelParticipant)
+admin.site.register(ChatMember)
 admin.site.register(ChatPermissions)
 admin.site.register(AdminRights)
 admin.site.register(SharedMediaAnalyzerMetaData)

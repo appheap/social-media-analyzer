@@ -29,7 +29,7 @@ class GetChatMember(Scaffold):
             self,
             chat_id: Union[int, str],
             user_id: Union[int, str]
-    ) -> "types.ChatParticipant":
+    ) -> "types.ChatMember":
         """Get information about one member of a chat.
 
         Parameters:
@@ -64,11 +64,7 @@ class GetChatMember(Scaffold):
             users = {i.id: i for i in r.users}
 
             for member in members:
-<<<<<<< HEAD
-                member = types.ChatParticipant._parse(self, member, users)
-=======
                 member = types.ChatMember._parse(self, member, users)
->>>>>>> + Update telegram models
 
                 if isinstance(user, raw.types.InputPeerSelf):
                     if member.user.is_self:
@@ -88,10 +84,6 @@ class GetChatMember(Scaffold):
 
             users = {i.id: i for i in r.users}
 
-<<<<<<< HEAD
-            return types.ChatParticipant._parse(self, r.participant, users)
-=======
             return types.ChatMember._parse(self, r.participant, users)
->>>>>>> + Update telegram models
         else:
             raise ValueError(f'The chat_id "{chat_id}" belongs to a user')

@@ -8,14 +8,14 @@ class AdminLogEventActionToggleBan(BaseModel):
     """
 
     prev_participant = models.OneToOneField(
-        'telegram.ChannelParticipant',
+        'telegram.ChatMember',
         on_delete=models.CASCADE,
         null=True, blank=True,
         related_name="action_toggle_ban_prev",
     )
 
     new_participant = models.OneToOneField(
-        'telegram.ChannelParticipant',
+        'telegram.ChatMember',
         on_delete=models.CASCADE,
         null=True, blank=True,
         related_name="action_toggle_ban_new",

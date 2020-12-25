@@ -10,8 +10,8 @@ class ChannelAdminLogEventActionParticipantToggleBan(ChannelAdminLogEventAction)
             *,
             client: "pyrogram.Client" = None,
 
-            prev_chat_member: "types.ChatParticipant" = None,
-            new_chat_member: "types.ChatParticipant" = None,
+            prev_chat_member: "types.ChatMember" = None,
+            new_chat_member: "types.ChatMember" = None,
     ):
         super().__init__(client=client)
 
@@ -26,6 +26,6 @@ class ChannelAdminLogEventActionParticipantToggleBan(ChannelAdminLogEventAction)
         return ChannelAdminLogEventActionParticipantToggleBan(
             client=client,
 
-            prev_chat_member=types.ChatParticipant._parse(client, getattr(action, 'prev_participant', None), users),
-            new_chat_member=types.ChatParticipant._parse(client, getattr(action, 'new_participant', None), users)
+            prev_chat_member=types.ChatMember._parse(client, getattr(action, 'prev_participant', None), users),
+            new_chat_member=types.ChatMember._parse(client, getattr(action, 'new_participant', None), users)
         )

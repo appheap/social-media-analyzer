@@ -10,7 +10,7 @@ class AdminLogEventActionParticipantInvite(BaseModel):
 
     # The user that was invited
     participant = models.OneToOneField(
-        'telegram.ChannelParticipant',
+        'telegram.ChatMember',
         on_delete=models.CASCADE,
         null=True, blank=True,
         related_name="action_participant_invite",

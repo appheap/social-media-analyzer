@@ -6,7 +6,7 @@ from .channel_full import ChannelFull
 from .chat_admin_rights import ChatAdminRights
 from .channel_location import ChannelLocation
 from .geo_point import GeoPoint
-from .chat_participant import ChatParticipant
+from .chat_member import ChatMember
 from .channel_admin_log_event import ChannelAdminLogEvent
 from .channel_admin_log_event_action import ChannelAdminLogEventAction
 from .channel_admin_log_event_action_change_title import ChannelAdminLogEventActionChangeTitle
@@ -40,7 +40,7 @@ __all__ = [
     "ChatAdminRights",
     "ChannelLocation",
     "GeoPoint",
-    "ChatParticipant",
+    "ChatMember",
 
     "ChannelAdminLogEvent",
     "ChannelAdminLogEventAction",

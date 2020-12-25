@@ -10,7 +10,7 @@ class ChannelAdminLogEventActionParticipantInvite(ChannelAdminLogEventAction):
             *,
             client: "pyrogram.Client" = None,
 
-            chat_member: "types.ChatParticipant" = None,
+            chat_member: "types.ChatMember" = None,
     ):
         super().__init__(client=client)
 
@@ -24,5 +24,5 @@ class ChannelAdminLogEventActionParticipantInvite(ChannelAdminLogEventAction):
         return ChannelAdminLogEventActionParticipantInvite(
             client=client,
 
-            chat_member=types.ChatParticipant._parse(client, getattr(action, 'participant', None), users)
+            chat_member=types.ChatMember._parse(client, getattr(action, 'participant', None), users)
         )
