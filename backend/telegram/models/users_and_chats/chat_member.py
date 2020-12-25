@@ -2,7 +2,7 @@ from django.db import models
 from ..base import BaseModel
 
 
-class ChannelParticipantTypes(models.TextChoices):
+class ChatMemberTypes(models.TextChoices):
     user = 'user'  # not member yet, only a telegram user (when banned/promoted before joining the channel)
     member = 'member'
     self = 'self'
@@ -22,7 +22,16 @@ class ChannelParticipantTypes(models.TextChoices):
     #         return ChannelParticipantTypes.undefined
 
 
-class ChannelParticipant(BaseModel):
+class ChatMemberQuerySet(models.QuerySet):
+    pass
+
+
+class ChatMemberManager(models.Manager):
+    def get_queryset(self) -> ChatMemberQuerySet:
+        return ChatMemberQuerySet(self.model, using=self._db)
+
+
+class ChatMember(BaseModel):
     """
         Channel/supergroup participant
     """
@@ -35,8 +44,8 @@ class ChannelParticipant(BaseModel):
     type = models.CharField(
         max_length=64,
         null=False,
-        choices=ChannelParticipantTypes.choices,
-        default=ChannelParticipantTypes.undefined,
+        choices=ChatMemberTypes.choices,
+        default=ChatMemberTypes.undefined,
     )
 
     ### participant (user_id, join_date, demoted_by?, )
@@ -118,6 +127,8 @@ class ChannelParticipant(BaseModel):
     # the time of event happened to this participant (from adminLogs)
     event_date = models.BigIntegerField(null=True, blank=True, )
     is_previous = models.BooleanField(null=True, blank=True, )
+
+    objects = ChatMemberManager()
 
     class Meta:
         ordering = ['-event_date', 'is_previous']
