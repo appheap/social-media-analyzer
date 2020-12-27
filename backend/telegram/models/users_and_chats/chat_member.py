@@ -7,6 +7,7 @@ from pyrogram import types
 from telegram import models as tg_models
 from ..users import UserUpdater
 from ..chats import ChatPermissionsUpdater
+from ..chats import ChatAdminRightsUpdater
 
 
 class ChatMemberTypes(models.TextChoices):
@@ -113,6 +114,12 @@ class ChatMemberManager(models.Manager):
                         raw_chat_permissions=raw_chat_member.banned_rights
                     )
 
+                    db_chat_member.update_or_create_chat_admin_rights_from_raw(
+                        model=db_chat_member,
+                        field_name='admin_rights',
+                        raw_chat_admin_rights=raw_chat_member.admin_rights
+                    )
+
             return db_chat_member
 
         return None
@@ -131,7 +138,7 @@ class ChatMemberManager(models.Manager):
         }
 
 
-class ChatMember(BaseModel, UserUpdater, ChatPermissionsUpdater):
+class ChatMember(BaseModel, UserUpdater, ChatPermissionsUpdater, ChatAdminRightsUpdater):
     """
         Channel/supergroup participant
     """
