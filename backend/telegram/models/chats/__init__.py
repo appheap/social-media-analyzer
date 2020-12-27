@@ -19,7 +19,8 @@ from .dialog import Dialog
 from .dialog import DialogQuerySet
 from .dialog import DialogManager
 
-from .chat_admin_rights import AdminRights
+from .chat_admin_rights import ChatAdminRights
+from .chat_admin_rights_updater import ChatAdminRightsUpdater
 
 from .chat_permissions import ChatPermissions
 from .chat_permissions import ChatPermissionsManager
@@ -51,7 +52,8 @@ __all__ = [
     "DialogQuerySet",
     "DialogManager",
 
-    "AdminRights",
+    "ChatAdminRights",
+    "ChatAdminRightsUpdater",
 
     "ChatPermissions",
     "ChatPermissionsManager",

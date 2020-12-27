@@ -33,7 +33,6 @@ class TelegramAccount(BaseModel):
     # `message_views` : message views logged by this account
     # `member_count_history` : member counts logged by this account
     # `shared_media_history` : shared media counts logged by this account
-    # `admin_rights` : admin rights belonging to this account
     # `dialogs` : dialogs belonging to this account
 
     # User who is the owner of this telegram account

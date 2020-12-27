@@ -59,7 +59,6 @@ class TelegramChannel(BaseModel):
     # `chat_member_analyzer_metadata` : chat member analyzer of this channel
     # `admin_log_analyzer_metadata` : admin log analyzer of this channel
     # `add_requests` : requests made for adding this channel to an user's accounts
-    # `admin_rights`: admin rights belonging to this channel
 
     def __str__(self):
         return str(self.chat.title) if self.chat else str(self.username)
