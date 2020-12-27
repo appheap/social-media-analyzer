@@ -140,12 +140,15 @@ class MessageManager(models.Manager):
             if logger_account:
                 parsed_msg['logged_by'] = logger_account
 
-            db_message = self.get_queryset().filter_by_id(id=id).update_message(
-                **parsed_msg
-            )
+            _updated = False
+            with transaction.atomic():
+                db_message_qs = self.get_queryset().filter_by_id(id=id)
+                _updated = db_message_qs.update_message(
+                    **parsed_msg
+                )
+                self._update_message_related_models(db_message_qs[0], raw_message)
 
-            self._update_message_related_models(db_message, raw_message)
-            return db_message
+            return _updated
 
         return False
 

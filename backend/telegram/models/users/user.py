@@ -91,9 +91,9 @@ class UserManager(models.Manager):
             return None
         updated = False
         with transaction.atomic():
-            user = self.get_queryset().filter_by_user_id(user_id=user_id)
-            updated = user.update_user(**parsed_object)
-            self.create_restrictions(raw_user.user if is_full_type else raw_user, user)
+            user_qs = self.get_queryset().filter_by_user_id(user_id=user_id)
+            updated = user_qs.update_user(**parsed_object)
+            self.create_restrictions(raw_user.user if is_full_type else raw_user, user_qs[0])
         return updated
 
     def update_or_create_from_raw(self, *, raw_user: Union[types.User, types.UserFull]) -> Optional["User"]:
