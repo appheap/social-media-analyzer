@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 from django.db import models, DatabaseError
 
 from ..base import BaseModel
 from telegram import models as tg_models
 from telegram.globals import logger
+from pyrogram import types
 
 
 class MembershipQuerySet(models.QuerySet):
@@ -81,6 +82,23 @@ class MembershipManager(models.Manager):
 
     def get_membership(self, *, db_user: 'tg_models.User', db_chat: 'tg_models.Chat') -> Optional['Membership']:
         return self.get_queryset().get_by_user_and_chat(db_user=db_user, db_chat=db_chat)
+
+    def is_status_changed(
+            self,
+            *,
+            db_user: 'tg_models.User',
+            db_chat: 'tg_models.Chat',
+            raw_chat_member: types.ChatMember
+    ) -> Tuple['Membership', bool]:
+
+        if db_user is None or db_chat is None or raw_chat_member is None:
+            return None, False
+
+        db_membership = self.get_membership(db_user=db_user, db_chat=db_chat)
+        if db_membership:
+            return db_membership, db_membership.current_status and db_membership.current_status.type == raw_chat_member.status
+        else:
+            return None, False
 
     @staticmethod
     def update_membership_status(

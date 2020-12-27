@@ -57,7 +57,7 @@ class ChatMemberManager(models.Manager):
             raw_chat_member: types.ChatMember,
             db_membership: 'tg_models.Membership',
 
-            event_date_ts: int = None,
+            event_date_ts: int,
             left_date_ts: int = None,
             is_previous: bool = None,
 
@@ -68,7 +68,7 @@ class ChatMemberManager(models.Manager):
 
     ) -> Optional['ChatMember']:
 
-        if raw_chat_member is None or db_membership is None:
+        if raw_chat_member is None or db_membership is None or event_date_ts is None:
             return None
 
         parsed_object = self._parse(raw_chat_member=raw_chat_member)
