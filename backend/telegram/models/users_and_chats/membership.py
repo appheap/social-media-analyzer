@@ -12,7 +12,7 @@ class MembershipQuerySet(models.QuerySet):
         try:
             return self.update_or_create(
                 **kwargs
-            )
+            )[0]
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -79,71 +79,72 @@ class MembershipManager(models.Manager):
             }
         )
 
+    def get_membership(self, *, db_user: 'tg_models.User', db_chat: 'tg_models.Chat') -> Optional['Membership']:
+        return self.get_queryset().get_by_user_and_chat(db_user=db_user, db_chat=db_chat)
+
+    @staticmethod
     def update_membership_status(
-            self,
             *,
-            db_user: 'tg_models.User',
-            db_chat: 'tg_models.Chat',
+            db_membership: 'tg_models.Membership',
             new_status: 'tg_models.ChatMember',
             event_date_ts: int
     ) -> bool:
 
-        if db_user is None or db_chat is None or new_status is None or event_date_ts is None:
-            return None
+        if db_membership is None or new_status is None or event_date_ts is None:
+            return False
 
-        db_membership = self.get_queryset().get_by_user_and_chat(db_user=db_user, db_chat=db_chat)
-        if db_membership:
-            if not db_membership.current_status and not db_membership.previous_status:
-                db_membership.current_status = new_status
+        if not db_membership.current_status and not db_membership.previous_status:
+            db_membership.current_status = new_status
+            db_membership.status_change_date = event_date_ts
+            db_membership.save()
+
+        elif not db_membership.previous_status and db_membership.current_status:
+            if event_date_ts < db_membership.status_change_date:
+                db_membership.previous_status = new_status
+                db_membership.save()
+            elif event_date_ts > db_membership.status_change_date:
+                db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
                 db_membership.status_change_date = event_date_ts
                 db_membership.save()
-
-            elif not db_membership.previous_status and db_membership.current_status:
-                if event_date_ts < db_membership.status_change_date:
+            elif event_date_ts == db_membership.status_change_date:
+                if not new_status.is_previous and db_membership.current_status.is_previous:
+                    db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
+                    db_membership.save()
+                elif new_status.is_previous and not db_membership.current_status.is_previous:
                     db_membership.previous_status = new_status
                     db_membership.save()
-                elif event_date_ts > db_membership.status_change_date:
-                    db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
-                    db_membership.status_change_date = event_date_ts
-                    db_membership.save()
-                elif event_date_ts == db_membership.status_change_date:
-                    if not new_status.is_previous and db_membership.current_status.is_previous:
-                        db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
-                        db_membership.save()
-                    elif new_status.is_previous and not db_membership.current_status.is_previous:
-                        db_membership.previous_status = new_status
-                        db_membership.save()
-                    else:
-                        raise Exception("Oops!, why?")
+                else:
+                    raise Exception("Oops!, why?")
 
-            elif db_membership.current_status and db_membership.previous_status:
-                if event_date_ts < db_membership.status_change_date:
-                    if event_date_ts < db_membership.previous_status.event_date_ts:
-                        pass
-                    elif event_date_ts > db_membership.previous_status.event_date_ts:
-                        db_membership.previous_status = new_status
-                        db_membership.save()
-                    elif event_date_ts == db_membership.previous_status.event_date_ts:
-                        if not new_status.is_previous and db_membership.previous_status.is_previous:
-                            db_membership.previous_status = new_status
-                            db_membership.save()
-                        elif new_status.is_previous and not db_membership.previous_status.is_previous:
-                            pass
-                        else:
-                            raise Exception("Oops!, why?")
-                elif event_date_ts > db_membership.status_change_date:
-                    db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
-                    db_membership.status_change_date = event_date_ts
+        elif db_membership.current_status and db_membership.previous_status:
+            if event_date_ts < db_membership.status_change_date:
+                if event_date_ts < db_membership.previous_status.event_date_ts:
+                    pass
+                elif event_date_ts > db_membership.previous_status.event_date_ts:
+                    db_membership.previous_status = new_status
                     db_membership.save()
-                elif event_date_ts == db_membership.status_change_date:
-                    if not new_status.is_previous and db_membership.current_status.is_previous:
-                        db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
-                        db_membership.save()
-                    elif new_status.is_previous and not db_membership.current_status.is_previous:
+                elif event_date_ts == db_membership.previous_status.event_date_ts:
+                    if not new_status.is_previous and db_membership.previous_status.is_previous:
                         db_membership.previous_status = new_status
                         db_membership.save()
+                    elif new_status.is_previous and not db_membership.previous_status.is_previous:
+                        pass
                     else:
                         raise Exception("Oops!, why?")
+            elif event_date_ts > db_membership.status_change_date:
+                db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
+                db_membership.status_change_date = event_date_ts
+                db_membership.save()
+            elif event_date_ts == db_membership.status_change_date:
+                if not new_status.is_previous and db_membership.current_status.is_previous:
+                    db_membership.previous_status, db_membership.current_status = db_membership.current_status, new_status
+                    db_membership.save()
+                elif new_status.is_previous and not db_membership.current_status.is_previous:
+                    db_membership.previous_status = new_status
+                    db_membership.save()
+                else:
+                    raise Exception("Oops!, why?")
+
         return True
 
 
@@ -188,6 +189,18 @@ class Membership(BaseModel):
 
     ######################################
     # `participant_history` : participants related to this membership
+
+    def update_membership_status(
+            self,
+            *,
+            new_status: 'tg_models.ChatMember',
+            event_date_ts: int
+    ) -> bool:
+        return self.objects.update_membership_status(
+            db_membership=self,
+            new_status=new_status,
+            event_date_ts=event_date_ts
+        )
 
     def __str__(self):
         return f"{self.user} @ {self.chat} : {self.current_status.type if self.current_status else ''}"
