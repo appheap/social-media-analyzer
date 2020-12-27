@@ -1,11 +1,17 @@
-from django.db import models
+from typing import Optional
+
+from django.db import models, DatabaseError, transaction
 from ..base import BaseModel
+from telegram.globals import logger
+from pyrogram import types
+from telegram import models as tg_models
+from ..users import UserUpdater
+from ..chats import ChatPermissionsUpdater
 
 
 class ChatMemberTypes(models.TextChoices):
     user = 'user'  # not member yet, only a telegram user (when banned/promoted before joining the channel)
     member = 'member'
-    self = 'self'
     administrator = 'administrator'
     creator = 'creator'
     restricted = 'restricted'
@@ -13,25 +19,119 @@ class ChatMemberTypes(models.TextChoices):
     left = 'left'
     undefined = 'undefined'
 
-    # @staticmethod
-    # def get_type(participant: "ChannelParticipant"):
-    #     for choice in ChannelParticipantTypes.choices:
-    #         if choice[0] == participant.type:
-    #             return getattr(ChannelParticipantTypes, str(choice[1]).lower())
-    #     else:
-    #         return ChannelParticipantTypes.undefined
+    @staticmethod
+    def get_type(participant: "types.ChatMember"):
+        for choice in ChatMemberTypes.choices:
+            if choice[0] == participant.status:
+                _type = getattr(ChatMemberTypes, str(choice[1]).lower())
+        else:
+            _type = ChatMemberTypes.undefined
+        return _type
 
 
 class ChatMemberQuerySet(models.QuerySet):
-    pass
+    def update_or_create_chat_member(
+            self,
+            **kwargs
+    ) -> Optional['ChatMember']:
+
+        try:
+            return self.update_or_create(
+                **kwargs
+            )[0]
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
 
 
 class ChatMemberManager(models.Manager):
     def get_queryset(self) -> ChatMemberQuerySet:
         return ChatMemberQuerySet(self.model, using=self._db)
 
+    def update_or_create_from_raw(
+            self,
+            *,
+            raw_chat_member: types.ChatMember,
+            db_membership: 'tg_models.Membership',
 
-class ChatMember(BaseModel):
+            event_date_ts: int = None,
+            left_date_ts: int = None,
+            is_previous: bool = None,
+
+            promoted_by: 'tg_models.User' = None,
+            demoted_by: 'tg_models.User' = None,
+            kicked_by: 'tg_models.User' = None,
+            invited_by: 'tg_models.User' = None,
+
+    ) -> Optional['ChatMember']:
+
+        if raw_chat_member is None or db_membership is None:
+            return None
+
+        parsed_object = self._parse(raw_chat_member=raw_chat_member)
+        if len(parsed_object):
+            if left_date_ts is not None and event_date_ts is not None:
+                parsed_object['type'] = ChatMemberTypes.left
+
+            with transaction.atomic():
+                db_chat_member = self.get_queryset().update_or_create_chat_member(
+                    **{
+                        **parsed_object,
+                        'membership': db_membership,
+                        'event_date_ts': event_date_ts,
+                        'left_date_ts': left_date_ts,
+                        'is_previous': is_previous,
+                    }
+                )
+                if db_chat_member:
+                    db_chat_member.update_or_create_user_from_raw(
+                        model=db_chat_member,
+                        field_name='promoted_by',
+                        raw_user=promoted_by,
+                    )
+                    db_chat_member.update_or_create_user_from_raw(
+                        model=db_chat_member,
+                        field_name='demoted_by',
+                        raw_user=demoted_by,
+                    )
+                    db_chat_member.update_or_create_user_from_raw(
+                        model=db_chat_member,
+                        field_name='kicked_by',
+                        raw_user=kicked_by,
+                    )
+                    db_chat_member.update_or_create_user_from_raw(
+                        model=db_chat_member,
+                        field_name='invited_by',
+                        raw_user=invited_by,
+                    )
+
+                    db_chat_member.update_or_create_chat_permissions_from_raw(
+                        model=db_chat_member,
+                        field_name='banned_rights',
+                        raw_chat_permissions=raw_chat_member.banned_rights
+                    )
+
+            return db_chat_member
+
+        return None
+
+    @staticmethod
+    def _parse(*, raw_chat_member: types.ChatMember):
+        if raw_chat_member is None:
+            return {}
+
+        return {
+            'type': ChatMemberTypes.get_type(raw_chat_member),
+            'join_date_ts': raw_chat_member.join_date,
+            'can_promote_admins': raw_chat_member.can_promote_admins,
+            'rank': raw_chat_member.status,
+            'has_left': raw_chat_member.has_left,
+        }
+
+
+class ChatMember(BaseModel, UserUpdater, ChatPermissionsUpdater):
     """
         Channel/supergroup participant
     """
@@ -58,10 +158,10 @@ class ChatMember(BaseModel):
 
     #### participantAdmin (user_id, join_date, promoted_by, can_edit, admin_rights, rank)
     # Can this admin promote other admins with the same permissions?
-    can_edit = models.BooleanField(null=True, blank=True)  # only for admin participant
+    can_promote_admins = models.BooleanField(null=True, blank=True)  # only for admin participant
     # User that promoted the user to admin
     admin_rights = models.OneToOneField(
-        'telegram.AdminRights',
+        'telegram.ChatAdminRights',
         on_delete=models.CASCADE,
         null=True, blank=True,
         related_name='participant',
