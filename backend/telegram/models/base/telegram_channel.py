@@ -13,7 +13,7 @@ from users import models as site_models
 from ..base import BaseModel
 
 
-class TelegramAccountQuerySet(SoftDeletableQS):
+class TelegramChannelQuerySet(SoftDeletableQS):
     def update_or_create_channel(self, **kwargs) -> Optional['TelegramChannel']:
         try:
             return self.update_or_create(
@@ -42,8 +42,8 @@ class TelegramAccountQuerySet(SoftDeletableQS):
 
 
 class TelegramChannelManager(models.Manager):
-    def get_queryset(self) -> TelegramAccountQuerySet:
-        return TelegramAccountQuerySet(self.model, using=self._db)
+    def get_queryset(self) -> TelegramChannelQuerySet:
+        return TelegramChannelQuerySet(self.model, using=self._db)
 
     def update_or_create_from_raw(
             self,

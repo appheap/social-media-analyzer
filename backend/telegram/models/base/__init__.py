@@ -5,6 +5,8 @@ from .telegram_account import TelegramAccountQuerySet
 from .telegram_account import TelegramAccountManager
 
 from .telegram_channel import TelegramChannel
+from .telegram_channel import TelegramChannelManager
+from .telegram_channel import TelegramChannelQuerySet
 
 __all__ = [
     "BaseModel",
@@ -14,5 +16,7 @@ __all__ = [
     "TelegramAccountManager",
 
     "TelegramChannel",
+    "TelegramChannelQuerySet",
+    "TelegramChannelManager",
 
 ]
