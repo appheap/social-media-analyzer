@@ -1,15 +1,15 @@
 from django.db import models
 from ..base import BaseModel
+from db.models import SoftDeletableBaseModel
 
 
-class Photo(BaseModel):
+class Photo(BaseModel, SoftDeletableBaseModel):
     width = models.IntegerField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)
     file_size = models.IntegerField(blank=True, null=True)
     upload_date = models.BigIntegerField(blank=True, null=True)
 
     photo = models.ImageField(upload_to=BaseModel.file_dir_path, null=True, blank=True)
-    is_deleted = models.BooleanField(null=True, blank=True)
 
     user = models.ForeignKey(
         'telegram.User',
