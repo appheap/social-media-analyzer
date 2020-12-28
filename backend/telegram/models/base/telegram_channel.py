@@ -57,7 +57,7 @@ class TelegramChannelManager(models.Manager):
         if raw_chat is None or db_site_user is None or db_account is None or db_chat is None:
             return None
 
-        parsed_object = self._parse(raw_chat=raw_chat, db_chat=db_chat)
+        parsed_object = self._parse(raw_chat=raw_chat)
         if len(parsed_object):
             db_channel = self.get_queryset().update_or_create_channel(
                 **{
@@ -73,8 +73,8 @@ class TelegramChannelManager(models.Manager):
         return None
 
     @staticmethod
-    def _parse(*, raw_chat: types.Chat, db_chat: 'tg_models.Chat'):
-        if raw_chat is None or db_chat is None:
+    def _parse(*, raw_chat: types.Chat) -> dict:
+        if raw_chat is None:
             return {}
 
         return {
