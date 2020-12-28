@@ -1,14 +1,65 @@
+from typing import Optional
+
 from django.core.validators import MinLengthValidator
-from django.db import models
+from django.db import models, DatabaseError
 import arrow
 
 from ..base import BaseModel
+from users import models as site_models
+from telegram.globals import logger
 
 
 class AddChannelRequestStatusTypes(models.TextChoices):
     INIT = 'INIT'
     CHANNEL_MEMBER = 'CHANNEL_MEMBER'
     CHANNEL_ADMIN = 'CHANNEL_ADMIN'
+
+
+class AddChannelRequestQuerySet(models.QuerySet):
+    def undone(self) -> 'AddChannelRequestQuerySet':
+        return self.filter(done=False)
+
+    def done(self) -> 'AddChannelRequestQuerySet':
+        return self.filter(done=True)
+
+    def get_by_username_and_user(
+            self,
+            *,
+            channel_username: str,
+            db_site_user: 'site_models.SiteUser'
+    ) -> Optional['AddChannelRequest']:
+
+        try:
+            return self.get(channel_username=channel_username, site_user=db_site_user)
+        except AddChannelRequest.DoesNotExist as e:
+            pass
+        except AddChannelRequest.MultipleObjectsReturned as e:
+            logger.exception(e)
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return None
+
+
+class AddChannelRequestManager(models.Manager):
+    def get_queryset(self) -> AddChannelRequestQuerySet:
+        return AddChannelRequestQuerySet(self.model, using=self._db)
+
+    def get_undone_request(
+            self,
+            *,
+            channel_username: str,
+            db_site_user: 'site_models.SiteUser'
+    ) -> Optional['AddChannelRequest']:
+        if channel_username is None or db_site_user is None:
+            return None
+
+        return self.get_queryset().undone().get_by_username_and_user(
+            channel_username=channel_username,
+            db_site_user=db_site_user
+        )
 
 
 class AddChannelRequest(BaseModel):
@@ -60,6 +111,8 @@ class AddChannelRequest(BaseModel):
 
     # def get_absolute_url(self):
     #     return reverse('dashboard/')
+    objects = AddChannelRequestManager()
+
     def __str__(self):
         return str(
-            f"{arrow.get(self.created_at)} : {self.custom_user} : @{self.channel_username} : {self.telegram_account}")
+            f"{arrow.get(self.created_ts)} : {self.site_user} : @{self.channel_username} : {self.telegram_account}")
