@@ -73,7 +73,11 @@ class BaseChatManager(models.Manager):
             return None
         db_chat = None
         if raw_chat.type in ('channel', 'supergroup'):
-            db_channel = tg_models.Channel.objects.update_or_create()
+            db_channel = tg_models.Channel.objects.update_or_create_from_raw(
+                full_channel=raw_chat.full_channel,
+                channel=raw_chat.channel,
+                creator=creator
+            )
             if db_channel:
                 db_chat = self.get_queryset().update_or_create_chat(
                     chat_id=raw_chat.id,
@@ -301,5 +305,3 @@ class Chat(BaseModel, SoftDeletableBaseModel):
 
     def update_fields_from_raw(self, *, raw_chat: types.Chat):
         self.manager.update_chat_from_raw(chat_id=self.chat_id, raw_chat=raw_chat)
-
-

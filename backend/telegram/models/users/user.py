@@ -117,7 +117,7 @@ class UserManager(models.Manager):
     def create_restrictions(raw_user: types.User, user: "User"):
         if user and raw_user.restrictions:
             tg_models.Restriction.objects.bulk_create_restrictions(
-                restrictions=raw_user.restrictions,
+                raw_restrictions=raw_user.restrictions,
                 user=user
             )
 

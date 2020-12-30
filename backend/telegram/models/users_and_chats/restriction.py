@@ -9,11 +9,11 @@ from typing import List, Optional
 
 
 class RestrictionQuerySet(models.QuerySet):
-    def update_or_create_restriction(self, **kwargs):
+    def update_or_create_restriction(self, **kwargs) -> Optional['Restriction']:
         try:
             return self.update_or_create(
                 **kwargs
-            )
+            )[0]
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -24,15 +24,15 @@ class RestrictionQuerySet(models.QuerySet):
     def clear_restrictions(
             self,
             *,
-            user: "tg_models.User" = None,
-            chat: "tg_models.Chat" = None,
-            message: "tg_models.Message" = None
+            db_user: "tg_models.User" = None,
+            db_chat: "tg_models.Chat" = None,
+            db_message: "tg_models.Message" = None
     ):
         try:
             self.filter(
-                user=user,
-                chat=chat,
-                message=message
+                user=db_user,
+                chat=db_chat,
+                message=db_message
             ).delete()
         except DatabaseError as e:
             logger.exception(e)
@@ -44,22 +44,22 @@ class RestrictionManager(models.Manager):
     def get_queryset(self) -> "RestrictionQuerySet":
         return RestrictionQuerySet(self.model, using=self._db)
 
-    def update_or_create(
+    def update_or_create_from_raw(
             self,
             *,
-            restriction: types.Restriction,
+            raw_restriction: types.Restriction,
             user: "tg_models.User" = None,
             chat: "tg_models.Chat" = None,
             message: "tg_models.Message" = None
     ) -> Optional["Restriction"]:
 
-        if restriction is None:
+        if raw_restriction is None:
             return None
-        parsed_object = RestrictionManager._parse_restriction(restriction)
+        parsed_object = RestrictionManager._parse_restriction(raw_restriction=raw_restriction)
         if not parsed_object:
             return None
 
-        self.get_queryset().clear_restrictions(user=user, chat=chat, message=message)
+        self.get_queryset().clear_restrictions(db_user=user, db_chat=chat, db_message=message)
         return self.get_queryset().update_or_create_restriction(
             **parsed_object
         )
@@ -67,26 +67,26 @@ class RestrictionManager(models.Manager):
     def bulk_create_restrictions(
             self,
             *,
-            restrictions: List['types.Restriction'],
+            raw_restrictions: List['types.Restriction'],
             user: "tg_models.User" = None,
             chat: "tg_models.Chat" = None,
             message: "tg_models.Message" = None
     ):
-        if restrictions is None:
+        if raw_restrictions is None:
             return
-        self.get_queryset().clear_restrictions(user=user, chat=chat, message=message)
+        self.get_queryset().clear_restrictions(db_user=user, db_chat=chat, db_message=message)
 
         try:
             self.get_queryset() \
-                .bulk_create(filter(lambda obj: obj is not None, map(RestrictionManager._parse, restrictions)))
+                .bulk_create(filter(lambda obj: obj is not None, map(RestrictionManager._parse, raw_restrictions)))
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
             logger.exception(e)
 
     @staticmethod
-    def _parse(restriction):
-        parsed_object = RestrictionManager._parse_restriction(restriction)
+    def _parse(raw_restriction) -> dict:
+        parsed_object = RestrictionManager._parse_restriction(raw_restriction=raw_restriction)
         if not parsed_object:
             return None
         obj = Restriction(
@@ -96,21 +96,22 @@ class RestrictionManager(models.Manager):
 
     @staticmethod
     def _parse_restriction(
-            restriction: types.Restriction,
-            user: "tg_models.User" = None,
-            chat: "tg_models.Chat" = None,
-            message: "tg_models.Message" = None
+            *,
+            raw_restriction: types.Restriction,
+            db_user: "tg_models.User" = None,
+            db_chat: "tg_models.Chat" = None,
+            db_message: "tg_models.Message" = None
     ):
 
-        if restriction is None:
+        if raw_restriction is None:
             return None
         return {
-            'platform': restriction.platform,
-            'reason': restriction.reason,
-            'text': restriction.text,
-            'user': user,
-            'chat': chat,
-            'message': message,
+            'platform': raw_restriction.platform,
+            'reason': raw_restriction.reason,
+            'text': raw_restriction.text,
+            'user': db_user,
+            'chat': db_chat,
+            'message': db_message,
         }
 
 
