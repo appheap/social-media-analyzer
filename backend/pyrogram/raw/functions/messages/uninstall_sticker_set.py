@@ -34,7 +34,7 @@ class UninstallStickerSet(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf96e55de``
 
     Parameters:

@@ -34,7 +34,7 @@ class InputGeoPointEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputGeoPoint`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xe4c123d6``
 
     **No parameters required.**

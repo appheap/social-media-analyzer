@@ -34,7 +34,7 @@ class GetSavedGifs(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x83bf3d52``
 
     Parameters:

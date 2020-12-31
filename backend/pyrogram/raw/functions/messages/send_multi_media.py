@@ -34,7 +34,7 @@ class SendMultiMedia(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xcc0110cb``
 
     Parameters:
@@ -89,9 +89,9 @@ class SendMultiMedia(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 5) if self.silent is not None else 0
-        flags |= (1 << 6) if self.background is not None else 0
-        flags |= (1 << 7) if self.clear_draft is not None else 0
+        flags |= (1 << 5) if self.silent else 0
+        flags |= (1 << 6) if self.background else 0
+        flags |= (1 << 7) if self.clear_draft else 0
         flags |= (1 << 0) if self.reply_to_msg_id is not None else 0
         flags |= (1 << 10) if self.schedule_date is not None else 0
         data.write(Int(flags))

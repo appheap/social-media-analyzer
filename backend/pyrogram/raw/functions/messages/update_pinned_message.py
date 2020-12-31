@@ -34,7 +34,7 @@ class UpdatePinnedMessage(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd2aaf7ec``
 
     Parameters:
@@ -79,9 +79,9 @@ class UpdatePinnedMessage(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.silent is not None else 0
-        flags |= (1 << 1) if self.unpin is not None else 0
-        flags |= (1 << 2) if self.pm_oneside is not None else 0
+        flags |= (1 << 0) if self.silent else 0
+        flags |= (1 << 1) if self.unpin else 0
+        flags |= (1 << 2) if self.pm_oneside else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())

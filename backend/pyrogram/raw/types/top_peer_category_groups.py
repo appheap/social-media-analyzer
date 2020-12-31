@@ -34,7 +34,7 @@ class TopPeerCategoryGroups(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.TopPeerCategory`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xbd17a14a``
 
     **No parameters required.**

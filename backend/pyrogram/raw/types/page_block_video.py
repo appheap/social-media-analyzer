@@ -34,7 +34,7 @@ class PageBlockVideo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PageBlock`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x7c8fe7b6``
 
     Parameters:
@@ -73,8 +73,8 @@ class PageBlockVideo(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.autoplay is not None else 0
-        flags |= (1 << 1) if self.loop is not None else 0
+        flags |= (1 << 0) if self.autoplay else 0
+        flags |= (1 << 1) if self.loop else 0
         data.write(Int(flags))
 
         data.write(Long(self.video_id))

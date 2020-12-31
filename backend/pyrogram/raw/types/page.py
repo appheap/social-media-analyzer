@@ -34,7 +34,7 @@ class Page(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Page`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x98657f0d``
 
     Parameters:
@@ -88,9 +88,9 @@ class Page(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.part is not None else 0
-        flags |= (1 << 1) if self.rtl is not None else 0
-        flags |= (1 << 2) if self.v2 is not None else 0
+        flags |= (1 << 0) if self.part else 0
+        flags |= (1 << 1) if self.rtl else 0
+        flags |= (1 << 2) if self.v2 else 0
         flags |= (1 << 3) if self.views is not None else 0
         data.write(Int(flags))
 

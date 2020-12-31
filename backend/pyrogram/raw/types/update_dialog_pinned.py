@@ -34,7 +34,7 @@ class UpdateDialogPinned(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x6e6fe51c``
 
     Parameters:
@@ -69,7 +69,7 @@ class UpdateDialogPinned(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.pinned is not None else 0
+        flags |= (1 << 0) if self.pinned else 0
         flags |= (1 << 1) if self.folder_id is not None else 0
         data.write(Int(flags))
 

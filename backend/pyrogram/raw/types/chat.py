@@ -34,7 +34,7 @@ class Chat(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Chat`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3bda1bde``
 
     Parameters:
@@ -48,13 +48,16 @@ class Chat(TLObject):  # type: ignore
         kicked (optional): ``bool``
         left (optional): ``bool``
         deactivated (optional): ``bool``
+        call_active (optional): ``bool``
+        call_not_empty (optional): ``bool``
         migrated_to (optional): :obj:`InputChannel <pyrogram.raw.base.InputChannel>`
         admin_rights (optional): :obj:`ChatAdminRights <pyrogram.raw.base.ChatAdminRights>`
         default_banned_rights (optional): :obj:`ChatBannedRights <pyrogram.raw.base.ChatBannedRights>`
     """
 
     __slots__: List[str] = ["id", "title", "photo", "participants_count", "date", "version", "creator", "kicked",
-                            "left", "deactivated", "migrated_to", "admin_rights", "default_banned_rights"]
+                            "left", "deactivated", "call_active", "call_not_empty", "migrated_to", "admin_rights",
+                            "default_banned_rights"]
 
     ID = 0x3bda1bde
     QUALNAME = "types.Chat"
@@ -62,6 +65,7 @@ class Chat(TLObject):  # type: ignore
     def __init__(self, *, id: int, title: str, photo: "raw.base.ChatPhoto", participants_count: int, date: int,
                  version: int, creator: Union[None, bool] = None, kicked: Union[None, bool] = None,
                  left: Union[None, bool] = None, deactivated: Union[None, bool] = None,
+                 call_active: Union[None, bool] = None, call_not_empty: Union[None, bool] = None,
                  migrated_to: "raw.base.InputChannel" = None, admin_rights: "raw.base.ChatAdminRights" = None,
                  default_banned_rights: "raw.base.ChatBannedRights" = None) -> None:
         self.id = id  # int
@@ -74,6 +78,8 @@ class Chat(TLObject):  # type: ignore
         self.kicked = kicked  # flags.1?true
         self.left = left  # flags.2?true
         self.deactivated = deactivated  # flags.5?true
+        self.call_active = call_active  # flags.23?true
+        self.call_not_empty = call_not_empty  # flags.24?true
         self.migrated_to = migrated_to  # flags.6?InputChannel
         self.admin_rights = admin_rights  # flags.14?ChatAdminRights
         self.default_banned_rights = default_banned_rights  # flags.18?ChatBannedRights
@@ -86,6 +92,8 @@ class Chat(TLObject):  # type: ignore
         kicked = True if flags & (1 << 1) else False
         left = True if flags & (1 << 2) else False
         deactivated = True if flags & (1 << 5) else False
+        call_active = True if flags & (1 << 23) else False
+        call_not_empty = True if flags & (1 << 24) else False
         id = Int.read(data)
 
         title = String.read(data)
@@ -105,18 +113,21 @@ class Chat(TLObject):  # type: ignore
         default_banned_rights = TLObject.read(data) if flags & (1 << 18) else None
 
         return Chat(id=id, title=title, photo=photo, participants_count=participants_count, date=date, version=version,
-                    creator=creator, kicked=kicked, left=left, deactivated=deactivated, migrated_to=migrated_to,
-                    admin_rights=admin_rights, default_banned_rights=default_banned_rights)
+                    creator=creator, kicked=kicked, left=left, deactivated=deactivated, call_active=call_active,
+                    call_not_empty=call_not_empty, migrated_to=migrated_to, admin_rights=admin_rights,
+                    default_banned_rights=default_banned_rights)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.creator is not None else 0
-        flags |= (1 << 1) if self.kicked is not None else 0
-        flags |= (1 << 2) if self.left is not None else 0
-        flags |= (1 << 5) if self.deactivated is not None else 0
+        flags |= (1 << 0) if self.creator else 0
+        flags |= (1 << 1) if self.kicked else 0
+        flags |= (1 << 2) if self.left else 0
+        flags |= (1 << 5) if self.deactivated else 0
+        flags |= (1 << 23) if self.call_active else 0
+        flags |= (1 << 24) if self.call_not_empty else 0
         flags |= (1 << 6) if self.migrated_to is not None else 0
         flags |= (1 << 14) if self.admin_rights is not None else 0
         flags |= (1 << 18) if self.default_banned_rights is not None else 0

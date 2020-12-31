@@ -34,7 +34,7 @@ class SupportName(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.help.SupportName`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8c05f1c9``
 
     Parameters:

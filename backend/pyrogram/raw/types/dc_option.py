@@ -34,7 +34,7 @@ class DcOption(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DcOption`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x18b7a10d``
 
     Parameters:
@@ -92,11 +92,11 @@ class DcOption(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.ipv6 is not None else 0
-        flags |= (1 << 1) if self.media_only is not None else 0
-        flags |= (1 << 2) if self.tcpo_only is not None else 0
-        flags |= (1 << 3) if self.cdn is not None else 0
-        flags |= (1 << 4) if self.static is not None else 0
+        flags |= (1 << 0) if self.ipv6 else 0
+        flags |= (1 << 1) if self.media_only else 0
+        flags |= (1 << 2) if self.tcpo_only else 0
+        flags |= (1 << 3) if self.cdn else 0
+        flags |= (1 << 4) if self.static else 0
         flags |= (1 << 10) if self.secret is not None else 0
         data.write(Int(flags))
 

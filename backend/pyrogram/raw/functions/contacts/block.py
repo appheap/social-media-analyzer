@@ -34,7 +34,7 @@ class Block(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x68cc1411``
 
     Parameters:

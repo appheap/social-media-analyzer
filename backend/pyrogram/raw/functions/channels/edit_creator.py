@@ -34,7 +34,7 @@ class EditCreator(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8f38cd1f``
 
     Parameters:

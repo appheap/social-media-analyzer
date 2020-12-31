@@ -34,7 +34,7 @@ class SecureRequiredType(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.SecureRequiredType`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x829d99da``
 
     Parameters:
@@ -73,9 +73,9 @@ class SecureRequiredType(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.native_names is not None else 0
-        flags |= (1 << 1) if self.selfie_required is not None else 0
-        flags |= (1 << 2) if self.translation_required is not None else 0
+        flags |= (1 << 0) if self.native_names else 0
+        flags |= (1 << 1) if self.selfie_required else 0
+        flags |= (1 << 2) if self.translation_required else 0
         data.write(Int(flags))
 
         data.write(self.type.write())

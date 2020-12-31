@@ -34,7 +34,7 @@ class PhoneCall(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhoneCall`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8742ae7f``
 
     Parameters:
@@ -110,8 +110,8 @@ class PhoneCall(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 5) if self.p2p_allowed is not None else 0
-        flags |= (1 << 6) if self.video is not None else 0
+        flags |= (1 << 5) if self.p2p_allowed else 0
+        flags |= (1 << 6) if self.video else 0
         data.write(Int(flags))
 
         data.write(Long(self.id))

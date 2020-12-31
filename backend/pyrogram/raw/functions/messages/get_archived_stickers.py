@@ -34,7 +34,7 @@ class GetArchivedStickers(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x57f17692``
 
     Parameters:
@@ -72,7 +72,7 @@ class GetArchivedStickers(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.masks is not None else 0
+        flags |= (1 << 0) if self.masks else 0
         data.write(Int(flags))
 
         data.write(Long(self.offset_id))

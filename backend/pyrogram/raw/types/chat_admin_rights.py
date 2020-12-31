@@ -34,7 +34,7 @@ class ChatAdminRights(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatAdminRights`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x5fb224d5``
 
     Parameters:
@@ -47,10 +47,11 @@ class ChatAdminRights(TLObject):  # type: ignore
         pin_messages (optional): ``bool``
         add_admins (optional): ``bool``
         anonymous (optional): ``bool``
+        manage_call (optional): ``bool``
     """
 
     __slots__: List[str] = ["change_info", "post_messages", "edit_messages", "delete_messages", "ban_users",
-                            "invite_users", "pin_messages", "add_admins", "anonymous"]
+                            "invite_users", "pin_messages", "add_admins", "anonymous", "manage_call"]
 
     ID = 0x5fb224d5
     QUALNAME = "types.ChatAdminRights"
@@ -59,7 +60,7 @@ class ChatAdminRights(TLObject):  # type: ignore
                  edit_messages: Union[None, bool] = None, delete_messages: Union[None, bool] = None,
                  ban_users: Union[None, bool] = None, invite_users: Union[None, bool] = None,
                  pin_messages: Union[None, bool] = None, add_admins: Union[None, bool] = None,
-                 anonymous: Union[None, bool] = None) -> None:
+                 anonymous: Union[None, bool] = None, manage_call: Union[None, bool] = None) -> None:
         self.change_info = change_info  # flags.0?true
         self.post_messages = post_messages  # flags.1?true
         self.edit_messages = edit_messages  # flags.2?true
@@ -69,6 +70,7 @@ class ChatAdminRights(TLObject):  # type: ignore
         self.pin_messages = pin_messages  # flags.7?true
         self.add_admins = add_admins  # flags.9?true
         self.anonymous = anonymous  # flags.10?true
+        self.manage_call = manage_call  # flags.11?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "ChatAdminRights":
@@ -83,24 +85,27 @@ class ChatAdminRights(TLObject):  # type: ignore
         pin_messages = True if flags & (1 << 7) else False
         add_admins = True if flags & (1 << 9) else False
         anonymous = True if flags & (1 << 10) else False
+        manage_call = True if flags & (1 << 11) else False
         return ChatAdminRights(change_info=change_info, post_messages=post_messages, edit_messages=edit_messages,
                                delete_messages=delete_messages, ban_users=ban_users, invite_users=invite_users,
-                               pin_messages=pin_messages, add_admins=add_admins, anonymous=anonymous)
+                               pin_messages=pin_messages, add_admins=add_admins, anonymous=anonymous,
+                               manage_call=manage_call)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.change_info is not None else 0
-        flags |= (1 << 1) if self.post_messages is not None else 0
-        flags |= (1 << 2) if self.edit_messages is not None else 0
-        flags |= (1 << 3) if self.delete_messages is not None else 0
-        flags |= (1 << 4) if self.ban_users is not None else 0
-        flags |= (1 << 5) if self.invite_users is not None else 0
-        flags |= (1 << 7) if self.pin_messages is not None else 0
-        flags |= (1 << 9) if self.add_admins is not None else 0
-        flags |= (1 << 10) if self.anonymous is not None else 0
+        flags |= (1 << 0) if self.change_info else 0
+        flags |= (1 << 1) if self.post_messages else 0
+        flags |= (1 << 2) if self.edit_messages else 0
+        flags |= (1 << 3) if self.delete_messages else 0
+        flags |= (1 << 4) if self.ban_users else 0
+        flags |= (1 << 5) if self.invite_users else 0
+        flags |= (1 << 7) if self.pin_messages else 0
+        flags |= (1 << 9) if self.add_admins else 0
+        flags |= (1 << 10) if self.anonymous else 0
+        flags |= (1 << 11) if self.manage_call else 0
         data.write(Int(flags))
 
         return data.getvalue()

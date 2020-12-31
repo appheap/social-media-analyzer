@@ -34,7 +34,7 @@ class SetInlineBotResults(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xeb5ea206``
 
     Parameters:
@@ -89,8 +89,8 @@ class SetInlineBotResults(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.gallery is not None else 0
-        flags |= (1 << 1) if self.private is not None else 0
+        flags |= (1 << 0) if self.gallery else 0
+        flags |= (1 << 1) if self.private else 0
         flags |= (1 << 2) if self.next_offset is not None else 0
         flags |= (1 << 3) if self.switch_pm is not None else 0
         data.write(Int(flags))

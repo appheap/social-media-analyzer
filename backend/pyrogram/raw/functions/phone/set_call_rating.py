@@ -34,7 +34,7 @@ class SetCallRating(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x59ead627``
 
     Parameters:
@@ -77,7 +77,7 @@ class SetCallRating(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.user_initiative is not None else 0
+        flags |= (1 << 0) if self.user_initiative else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())

@@ -34,7 +34,7 @@ class SavedGifsNotModified(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.SavedGifs`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xe8025ca2``
 
     **No parameters required.**

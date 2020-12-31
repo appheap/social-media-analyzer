@@ -34,7 +34,7 @@ class UserStatusLastWeek(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.UserStatus`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x7bf09fc``
 
     **No parameters required.**

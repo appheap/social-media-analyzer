@@ -34,7 +34,7 @@ class MessageActionEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageAction`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb6aef7b0``
 
     **No parameters required.**

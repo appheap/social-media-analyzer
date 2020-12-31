@@ -34,7 +34,7 @@ class JsonNull(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.JSONValue`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3f6d7b68``
 
     **No parameters required.**

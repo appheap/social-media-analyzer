@@ -34,7 +34,7 @@ class BotInlineMessageText(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.BotInlineMessage`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8c7f65e2``
 
     Parameters:
@@ -76,7 +76,7 @@ class BotInlineMessageText(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.no_webpage is not None else 0
+        flags |= (1 << 0) if self.no_webpage else 0
         flags |= (1 << 1) if self.entities is not None else 0
         flags |= (1 << 2) if self.reply_markup is not None else 0
         data.write(Int(flags))

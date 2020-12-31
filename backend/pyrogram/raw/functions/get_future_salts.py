@@ -34,7 +34,7 @@ class GetFutureSalts(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb921bd04``
 
     Parameters:

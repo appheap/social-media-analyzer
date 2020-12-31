@@ -34,7 +34,7 @@ class Invoice(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Invoice`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc30aa358``
 
     Parameters:
@@ -98,14 +98,14 @@ class Invoice(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.test is not None else 0
-        flags |= (1 << 1) if self.name_requested is not None else 0
-        flags |= (1 << 2) if self.phone_requested is not None else 0
-        flags |= (1 << 3) if self.email_requested is not None else 0
-        flags |= (1 << 4) if self.shipping_address_requested is not None else 0
-        flags |= (1 << 5) if self.flexible is not None else 0
-        flags |= (1 << 6) if self.phone_to_provider is not None else 0
-        flags |= (1 << 7) if self.email_to_provider is not None else 0
+        flags |= (1 << 0) if self.test else 0
+        flags |= (1 << 1) if self.name_requested else 0
+        flags |= (1 << 2) if self.phone_requested else 0
+        flags |= (1 << 3) if self.email_requested else 0
+        flags |= (1 << 4) if self.shipping_address_requested else 0
+        flags |= (1 << 5) if self.flexible else 0
+        flags |= (1 << 6) if self.phone_to_provider else 0
+        flags |= (1 << 7) if self.email_to_provider else 0
         data.write(Int(flags))
 
         data.write(String(self.currency))

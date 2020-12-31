@@ -34,7 +34,7 @@ class DocumentAttributeAudio(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DocumentAttribute`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x9852f9c6``
 
     Parameters:
@@ -76,7 +76,7 @@ class DocumentAttributeAudio(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 10) if self.voice is not None else 0
+        flags |= (1 << 10) if self.voice else 0
         flags |= (1 << 0) if self.title is not None else 0
         flags |= (1 << 1) if self.performer is not None else 0
         flags |= (1 << 2) if self.waveform is not None else 0

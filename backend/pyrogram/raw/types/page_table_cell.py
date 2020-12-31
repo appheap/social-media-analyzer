@@ -34,7 +34,7 @@ class PageTableCell(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PageTableCell`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x34566b6a``
 
     Parameters:
@@ -89,11 +89,11 @@ class PageTableCell(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.header is not None else 0
-        flags |= (1 << 3) if self.align_center is not None else 0
-        flags |= (1 << 4) if self.align_right is not None else 0
-        flags |= (1 << 5) if self.valign_middle is not None else 0
-        flags |= (1 << 6) if self.valign_bottom is not None else 0
+        flags |= (1 << 0) if self.header else 0
+        flags |= (1 << 3) if self.align_center else 0
+        flags |= (1 << 4) if self.align_right else 0
+        flags |= (1 << 5) if self.valign_middle else 0
+        flags |= (1 << 6) if self.valign_bottom else 0
         flags |= (1 << 7) if self.text is not None else 0
         flags |= (1 << 1) if self.colspan is not None else 0
         flags |= (1 << 2) if self.rowspan is not None else 0

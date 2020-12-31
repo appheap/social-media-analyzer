@@ -34,7 +34,7 @@ class BankCardData(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.payments.BankCardData`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3e24e573``
 
     Parameters:

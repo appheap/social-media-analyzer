@@ -34,7 +34,7 @@ class MessageEditData(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.MessageEditData`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x26b5dde6``
 
     Parameters:
@@ -69,7 +69,7 @@ class MessageEditData(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.caption is not None else 0
+        flags |= (1 << 0) if self.caption else 0
         data.write(Int(flags))
 
         return data.getvalue()

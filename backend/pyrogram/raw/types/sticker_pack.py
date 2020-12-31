@@ -34,7 +34,7 @@ class StickerPack(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.StickerPack`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x12b299d4``
 
     Parameters:

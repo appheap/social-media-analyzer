@@ -34,7 +34,7 @@ class AcceptContact(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf831a20f``
 
     Parameters:

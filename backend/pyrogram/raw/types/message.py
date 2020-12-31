@@ -34,7 +34,7 @@ class Message(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Message`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x58ae39c9``
 
     Parameters:
@@ -171,15 +171,15 @@ class Message(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.out is not None else 0
-        flags |= (1 << 4) if self.mentioned is not None else 0
-        flags |= (1 << 5) if self.media_unread is not None else 0
-        flags |= (1 << 13) if self.silent is not None else 0
-        flags |= (1 << 14) if self.post is not None else 0
-        flags |= (1 << 18) if self.from_scheduled is not None else 0
-        flags |= (1 << 19) if self.legacy is not None else 0
-        flags |= (1 << 21) if self.edit_hide is not None else 0
-        flags |= (1 << 24) if self.pinned is not None else 0
+        flags |= (1 << 1) if self.out else 0
+        flags |= (1 << 4) if self.mentioned else 0
+        flags |= (1 << 5) if self.media_unread else 0
+        flags |= (1 << 13) if self.silent else 0
+        flags |= (1 << 14) if self.post else 0
+        flags |= (1 << 18) if self.from_scheduled else 0
+        flags |= (1 << 19) if self.legacy else 0
+        flags |= (1 << 21) if self.edit_hide else 0
+        flags |= (1 << 24) if self.pinned else 0
         flags |= (1 << 8) if self.from_id is not None else 0
         flags |= (1 << 2) if self.fwd_from is not None else 0
         flags |= (1 << 11) if self.via_bot_id is not None else 0

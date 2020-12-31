@@ -34,7 +34,7 @@ class SetDiscussionGroup(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x40582bb2``
 
     Parameters:

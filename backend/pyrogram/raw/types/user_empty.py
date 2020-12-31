@@ -34,7 +34,7 @@ class UserEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.User`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x200250ba``
 
     Parameters:

@@ -34,7 +34,7 @@ class WebPageEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.WebPage`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xeb1477e8``
 
     Parameters:

@@ -34,7 +34,7 @@ class GetAuthorizationForm(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb86ba8e1``
 
     Parameters:

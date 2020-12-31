@@ -34,7 +34,7 @@ class DocumentAttributeVideo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DocumentAttribute`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xef02ce6``
 
     Parameters:
@@ -78,8 +78,8 @@ class DocumentAttributeVideo(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.round_message is not None else 0
-        flags |= (1 << 1) if self.supports_streaming is not None else 0
+        flags |= (1 << 0) if self.round_message else 0
+        flags |= (1 << 1) if self.supports_streaming else 0
         data.write(Int(flags))
 
         data.write(Int(self.duration))

@@ -34,7 +34,7 @@ class KeyboardButtonCallback(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.KeyboardButton`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x35bbdb6b``
 
     Parameters:
@@ -69,7 +69,7 @@ class KeyboardButtonCallback(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.requires_password is not None else 0
+        flags |= (1 << 0) if self.requires_password else 0
         data.write(Int(flags))
 
         data.write(String(self.text))

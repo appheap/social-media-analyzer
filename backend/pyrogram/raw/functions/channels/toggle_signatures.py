@@ -34,7 +34,7 @@ class ToggleSignatures(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1f69b606``
 
     Parameters:

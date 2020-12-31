@@ -34,7 +34,7 @@ class SetContentSettings(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb574b16b``
 
     Parameters:
@@ -64,7 +64,7 @@ class SetContentSettings(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.sensitive_enabled is not None else 0
+        flags |= (1 << 0) if self.sensitive_enabled else 0
         data.write(Int(flags))
 
         return data.getvalue()

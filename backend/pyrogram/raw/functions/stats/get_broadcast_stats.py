@@ -34,7 +34,7 @@ class GetBroadcastStats(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xab42441a``
 
     Parameters:
@@ -68,7 +68,7 @@ class GetBroadcastStats(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.dark is not None else 0
+        flags |= (1 << 0) if self.dark else 0
         data.write(Int(flags))
 
         data.write(self.channel.write())

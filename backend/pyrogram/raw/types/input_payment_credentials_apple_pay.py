@@ -34,7 +34,7 @@ class InputPaymentCredentialsApplePay(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputPaymentCredentials`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xaa1c39f``
 
     Parameters:

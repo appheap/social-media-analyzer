@@ -34,7 +34,7 @@ class DestroyAuthKey(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd1435160``
 
     **No parameters required.**

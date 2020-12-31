@@ -34,7 +34,7 @@ class InputPeerPhotoFileLocation(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputFileLocation`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x27d69997``
 
     Parameters:
@@ -74,7 +74,7 @@ class InputPeerPhotoFileLocation(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.big is not None else 0
+        flags |= (1 << 0) if self.big else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())

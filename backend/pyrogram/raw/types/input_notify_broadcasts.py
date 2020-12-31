@@ -34,7 +34,7 @@ class InputNotifyBroadcasts(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputNotifyPeer`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb1db7c7e``
 
     **No parameters required.**

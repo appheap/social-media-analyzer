@@ -34,7 +34,7 @@ class ClearSavedInfo(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd83d70c1``
 
     Parameters:
@@ -67,8 +67,8 @@ class ClearSavedInfo(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.credentials is not None else 0
-        flags |= (1 << 1) if self.info is not None else 0
+        flags |= (1 << 0) if self.credentials else 0
+        flags |= (1 << 1) if self.info else 0
         data.write(Int(flags))
 
         return data.getvalue()

@@ -34,7 +34,7 @@ class MessageService(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Message`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x286fa604``
 
     Parameters:
@@ -107,12 +107,12 @@ class MessageService(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.out is not None else 0
-        flags |= (1 << 4) if self.mentioned is not None else 0
-        flags |= (1 << 5) if self.media_unread is not None else 0
-        flags |= (1 << 13) if self.silent is not None else 0
-        flags |= (1 << 14) if self.post is not None else 0
-        flags |= (1 << 19) if self.legacy is not None else 0
+        flags |= (1 << 1) if self.out else 0
+        flags |= (1 << 4) if self.mentioned else 0
+        flags |= (1 << 5) if self.media_unread else 0
+        flags |= (1 << 13) if self.silent else 0
+        flags |= (1 << 14) if self.post else 0
+        flags |= (1 << 19) if self.legacy else 0
         flags |= (1 << 8) if self.from_id is not None else 0
         flags |= (1 << 3) if self.reply_to is not None else 0
         data.write(Int(flags))

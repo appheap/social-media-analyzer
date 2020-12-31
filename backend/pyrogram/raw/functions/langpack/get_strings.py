@@ -34,7 +34,7 @@ class GetStrings(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xefea3803``
 
     Parameters:

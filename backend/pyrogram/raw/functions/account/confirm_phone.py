@@ -34,7 +34,7 @@ class ConfirmPhone(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x5f2178c3``
 
     Parameters:

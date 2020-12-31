@@ -34,7 +34,7 @@ class JsonObjectValue(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.JSONObjectValue`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc0de1bd9``
 
     Parameters:

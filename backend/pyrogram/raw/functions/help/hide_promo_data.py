@@ -34,7 +34,7 @@ class HidePromoData(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1e251c95``
 
     Parameters:

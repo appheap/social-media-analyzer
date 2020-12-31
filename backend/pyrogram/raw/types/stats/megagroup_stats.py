@@ -34,7 +34,7 @@ class MegagroupStats(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.stats.MegagroupStats`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xef7ff916``
 
     Parameters:

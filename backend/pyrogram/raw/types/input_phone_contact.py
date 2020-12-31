@@ -34,7 +34,7 @@ class InputPhoneContact(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputContact`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf392b7f4``
 
     Parameters:

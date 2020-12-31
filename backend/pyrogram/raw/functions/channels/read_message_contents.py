@@ -34,7 +34,7 @@ class ReadMessageContents(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xeab5dc38``
 
     Parameters:

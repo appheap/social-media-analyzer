@@ -34,7 +34,7 @@ class ContentSettings(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.account.ContentSettings`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x57e28221``
 
     Parameters:
@@ -73,8 +73,8 @@ class ContentSettings(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.sensitive_enabled is not None else 0
-        flags |= (1 << 1) if self.sensitive_can_change is not None else 0
+        flags |= (1 << 0) if self.sensitive_enabled else 0
+        flags |= (1 << 1) if self.sensitive_can_change else 0
         data.write(Int(flags))
 
         return data.getvalue()

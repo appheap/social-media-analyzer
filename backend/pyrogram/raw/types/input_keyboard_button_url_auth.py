@@ -34,7 +34,7 @@ class InputKeyboardButtonUrlAuth(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.KeyboardButton`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd02e7fd4``
 
     Parameters:
@@ -78,7 +78,7 @@ class InputKeyboardButtonUrlAuth(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.request_write_access is not None else 0
+        flags |= (1 << 0) if self.request_write_access else 0
         flags |= (1 << 1) if self.fwd_text is not None else 0
         data.write(Int(flags))
 

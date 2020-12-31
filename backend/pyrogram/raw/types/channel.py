@@ -34,7 +34,7 @@ class Channel(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Chat`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd31a961e``
 
     Parameters:
@@ -55,6 +55,8 @@ class Channel(TLObject):  # type: ignore
         has_link (optional): ``bool``
         has_geo (optional): ``bool``
         slowmode_enabled (optional): ``bool``
+        call_active (optional): ``bool``
+        call_not_empty (optional): ``bool``
         access_hash (optional): ``int`` ``64-bit``
         username (optional): ``str``
         restriction_reason (optional): List of :obj:`RestrictionReason <pyrogram.raw.base.RestrictionReason>`
@@ -66,8 +68,9 @@ class Channel(TLObject):  # type: ignore
 
     __slots__: List[str] = ["id", "title", "photo", "date", "version", "creator", "left", "broadcast", "verified",
                             "megagroup", "restricted", "signatures", "min", "scam", "has_link", "has_geo",
-                            "slowmode_enabled", "access_hash", "username", "restriction_reason", "admin_rights",
-                            "banned_rights", "default_banned_rights", "participants_count"]
+                            "slowmode_enabled", "call_active", "call_not_empty", "access_hash", "username",
+                            "restriction_reason", "admin_rights", "banned_rights", "default_banned_rights",
+                            "participants_count"]
 
     ID = 0xd31a961e
     QUALNAME = "types.Channel"
@@ -78,6 +81,7 @@ class Channel(TLObject):  # type: ignore
                  restricted: Union[None, bool] = None, signatures: Union[None, bool] = None,
                  min: Union[None, bool] = None, scam: Union[None, bool] = None, has_link: Union[None, bool] = None,
                  has_geo: Union[None, bool] = None, slowmode_enabled: Union[None, bool] = None,
+                 call_active: Union[None, bool] = None, call_not_empty: Union[None, bool] = None,
                  access_hash: Union[None, int] = None, username: Union[None, str] = None,
                  restriction_reason: Union[None, List["raw.base.RestrictionReason"]] = None,
                  admin_rights: "raw.base.ChatAdminRights" = None, banned_rights: "raw.base.ChatBannedRights" = None,
@@ -100,6 +104,8 @@ class Channel(TLObject):  # type: ignore
         self.has_link = has_link  # flags.20?true
         self.has_geo = has_geo  # flags.21?true
         self.slowmode_enabled = slowmode_enabled  # flags.22?true
+        self.call_active = call_active  # flags.23?true
+        self.call_not_empty = call_not_empty  # flags.24?true
         self.access_hash = access_hash  # flags.13?long
         self.username = username  # flags.6?string
         self.restriction_reason = restriction_reason  # flags.9?Vector<RestrictionReason>
@@ -124,6 +130,8 @@ class Channel(TLObject):  # type: ignore
         has_link = True if flags & (1 << 20) else False
         has_geo = True if flags & (1 << 21) else False
         slowmode_enabled = True if flags & (1 << 22) else False
+        call_active = True if flags & (1 << 23) else False
+        call_not_empty = True if flags & (1 << 24) else False
         id = Int.read(data)
 
         access_hash = Long.read(data) if flags & (1 << 13) else None
@@ -148,8 +156,9 @@ class Channel(TLObject):  # type: ignore
         return Channel(id=id, title=title, photo=photo, date=date, version=version, creator=creator, left=left,
                        broadcast=broadcast, verified=verified, megagroup=megagroup, restricted=restricted,
                        signatures=signatures, min=min, scam=scam, has_link=has_link, has_geo=has_geo,
-                       slowmode_enabled=slowmode_enabled, access_hash=access_hash, username=username,
-                       restriction_reason=restriction_reason, admin_rights=admin_rights, banned_rights=banned_rights,
+                       slowmode_enabled=slowmode_enabled, call_active=call_active, call_not_empty=call_not_empty,
+                       access_hash=access_hash, username=username, restriction_reason=restriction_reason,
+                       admin_rights=admin_rights, banned_rights=banned_rights,
                        default_banned_rights=default_banned_rights, participants_count=participants_count)
 
     def write(self) -> bytes:
@@ -157,18 +166,20 @@ class Channel(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.creator is not None else 0
-        flags |= (1 << 2) if self.left is not None else 0
-        flags |= (1 << 5) if self.broadcast is not None else 0
-        flags |= (1 << 7) if self.verified is not None else 0
-        flags |= (1 << 8) if self.megagroup is not None else 0
-        flags |= (1 << 9) if self.restricted is not None else 0
-        flags |= (1 << 11) if self.signatures is not None else 0
-        flags |= (1 << 12) if self.min is not None else 0
-        flags |= (1 << 19) if self.scam is not None else 0
-        flags |= (1 << 20) if self.has_link is not None else 0
-        flags |= (1 << 21) if self.has_geo is not None else 0
-        flags |= (1 << 22) if self.slowmode_enabled is not None else 0
+        flags |= (1 << 0) if self.creator else 0
+        flags |= (1 << 2) if self.left else 0
+        flags |= (1 << 5) if self.broadcast else 0
+        flags |= (1 << 7) if self.verified else 0
+        flags |= (1 << 8) if self.megagroup else 0
+        flags |= (1 << 9) if self.restricted else 0
+        flags |= (1 << 11) if self.signatures else 0
+        flags |= (1 << 12) if self.min else 0
+        flags |= (1 << 19) if self.scam else 0
+        flags |= (1 << 20) if self.has_link else 0
+        flags |= (1 << 21) if self.has_geo else 0
+        flags |= (1 << 22) if self.slowmode_enabled else 0
+        flags |= (1 << 23) if self.call_active else 0
+        flags |= (1 << 24) if self.call_not_empty else 0
         flags |= (1 << 13) if self.access_hash is not None else 0
         flags |= (1 << 6) if self.username is not None else 0
         flags |= (1 << 9) if self.restriction_reason is not None else 0

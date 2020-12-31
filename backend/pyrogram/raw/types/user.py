@@ -34,7 +34,7 @@ class User(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.User`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x938458c1``
 
     Parameters:
@@ -172,20 +172,20 @@ class User(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 10) if self.is_self is not None else 0
-        flags |= (1 << 11) if self.contact is not None else 0
-        flags |= (1 << 12) if self.mutual_contact is not None else 0
-        flags |= (1 << 13) if self.deleted is not None else 0
-        flags |= (1 << 14) if self.bot is not None else 0
-        flags |= (1 << 15) if self.bot_chat_history is not None else 0
-        flags |= (1 << 16) if self.bot_nochats is not None else 0
-        flags |= (1 << 17) if self.verified is not None else 0
-        flags |= (1 << 18) if self.restricted is not None else 0
-        flags |= (1 << 20) if self.min is not None else 0
-        flags |= (1 << 21) if self.bot_inline_geo is not None else 0
-        flags |= (1 << 23) if self.support is not None else 0
-        flags |= (1 << 24) if self.scam is not None else 0
-        flags |= (1 << 25) if self.apply_min_photo is not None else 0
+        flags |= (1 << 10) if self.is_self else 0
+        flags |= (1 << 11) if self.contact else 0
+        flags |= (1 << 12) if self.mutual_contact else 0
+        flags |= (1 << 13) if self.deleted else 0
+        flags |= (1 << 14) if self.bot else 0
+        flags |= (1 << 15) if self.bot_chat_history else 0
+        flags |= (1 << 16) if self.bot_nochats else 0
+        flags |= (1 << 17) if self.verified else 0
+        flags |= (1 << 18) if self.restricted else 0
+        flags |= (1 << 20) if self.min else 0
+        flags |= (1 << 21) if self.bot_inline_geo else 0
+        flags |= (1 << 23) if self.support else 0
+        flags |= (1 << 24) if self.scam else 0
+        flags |= (1 << 25) if self.apply_min_photo else 0
         flags |= (1 << 0) if self.access_hash is not None else 0
         flags |= (1 << 1) if self.first_name is not None else 0
         flags |= (1 << 2) if self.last_name is not None else 0

@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,14 +34,14 @@ class MessageReplies(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageReplies`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x4128faac``
 
     Parameters:
         replies: ``int`` ``32-bit``
         replies_pts: ``int`` ``32-bit``
         comments (optional): ``bool``
-         (optional): List of :obj:`Peer <pyrogram.raw.base.Peer>`
+        recent_repliers (optional): List of :obj:`Peer <pyrogram.raw.base.Peer>`
         channel_id (optional): ``int`` ``32-bit``
         max_id (optional): ``int`` ``32-bit``
         read_max_id (optional): ``int`` ``32-bit``
@@ -88,7 +87,7 @@ class MessageReplies(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.comments is not None else 0
+        flags |= (1 << 0) if self.comments else 0
         flags |= (1 << 1) if self.recent_repliers is not None else 0
         flags |= (1 << 0) if self.channel_id is not None else 0
         flags |= (1 << 2) if self.max_id is not None else 0

@@ -34,7 +34,7 @@ class DraftMessage(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DraftMessage`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xfd8e711f``
 
     Parameters:
@@ -79,7 +79,7 @@ class DraftMessage(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.no_webpage is not None else 0
+        flags |= (1 << 1) if self.no_webpage else 0
         flags |= (1 << 0) if self.reply_to_msg_id is not None else 0
         flags |= (1 << 3) if self.entities is not None else 0
         data.write(Int(flags))

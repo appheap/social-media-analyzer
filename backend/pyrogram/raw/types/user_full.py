@@ -34,7 +34,7 @@ class UserFull(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.UserFull`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xedf17c12``
 
     Parameters:
@@ -131,12 +131,12 @@ class UserFull(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.blocked is not None else 0
-        flags |= (1 << 4) if self.phone_calls_available is not None else 0
-        flags |= (1 << 5) if self.phone_calls_private is not None else 0
-        flags |= (1 << 7) if self.can_pin_message is not None else 0
-        flags |= (1 << 12) if self.has_scheduled is not None else 0
-        flags |= (1 << 13) if self.video_calls_available is not None else 0
+        flags |= (1 << 0) if self.blocked else 0
+        flags |= (1 << 4) if self.phone_calls_available else 0
+        flags |= (1 << 5) if self.phone_calls_private else 0
+        flags |= (1 << 7) if self.can_pin_message else 0
+        flags |= (1 << 12) if self.has_scheduled else 0
+        flags |= (1 << 13) if self.video_calls_available else 0
         flags |= (1 << 1) if self.about is not None else 0
         flags |= (1 << 2) if self.profile_photo is not None else 0
         flags |= (1 << 3) if self.bot_info is not None else 0

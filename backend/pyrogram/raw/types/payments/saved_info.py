@@ -34,7 +34,7 @@ class SavedInfo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.payments.SavedInfo`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xfb8fe43c``
 
     Parameters:
@@ -74,7 +74,7 @@ class SavedInfo(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.has_saved_credentials is not None else 0
+        flags |= (1 << 1) if self.has_saved_credentials else 0
         flags |= (1 << 0) if self.saved_info is not None else 0
         data.write(Int(flags))
 

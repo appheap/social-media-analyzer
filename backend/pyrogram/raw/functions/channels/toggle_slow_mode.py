@@ -34,7 +34,7 @@ class ToggleSlowMode(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xedd49ef0``
 
     Parameters:

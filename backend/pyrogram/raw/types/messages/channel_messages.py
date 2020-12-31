@@ -34,7 +34,7 @@ class ChannelMessages(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.Messages`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x64479808``
 
     Parameters:
@@ -105,7 +105,7 @@ class ChannelMessages(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.inexact is not None else 0
+        flags |= (1 << 1) if self.inexact else 0
         flags |= (1 << 2) if self.offset_id_offset is not None else 0
         data.write(Int(flags))
 

@@ -34,7 +34,7 @@ class SendVote(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x10ea6184``
 
     Parameters:

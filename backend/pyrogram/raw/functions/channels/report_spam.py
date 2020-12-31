@@ -34,7 +34,7 @@ class ReportSpam(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xfe087810``
 
     Parameters:

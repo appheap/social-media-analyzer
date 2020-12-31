@@ -34,7 +34,7 @@ class Dialog(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Dialog`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x2c171f72``
 
     Parameters:
@@ -110,8 +110,8 @@ class Dialog(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 2) if self.pinned is not None else 0
-        flags |= (1 << 3) if self.unread_mark is not None else 0
+        flags |= (1 << 2) if self.pinned else 0
+        flags |= (1 << 3) if self.unread_mark else 0
         flags |= (1 << 0) if self.pts is not None else 0
         flags |= (1 << 1) if self.draft is not None else 0
         flags |= (1 << 4) if self.folder_id is not None else 0

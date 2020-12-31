@@ -34,7 +34,7 @@ class PaymentForm(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.payments.PaymentForm`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3f56aea3``
 
     Parameters:
@@ -115,8 +115,8 @@ class PaymentForm(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 2) if self.can_save_credentials is not None else 0
-        flags |= (1 << 3) if self.password_missing is not None else 0
+        flags |= (1 << 2) if self.can_save_credentials else 0
+        flags |= (1 << 3) if self.password_missing else 0
         flags |= (1 << 4) if self.native_provider is not None else 0
         flags |= (1 << 4) if self.native_params is not None else 0
         flags |= (1 << 0) if self.saved_info is not None else 0

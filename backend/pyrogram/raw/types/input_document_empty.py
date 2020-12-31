@@ -34,7 +34,7 @@ class InputDocumentEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputDocument`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x72f0eaae``
 
     **No parameters required.**

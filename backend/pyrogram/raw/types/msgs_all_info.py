@@ -34,7 +34,7 @@ class MsgsAllInfo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MsgsAllInfo`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8cc0d131``
 
     Parameters:

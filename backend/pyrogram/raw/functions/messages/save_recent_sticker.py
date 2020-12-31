@@ -34,7 +34,7 @@ class SaveRecentSticker(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x392718f8``
 
     Parameters:
@@ -72,7 +72,7 @@ class SaveRecentSticker(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.attached is not None else 0
+        flags |= (1 << 0) if self.attached else 0
         data.write(Int(flags))
 
         data.write(self.id.write())

@@ -34,7 +34,7 @@ class DocumentAttributeHasStickers(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DocumentAttribute`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x9801d2f7``
 
     **No parameters required.**

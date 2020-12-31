@@ -34,7 +34,7 @@ class AutoDownloadSettings(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.AutoDownloadSettings`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xe04232f3``
 
     Parameters:
@@ -92,10 +92,10 @@ class AutoDownloadSettings(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.disabled is not None else 0
-        flags |= (1 << 1) if self.video_preload_large is not None else 0
-        flags |= (1 << 2) if self.audio_preload_next is not None else 0
-        flags |= (1 << 3) if self.phonecalls_less_data is not None else 0
+        flags |= (1 << 0) if self.disabled else 0
+        flags |= (1 << 1) if self.video_preload_large else 0
+        flags |= (1 << 2) if self.audio_preload_next else 0
+        flags |= (1 << 3) if self.phonecalls_less_data else 0
         data.write(Int(flags))
 
         data.write(Int(self.photo_size_max))

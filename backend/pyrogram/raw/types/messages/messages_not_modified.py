@@ -34,7 +34,7 @@ class MessagesNotModified(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.Messages`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x74535f21``
 
     Parameters:

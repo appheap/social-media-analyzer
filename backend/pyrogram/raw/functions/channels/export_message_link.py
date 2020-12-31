@@ -34,7 +34,7 @@ class ExportMessageLink(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xe63fadeb``
 
     Parameters:
@@ -76,8 +76,8 @@ class ExportMessageLink(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.grouped is not None else 0
-        flags |= (1 << 1) if self.thread is not None else 0
+        flags |= (1 << 0) if self.grouped else 0
+        flags |= (1 << 1) if self.thread else 0
         data.write(Int(flags))
 
         data.write(self.channel.write())

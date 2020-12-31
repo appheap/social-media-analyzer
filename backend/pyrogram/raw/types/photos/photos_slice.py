@@ -34,7 +34,7 @@ class PhotosSlice(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.photos.Photos`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x15051f54``
 
     Parameters:

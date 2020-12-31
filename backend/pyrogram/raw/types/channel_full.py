@@ -34,8 +34,8 @@ class ChannelFull(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatFull`.
 
     Details:
-        - Layer: ``120``
-        - ID: ``0xf0e6672a``
+        - Layer: ``122``
+        - ID: ``0xef3a6acd``
 
     Parameters:
         id: ``int`` ``32-bit``
@@ -72,6 +72,7 @@ class ChannelFull(TLObject):  # type: ignore
         slowmode_seconds (optional): ``int`` ``32-bit``
         slowmode_next_send_date (optional): ``int`` ``32-bit``
         stats_dc (optional): ``int`` ``32-bit``
+        call (optional): :obj:`InputGroupCall <pyrogram.raw.base.InputGroupCall>`
     """
 
     __slots__: List[str] = ["id", "about", "read_inbox_max_id", "read_outbox_max_id", "unread_count", "chat_photo",
@@ -80,9 +81,10 @@ class ChannelFull(TLObject):  # type: ignore
                             "has_scheduled", "can_view_stats", "blocked", "participants_count", "admins_count",
                             "kicked_count", "banned_count", "online_count", "migrated_from_chat_id",
                             "migrated_from_max_id", "pinned_msg_id", "stickerset", "available_min_id", "folder_id",
-                            "linked_chat_id", "location", "slowmode_seconds", "slowmode_next_send_date", "stats_dc"]
+                            "linked_chat_id", "location", "slowmode_seconds", "slowmode_next_send_date", "stats_dc",
+                            "call"]
 
-    ID = 0xf0e6672a
+    ID = 0xef3a6acd
     QUALNAME = "types.ChannelFull"
 
     def __init__(self, *, id: int, about: str, read_inbox_max_id: int, read_outbox_max_id: int, unread_count: int,
@@ -99,7 +101,8 @@ class ChannelFull(TLObject):  # type: ignore
                  stickerset: "raw.base.StickerSet" = None, available_min_id: Union[None, int] = None,
                  folder_id: Union[None, int] = None, linked_chat_id: Union[None, int] = None,
                  location: "raw.base.ChannelLocation" = None, slowmode_seconds: Union[None, int] = None,
-                 slowmode_next_send_date: Union[None, int] = None, stats_dc: Union[None, int] = None) -> None:
+                 slowmode_next_send_date: Union[None, int] = None, stats_dc: Union[None, int] = None,
+                 call: "raw.base.InputGroupCall" = None) -> None:
         self.id = id  # int
         self.about = about  # string
         self.read_inbox_max_id = read_inbox_max_id  # int
@@ -134,6 +137,7 @@ class ChannelFull(TLObject):  # type: ignore
         self.slowmode_seconds = slowmode_seconds  # flags.17?int
         self.slowmode_next_send_date = slowmode_next_send_date  # flags.18?int
         self.stats_dc = stats_dc  # flags.12?int
+        self.call = call  # flags.21?InputGroupCall
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "ChannelFull":
@@ -185,6 +189,8 @@ class ChannelFull(TLObject):  # type: ignore
         stats_dc = Int.read(data) if flags & (1 << 12) else None
         pts = Int.read(data)
 
+        call = TLObject.read(data) if flags & (1 << 21) else None
+
         return ChannelFull(id=id, about=about, read_inbox_max_id=read_inbox_max_id,
                            read_outbox_max_id=read_outbox_max_id, unread_count=unread_count, chat_photo=chat_photo,
                            notify_settings=notify_settings, exported_invite=exported_invite, bot_info=bot_info, pts=pts,
@@ -197,21 +203,21 @@ class ChannelFull(TLObject):  # type: ignore
                            migrated_from_max_id=migrated_from_max_id, pinned_msg_id=pinned_msg_id,
                            stickerset=stickerset, available_min_id=available_min_id, folder_id=folder_id,
                            linked_chat_id=linked_chat_id, location=location, slowmode_seconds=slowmode_seconds,
-                           slowmode_next_send_date=slowmode_next_send_date, stats_dc=stats_dc)
+                           slowmode_next_send_date=slowmode_next_send_date, stats_dc=stats_dc, call=call)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 3) if self.can_view_participants is not None else 0
-        flags |= (1 << 6) if self.can_set_username is not None else 0
-        flags |= (1 << 7) if self.can_set_stickers is not None else 0
-        flags |= (1 << 10) if self.hidden_prehistory is not None else 0
-        flags |= (1 << 16) if self.can_set_location is not None else 0
-        flags |= (1 << 19) if self.has_scheduled is not None else 0
-        flags |= (1 << 20) if self.can_view_stats is not None else 0
-        flags |= (1 << 22) if self.blocked is not None else 0
+        flags |= (1 << 3) if self.can_view_participants else 0
+        flags |= (1 << 6) if self.can_set_username else 0
+        flags |= (1 << 7) if self.can_set_stickers else 0
+        flags |= (1 << 10) if self.hidden_prehistory else 0
+        flags |= (1 << 16) if self.can_set_location else 0
+        flags |= (1 << 19) if self.has_scheduled else 0
+        flags |= (1 << 20) if self.can_view_stats else 0
+        flags |= (1 << 22) if self.blocked else 0
         flags |= (1 << 0) if self.participants_count is not None else 0
         flags |= (1 << 1) if self.admins_count is not None else 0
         flags |= (1 << 2) if self.kicked_count is not None else 0
@@ -228,6 +234,7 @@ class ChannelFull(TLObject):  # type: ignore
         flags |= (1 << 17) if self.slowmode_seconds is not None else 0
         flags |= (1 << 18) if self.slowmode_next_send_date is not None else 0
         flags |= (1 << 12) if self.stats_dc is not None else 0
+        flags |= (1 << 21) if self.call is not None else 0
         data.write(Int(flags))
 
         data.write(Int(self.id))
@@ -297,5 +304,8 @@ class ChannelFull(TLObject):  # type: ignore
             data.write(Int(self.stats_dc))
 
         data.write(Int(self.pts))
+
+        if self.call is not None:
+            data.write(self.call.write())
 
         return data.getvalue()

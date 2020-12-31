@@ -34,7 +34,7 @@ class GetTermsOfServiceUpdate(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x2ca51fd1``
 
     **No parameters required.**

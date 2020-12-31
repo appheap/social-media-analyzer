@@ -34,7 +34,7 @@ class ReorderStickerSets(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x78337739``
 
     Parameters:
@@ -68,7 +68,7 @@ class ReorderStickerSets(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.masks is not None else 0
+        flags |= (1 << 0) if self.masks else 0
         data.write(Int(flags))
 
         data.write(Vector(self.order, Long))

@@ -34,7 +34,7 @@ class PaymentRequestedInfo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PaymentRequestedInfo`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x909c3f94``
 
     Parameters:

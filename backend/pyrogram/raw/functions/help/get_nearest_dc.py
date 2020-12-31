@@ -34,7 +34,7 @@ class GetNearestDc(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1fb33026``
 
     **No parameters required.**

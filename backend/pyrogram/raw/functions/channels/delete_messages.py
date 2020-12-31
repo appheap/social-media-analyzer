@@ -34,7 +34,7 @@ class DeleteMessages(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x84c1fd4e``
 
     Parameters:

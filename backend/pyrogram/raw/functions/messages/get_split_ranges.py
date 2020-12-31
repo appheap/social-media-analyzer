@@ -34,7 +34,7 @@ class GetSplitRanges(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1cff7e08``
 
     **No parameters required.**

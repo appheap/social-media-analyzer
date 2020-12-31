@@ -34,7 +34,7 @@ class PhotoSizeEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhotoSize`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xe17e23c``
 
     Parameters:

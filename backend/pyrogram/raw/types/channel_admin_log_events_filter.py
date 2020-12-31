@@ -34,7 +34,7 @@ class ChannelAdminLogEventsFilter(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChannelAdminLogEventsFilter`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xea107ae4``
 
     Parameters:
@@ -52,10 +52,11 @@ class ChannelAdminLogEventsFilter(TLObject):  # type: ignore
         pinned (optional): ``bool``
         edit (optional): ``bool``
         delete (optional): ``bool``
+        group_call (optional): ``bool``
     """
 
     __slots__: List[str] = ["join", "leave", "invite", "ban", "unban", "kick", "unkick", "promote", "demote", "info",
-                            "settings", "pinned", "edit", "delete"]
+                            "settings", "pinned", "edit", "delete", "group_call"]
 
     ID = 0xea107ae4
     QUALNAME = "types.ChannelAdminLogEventsFilter"
@@ -64,8 +65,8 @@ class ChannelAdminLogEventsFilter(TLObject):  # type: ignore
                  invite: Union[None, bool] = None, ban: Union[None, bool] = None, unban: Union[None, bool] = None,
                  kick: Union[None, bool] = None, unkick: Union[None, bool] = None, promote: Union[None, bool] = None,
                  demote: Union[None, bool] = None, info: Union[None, bool] = None, settings: Union[None, bool] = None,
-                 pinned: Union[None, bool] = None, edit: Union[None, bool] = None,
-                 delete: Union[None, bool] = None) -> None:
+                 pinned: Union[None, bool] = None, edit: Union[None, bool] = None, delete: Union[None, bool] = None,
+                 group_call: Union[None, bool] = None) -> None:
         self.join = join  # flags.0?true
         self.leave = leave  # flags.1?true
         self.invite = invite  # flags.2?true
@@ -80,6 +81,7 @@ class ChannelAdminLogEventsFilter(TLObject):  # type: ignore
         self.pinned = pinned  # flags.11?true
         self.edit = edit  # flags.12?true
         self.delete = delete  # flags.13?true
+        self.group_call = group_call  # flags.14?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "ChannelAdminLogEventsFilter":
@@ -99,29 +101,31 @@ class ChannelAdminLogEventsFilter(TLObject):  # type: ignore
         pinned = True if flags & (1 << 11) else False
         edit = True if flags & (1 << 12) else False
         delete = True if flags & (1 << 13) else False
+        group_call = True if flags & (1 << 14) else False
         return ChannelAdminLogEventsFilter(join=join, leave=leave, invite=invite, ban=ban, unban=unban, kick=kick,
                                            unkick=unkick, promote=promote, demote=demote, info=info, settings=settings,
-                                           pinned=pinned, edit=edit, delete=delete)
+                                           pinned=pinned, edit=edit, delete=delete, group_call=group_call)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.join is not None else 0
-        flags |= (1 << 1) if self.leave is not None else 0
-        flags |= (1 << 2) if self.invite is not None else 0
-        flags |= (1 << 3) if self.ban is not None else 0
-        flags |= (1 << 4) if self.unban is not None else 0
-        flags |= (1 << 5) if self.kick is not None else 0
-        flags |= (1 << 6) if self.unkick is not None else 0
-        flags |= (1 << 7) if self.promote is not None else 0
-        flags |= (1 << 8) if self.demote is not None else 0
-        flags |= (1 << 9) if self.info is not None else 0
-        flags |= (1 << 10) if self.settings is not None else 0
-        flags |= (1 << 11) if self.pinned is not None else 0
-        flags |= (1 << 12) if self.edit is not None else 0
-        flags |= (1 << 13) if self.delete is not None else 0
+        flags |= (1 << 0) if self.join else 0
+        flags |= (1 << 1) if self.leave else 0
+        flags |= (1 << 2) if self.invite else 0
+        flags |= (1 << 3) if self.ban else 0
+        flags |= (1 << 4) if self.unban else 0
+        flags |= (1 << 5) if self.kick else 0
+        flags |= (1 << 6) if self.unkick else 0
+        flags |= (1 << 7) if self.promote else 0
+        flags |= (1 << 8) if self.demote else 0
+        flags |= (1 << 9) if self.info else 0
+        flags |= (1 << 10) if self.settings else 0
+        flags |= (1 << 11) if self.pinned else 0
+        flags |= (1 << 12) if self.edit else 0
+        flags |= (1 << 13) if self.delete else 0
+        flags |= (1 << 14) if self.group_call else 0
         data.write(Int(flags))
 
         return data.getvalue()

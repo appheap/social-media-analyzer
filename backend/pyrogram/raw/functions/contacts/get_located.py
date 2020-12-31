@@ -34,7 +34,7 @@ class GetLocated(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd348bc44``
 
     Parameters:
@@ -72,7 +72,7 @@ class GetLocated(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.background is not None else 0
+        flags |= (1 << 1) if self.background else 0
         flags |= (1 << 0) if self.self_expires is not None else 0
         data.write(Int(flags))
 

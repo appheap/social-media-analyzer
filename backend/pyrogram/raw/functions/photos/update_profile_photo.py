@@ -34,7 +34,7 @@ class UpdateProfilePhoto(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x72d4742c``
 
     Parameters:

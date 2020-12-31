@@ -34,7 +34,7 @@ class ChangePhone(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x70c32edb``
 
     Parameters:

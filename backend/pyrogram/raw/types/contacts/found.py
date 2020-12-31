@@ -34,7 +34,7 @@ class Found(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.contacts.Found`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb3134d9d``
 
     Parameters:

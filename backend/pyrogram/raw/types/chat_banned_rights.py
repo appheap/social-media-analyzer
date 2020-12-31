@@ -34,7 +34,7 @@ class ChatBannedRights(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatBannedRights`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x9f120418``
 
     Parameters:
@@ -110,18 +110,18 @@ class ChatBannedRights(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.view_messages is not None else 0
-        flags |= (1 << 1) if self.send_messages is not None else 0
-        flags |= (1 << 2) if self.send_media is not None else 0
-        flags |= (1 << 3) if self.send_stickers is not None else 0
-        flags |= (1 << 4) if self.send_gifs is not None else 0
-        flags |= (1 << 5) if self.send_games is not None else 0
-        flags |= (1 << 6) if self.send_inline is not None else 0
-        flags |= (1 << 7) if self.embed_links is not None else 0
-        flags |= (1 << 8) if self.send_polls is not None else 0
-        flags |= (1 << 10) if self.change_info is not None else 0
-        flags |= (1 << 15) if self.invite_users is not None else 0
-        flags |= (1 << 17) if self.pin_messages is not None else 0
+        flags |= (1 << 0) if self.view_messages else 0
+        flags |= (1 << 1) if self.send_messages else 0
+        flags |= (1 << 2) if self.send_media else 0
+        flags |= (1 << 3) if self.send_stickers else 0
+        flags |= (1 << 4) if self.send_gifs else 0
+        flags |= (1 << 5) if self.send_games else 0
+        flags |= (1 << 6) if self.send_inline else 0
+        flags |= (1 << 7) if self.embed_links else 0
+        flags |= (1 << 8) if self.send_polls else 0
+        flags |= (1 << 10) if self.change_info else 0
+        flags |= (1 << 15) if self.invite_users else 0
+        flags |= (1 << 17) if self.pin_messages else 0
         data.write(Int(flags))
 
         data.write(Int(self.until_date))

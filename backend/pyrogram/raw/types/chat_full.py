@@ -34,8 +34,8 @@ class ChatFull(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatFull`.
 
     Details:
-        - Layer: ``120``
-        - ID: ``0x1b7c9db3``
+        - Layer: ``122``
+        - ID: ``0xdc8c181``
 
     Parameters:
         id: ``int`` ``32-bit``
@@ -49,19 +49,21 @@ class ChatFull(TLObject):  # type: ignore
         bot_info (optional): List of :obj:`BotInfo <pyrogram.raw.base.BotInfo>`
         pinned_msg_id (optional): ``int`` ``32-bit``
         folder_id (optional): ``int`` ``32-bit``
+        call (optional): :obj:`InputGroupCall <pyrogram.raw.base.InputGroupCall>`
     """
 
     __slots__: List[str] = ["id", "about", "participants", "notify_settings", "exported_invite", "can_set_username",
-                            "has_scheduled", "chat_photo", "bot_info", "pinned_msg_id", "folder_id"]
+                            "has_scheduled", "chat_photo", "bot_info", "pinned_msg_id", "folder_id", "call"]
 
-    ID = 0x1b7c9db3
+    ID = 0xdc8c181
     QUALNAME = "types.ChatFull"
 
     def __init__(self, *, id: int, about: str, participants: "raw.base.ChatParticipants",
                  notify_settings: "raw.base.PeerNotifySettings", exported_invite: "raw.base.ExportedChatInvite",
                  can_set_username: Union[None, bool] = None, has_scheduled: Union[None, bool] = None,
                  chat_photo: "raw.base.Photo" = None, bot_info: Union[None, List["raw.base.BotInfo"]] = None,
-                 pinned_msg_id: Union[None, int] = None, folder_id: Union[None, int] = None) -> None:
+                 pinned_msg_id: Union[None, int] = None, folder_id: Union[None, int] = None,
+                 call: "raw.base.InputGroupCall" = None) -> None:
         self.id = id  # int
         self.about = about  # string
         self.participants = participants  # ChatParticipants
@@ -73,6 +75,7 @@ class ChatFull(TLObject):  # type: ignore
         self.bot_info = bot_info  # flags.3?Vector<BotInfo>
         self.pinned_msg_id = pinned_msg_id  # flags.6?int
         self.folder_id = folder_id  # flags.11?int
+        self.call = call  # flags.12?InputGroupCall
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "ChatFull":
@@ -96,21 +99,25 @@ class ChatFull(TLObject):  # type: ignore
 
         pinned_msg_id = Int.read(data) if flags & (1 << 6) else None
         folder_id = Int.read(data) if flags & (1 << 11) else None
+        call = TLObject.read(data) if flags & (1 << 12) else None
+
         return ChatFull(id=id, about=about, participants=participants, notify_settings=notify_settings,
                         exported_invite=exported_invite, can_set_username=can_set_username, has_scheduled=has_scheduled,
-                        chat_photo=chat_photo, bot_info=bot_info, pinned_msg_id=pinned_msg_id, folder_id=folder_id)
+                        chat_photo=chat_photo, bot_info=bot_info, pinned_msg_id=pinned_msg_id, folder_id=folder_id,
+                        call=call)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 7) if self.can_set_username is not None else 0
-        flags |= (1 << 8) if self.has_scheduled is not None else 0
+        flags |= (1 << 7) if self.can_set_username else 0
+        flags |= (1 << 8) if self.has_scheduled else 0
         flags |= (1 << 2) if self.chat_photo is not None else 0
         flags |= (1 << 3) if self.bot_info is not None else 0
         flags |= (1 << 6) if self.pinned_msg_id is not None else 0
         flags |= (1 << 11) if self.folder_id is not None else 0
+        flags |= (1 << 12) if self.call is not None else 0
         data.write(Int(flags))
 
         data.write(Int(self.id))
@@ -134,5 +141,8 @@ class ChatFull(TLObject):  # type: ignore
 
         if self.folder_id is not None:
             data.write(Int(self.folder_id))
+
+        if self.call is not None:
+            data.write(self.call.write())
 
         return data.getvalue()

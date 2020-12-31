@@ -34,7 +34,7 @@ class UserInfo(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.help.UserInfo`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1eb3758``
 
     Parameters:

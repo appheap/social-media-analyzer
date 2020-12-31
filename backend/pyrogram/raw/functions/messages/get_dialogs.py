@@ -34,7 +34,7 @@ class GetDialogs(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xa0ee3b73``
 
     Parameters:
@@ -89,7 +89,7 @@ class GetDialogs(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.exclude_pinned is not None else 0
+        flags |= (1 << 0) if self.exclude_pinned else 0
         flags |= (1 << 1) if self.folder_id is not None else 0
         data.write(Int(flags))
 

@@ -34,7 +34,7 @@ class GetLanguages(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x42c6978f``
 
     Parameters:

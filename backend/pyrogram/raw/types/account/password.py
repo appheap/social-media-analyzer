@@ -34,7 +34,7 @@ class Password(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.account.Password`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xad2641f8``
 
     Parameters:
@@ -112,9 +112,9 @@ class Password(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.has_recovery is not None else 0
-        flags |= (1 << 1) if self.has_secure_values is not None else 0
-        flags |= (1 << 2) if self.has_password is not None else 0
+        flags |= (1 << 0) if self.has_recovery else 0
+        flags |= (1 << 1) if self.has_secure_values else 0
+        flags |= (1 << 2) if self.has_password else 0
         flags |= (1 << 2) if self.current_algo is not None else 0
         flags |= (1 << 2) if self.srp_B is not None else 0
         flags |= (1 << 2) if self.srp_id is not None else 0

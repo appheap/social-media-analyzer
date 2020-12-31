@@ -34,7 +34,7 @@ class PageBlockEmbed(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PageBlock`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xa8718dc5``
 
     Parameters:
@@ -87,8 +87,8 @@ class PageBlockEmbed(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.full_width is not None else 0
-        flags |= (1 << 3) if self.allow_scrolling is not None else 0
+        flags |= (1 << 0) if self.full_width else 0
+        flags |= (1 << 3) if self.allow_scrolling else 0
         flags |= (1 << 1) if self.url is not None else 0
         flags |= (1 << 2) if self.html is not None else 0
         flags |= (1 << 4) if self.poster_photo_id is not None else 0

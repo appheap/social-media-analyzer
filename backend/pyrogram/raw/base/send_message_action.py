@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 SendMessageAction = Union[
-    raw.types.SendMessageCancelAction, raw.types.SendMessageChooseContactAction, raw.types.SendMessageGamePlayAction, raw.types.SendMessageGeoLocationAction, raw.types.SendMessageRecordAudioAction, raw.types.SendMessageRecordRoundAction, raw.types.SendMessageRecordVideoAction, raw.types.SendMessageTypingAction, raw.types.SendMessageUploadAudioAction, raw.types.SendMessageUploadDocumentAction, raw.types.SendMessageUploadPhotoAction, raw.types.SendMessageUploadRoundAction, raw.types.SendMessageUploadVideoAction]
+    raw.types.SendMessageCancelAction, raw.types.SendMessageChooseContactAction, raw.types.SendMessageGamePlayAction, raw.types.SendMessageGeoLocationAction, raw.types.SendMessageRecordAudioAction, raw.types.SendMessageRecordRoundAction, raw.types.SendMessageRecordVideoAction, raw.types.SendMessageTypingAction, raw.types.SendMessageUploadAudioAction, raw.types.SendMessageUploadDocumentAction, raw.types.SendMessageUploadPhotoAction, raw.types.SendMessageUploadRoundAction, raw.types.SendMessageUploadVideoAction, raw.types.SpeakingInGroupCallAction]
 
 
 # noinspection PyRedeclaration
 class SendMessageAction:  # type: ignore
-    """This base type has 13 constructors available.
+    """This base type has 14 constructors available.
 
     Constructors:
         .. hlist::
@@ -51,6 +51,7 @@ class SendMessageAction:  # type: ignore
             - :obj:`SendMessageUploadPhotoAction <pyrogram.raw.types.SendMessageUploadPhotoAction>`
             - :obj:`SendMessageUploadRoundAction <pyrogram.raw.types.SendMessageUploadRoundAction>`
             - :obj:`SendMessageUploadVideoAction <pyrogram.raw.types.SendMessageUploadVideoAction>`
+            - :obj:`SpeakingInGroupCallAction <pyrogram.raw.types.SpeakingInGroupCallAction>`
     """
 
     QUALNAME = "pyrogram.raw.base.SendMessageAction"

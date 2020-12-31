@@ -34,7 +34,7 @@ class KeyboardButtonRequestPhone(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.KeyboardButton`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb16a6c29``
 
     Parameters:

@@ -34,7 +34,7 @@ class EmojiKeyword(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.EmojiKeyword`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd5b3b9f9``
 
     Parameters:

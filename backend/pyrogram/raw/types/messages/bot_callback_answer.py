@@ -34,7 +34,7 @@ class BotCallbackAnswer(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.BotCallbackAnswer`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x36585ea4``
 
     Parameters:
@@ -88,9 +88,9 @@ class BotCallbackAnswer(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.alert is not None else 0
-        flags |= (1 << 3) if self.has_url is not None else 0
-        flags |= (1 << 4) if self.native_ui is not None else 0
+        flags |= (1 << 1) if self.alert else 0
+        flags |= (1 << 3) if self.has_url else 0
+        flags |= (1 << 4) if self.native_ui else 0
         flags |= (1 << 0) if self.message is not None else 0
         flags |= (1 << 2) if self.url is not None else 0
         data.write(Int(flags))

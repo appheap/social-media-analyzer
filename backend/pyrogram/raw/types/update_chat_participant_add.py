@@ -34,7 +34,7 @@ class UpdateChatParticipantAdd(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xea4b0e5c``
 
     Parameters:

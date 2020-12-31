@@ -34,7 +34,7 @@ class GetDialogFilters(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf19ed96d``
 
     **No parameters required.**

@@ -34,7 +34,7 @@ class AppUpdate(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.help.AppUpdate`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1da7158f``
 
     Parameters:
@@ -95,7 +95,7 @@ class AppUpdate(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.can_not_skip is not None else 0
+        flags |= (1 << 0) if self.can_not_skip else 0
         flags |= (1 << 1) if self.document is not None else 0
         flags |= (1 << 2) if self.url is not None else 0
         data.write(Int(flags))

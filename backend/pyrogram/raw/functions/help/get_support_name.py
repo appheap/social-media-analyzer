@@ -34,7 +34,7 @@ class GetSupportName(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd360e72c``
 
     **No parameters required.**

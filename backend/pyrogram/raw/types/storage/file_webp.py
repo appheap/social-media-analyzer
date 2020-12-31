@@ -34,7 +34,7 @@ class FileWebp(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.storage.FileType`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1081464c``
 
     **No parameters required.**

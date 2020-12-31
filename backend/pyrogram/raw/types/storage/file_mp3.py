@@ -34,7 +34,7 @@ class FileMp3(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.storage.FileType`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x528a0677``
 
     **No parameters required.**

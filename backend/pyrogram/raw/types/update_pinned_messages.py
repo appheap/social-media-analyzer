@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class UpdatePinnedMessages(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xed85eab5``
 
     Parameters:
@@ -79,7 +78,7 @@ class UpdatePinnedMessages(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.pinned is not None else 0
+        flags |= (1 << 0) if self.pinned else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())

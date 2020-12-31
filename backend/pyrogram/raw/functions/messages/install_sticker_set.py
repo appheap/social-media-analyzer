@@ -34,7 +34,7 @@ class InstallStickerSet(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc78fe460``
 
     Parameters:

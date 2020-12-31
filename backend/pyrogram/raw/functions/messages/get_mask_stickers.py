@@ -34,7 +34,7 @@ class GetMaskStickers(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x65b8c79f``
 
     Parameters:

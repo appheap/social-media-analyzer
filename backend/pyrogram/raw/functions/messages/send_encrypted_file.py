@@ -34,7 +34,7 @@ class SendEncryptedFile(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x5559481d``
 
     Parameters:
@@ -81,7 +81,7 @@ class SendEncryptedFile(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.silent is not None else 0
+        flags |= (1 << 0) if self.silent else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())

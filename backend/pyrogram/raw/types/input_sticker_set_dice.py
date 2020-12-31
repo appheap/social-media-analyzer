@@ -34,7 +34,7 @@ class InputStickerSetDice(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputStickerSet`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xe67f520e``
 
     Parameters:

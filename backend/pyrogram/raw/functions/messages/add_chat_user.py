@@ -34,7 +34,7 @@ class AddChatUser(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf9a0aa09``
 
     Parameters:

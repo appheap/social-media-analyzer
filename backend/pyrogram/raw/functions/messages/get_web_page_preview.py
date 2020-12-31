@@ -34,7 +34,7 @@ class GetWebPagePreview(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8b68b0cc``
 
     Parameters:

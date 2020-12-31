@@ -34,7 +34,7 @@ class DocumentAttributeSticker(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DocumentAttribute`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x6319d612``
 
     Parameters:
@@ -74,7 +74,7 @@ class DocumentAttributeSticker(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.mask is not None else 0
+        flags |= (1 << 1) if self.mask else 0
         flags |= (1 << 0) if self.mask_coords is not None else 0
         data.write(Int(flags))
 

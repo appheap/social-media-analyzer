@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 MessageAction = Union[
-    raw.types.MessageActionBotAllowed, raw.types.MessageActionChannelCreate, raw.types.MessageActionChannelMigrateFrom, raw.types.MessageActionChatAddUser, raw.types.MessageActionChatCreate, raw.types.MessageActionChatDeletePhoto, raw.types.MessageActionChatDeleteUser, raw.types.MessageActionChatEditPhoto, raw.types.MessageActionChatEditTitle, raw.types.MessageActionChatJoinedByLink, raw.types.MessageActionChatMigrateTo, raw.types.MessageActionContactSignUp, raw.types.MessageActionCustomAction, raw.types.MessageActionEmpty, raw.types.MessageActionGameScore, raw.types.MessageActionGeoProximityReached, raw.types.MessageActionHistoryClear, raw.types.MessageActionPaymentSent, raw.types.MessageActionPaymentSentMe, raw.types.MessageActionPhoneCall, raw.types.MessageActionPinMessage, raw.types.MessageActionScreenshotTaken, raw.types.MessageActionSecureValuesSent, raw.types.MessageActionSecureValuesSentMe]
+    raw.types.MessageActionBotAllowed, raw.types.MessageActionChannelCreate, raw.types.MessageActionChannelMigrateFrom, raw.types.MessageActionChatAddUser, raw.types.MessageActionChatCreate, raw.types.MessageActionChatDeletePhoto, raw.types.MessageActionChatDeleteUser, raw.types.MessageActionChatEditPhoto, raw.types.MessageActionChatEditTitle, raw.types.MessageActionChatJoinedByLink, raw.types.MessageActionChatMigrateTo, raw.types.MessageActionContactSignUp, raw.types.MessageActionCustomAction, raw.types.MessageActionEmpty, raw.types.MessageActionGameScore, raw.types.MessageActionGeoProximityReached, raw.types.MessageActionGroupCall, raw.types.MessageActionHistoryClear, raw.types.MessageActionInviteToGroupCall, raw.types.MessageActionPaymentSent, raw.types.MessageActionPaymentSentMe, raw.types.MessageActionPhoneCall, raw.types.MessageActionPinMessage, raw.types.MessageActionScreenshotTaken, raw.types.MessageActionSecureValuesSent, raw.types.MessageActionSecureValuesSentMe]
 
 
 # noinspection PyRedeclaration
 class MessageAction:  # type: ignore
-    """This base type has 24 constructors available.
+    """This base type has 26 constructors available.
 
     Constructors:
         .. hlist::
@@ -54,7 +54,9 @@ class MessageAction:  # type: ignore
             - :obj:`MessageActionEmpty <pyrogram.raw.types.MessageActionEmpty>`
             - :obj:`MessageActionGameScore <pyrogram.raw.types.MessageActionGameScore>`
             - :obj:`MessageActionGeoProximityReached <pyrogram.raw.types.MessageActionGeoProximityReached>`
+            - :obj:`MessageActionGroupCall <pyrogram.raw.types.MessageActionGroupCall>`
             - :obj:`MessageActionHistoryClear <pyrogram.raw.types.MessageActionHistoryClear>`
+            - :obj:`MessageActionInviteToGroupCall <pyrogram.raw.types.MessageActionInviteToGroupCall>`
             - :obj:`MessageActionPaymentSent <pyrogram.raw.types.MessageActionPaymentSent>`
             - :obj:`MessageActionPaymentSentMe <pyrogram.raw.types.MessageActionPaymentSentMe>`
             - :obj:`MessageActionPhoneCall <pyrogram.raw.types.MessageActionPhoneCall>`

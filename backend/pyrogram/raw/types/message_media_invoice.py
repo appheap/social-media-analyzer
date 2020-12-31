@@ -34,7 +34,7 @@ class MessageMediaInvoice(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageMedia`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x84551347``
 
     Parameters:
@@ -105,8 +105,8 @@ class MessageMediaInvoice(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.shipping_address_requested is not None else 0
-        flags |= (1 << 3) if self.test is not None else 0
+        flags |= (1 << 1) if self.shipping_address_requested else 0
+        flags |= (1 << 3) if self.test else 0
         flags |= (1 << 0) if self.photo is not None else 0
         flags |= (1 << 2) if self.receipt_msg_id is not None else 0
         data.write(Int(flags))

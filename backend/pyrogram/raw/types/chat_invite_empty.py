@@ -34,7 +34,7 @@ class ChatInviteEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ExportedChatInvite`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x69df3769``
 
     **No parameters required.**

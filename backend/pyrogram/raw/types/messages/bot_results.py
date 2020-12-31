@@ -34,7 +34,7 @@ class BotResults(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.BotResults`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x947ca848``
 
     Parameters:
@@ -95,7 +95,7 @@ class BotResults(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.gallery is not None else 0
+        flags |= (1 << 0) if self.gallery else 0
         flags |= (1 << 1) if self.next_offset is not None else 0
         flags |= (1 << 2) if self.switch_pm is not None else 0
         data.write(Int(flags))

@@ -34,7 +34,7 @@ class TextEmail(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.RichText`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xde5a0dd6``
 
     Parameters:

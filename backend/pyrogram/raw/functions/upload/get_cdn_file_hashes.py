@@ -34,7 +34,7 @@ class GetCdnFileHashes(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x4da54231``
 
     Parameters:

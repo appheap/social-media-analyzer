@@ -34,7 +34,7 @@ class GetTopPeers(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd4982db5``
 
     Parameters:
@@ -104,14 +104,14 @@ class GetTopPeers(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.correspondents is not None else 0
-        flags |= (1 << 1) if self.bots_pm is not None else 0
-        flags |= (1 << 2) if self.bots_inline is not None else 0
-        flags |= (1 << 3) if self.phone_calls is not None else 0
-        flags |= (1 << 4) if self.forward_users is not None else 0
-        flags |= (1 << 5) if self.forward_chats is not None else 0
-        flags |= (1 << 10) if self.groups is not None else 0
-        flags |= (1 << 15) if self.channels is not None else 0
+        flags |= (1 << 0) if self.correspondents else 0
+        flags |= (1 << 1) if self.bots_pm else 0
+        flags |= (1 << 2) if self.bots_inline else 0
+        flags |= (1 << 3) if self.phone_calls else 0
+        flags |= (1 << 4) if self.forward_users else 0
+        flags |= (1 << 5) if self.forward_chats else 0
+        flags |= (1 << 10) if self.groups else 0
+        flags |= (1 << 15) if self.channels else 0
         data.write(Int(flags))
 
         data.write(Int(self.offset))

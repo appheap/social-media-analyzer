@@ -34,7 +34,7 @@ class CreateChannel(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3d5fb10f``
 
     Parameters:
@@ -85,8 +85,8 @@ class CreateChannel(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.broadcast is not None else 0
-        flags |= (1 << 1) if self.megagroup is not None else 0
+        flags |= (1 << 0) if self.broadcast else 0
+        flags |= (1 << 1) if self.megagroup else 0
         flags |= (1 << 2) if self.geo_point is not None else 0
         flags |= (1 << 2) if self.address is not None else 0
         data.write(Int(flags))

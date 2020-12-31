@@ -34,7 +34,7 @@ class CodeSettings(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.CodeSettings`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xdebebe83``
 
     Parameters:
@@ -69,9 +69,9 @@ class CodeSettings(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.allow_flashcall is not None else 0
-        flags |= (1 << 1) if self.current_number is not None else 0
-        flags |= (1 << 4) if self.allow_app_hash is not None else 0
+        flags |= (1 << 0) if self.allow_flashcall else 0
+        flags |= (1 << 1) if self.current_number else 0
+        flags |= (1 << 4) if self.allow_app_hash else 0
         data.write(Int(flags))
 
         return data.getvalue()

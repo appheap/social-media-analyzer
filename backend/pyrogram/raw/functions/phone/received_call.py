@@ -34,7 +34,7 @@ class ReceivedCall(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x17d54f61``
 
     Parameters:

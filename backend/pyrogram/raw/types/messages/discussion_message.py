@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class DiscussionMessage(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.DiscussionMessage`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf5dd8f9d``
 
     Parameters:

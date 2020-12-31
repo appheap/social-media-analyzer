@@ -34,7 +34,7 @@ class FaveSticker(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb9ffc55b``
 
     Parameters:

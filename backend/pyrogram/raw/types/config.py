@@ -34,7 +34,7 @@ class Config(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Config`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x330b4067``
 
     Parameters:
@@ -308,13 +308,13 @@ class Config(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.phonecalls_enabled is not None else 0
-        flags |= (1 << 3) if self.default_p2p_contacts is not None else 0
-        flags |= (1 << 4) if self.preload_featured_stickers is not None else 0
-        flags |= (1 << 5) if self.ignore_phone_entities is not None else 0
-        flags |= (1 << 6) if self.revoke_pm_inbox is not None else 0
-        flags |= (1 << 8) if self.blocked_mode is not None else 0
-        flags |= (1 << 13) if self.pfs_enabled is not None else 0
+        flags |= (1 << 1) if self.phonecalls_enabled else 0
+        flags |= (1 << 3) if self.default_p2p_contacts else 0
+        flags |= (1 << 4) if self.preload_featured_stickers else 0
+        flags |= (1 << 5) if self.ignore_phone_entities else 0
+        flags |= (1 << 6) if self.revoke_pm_inbox else 0
+        flags |= (1 << 8) if self.blocked_mode else 0
+        flags |= (1 << 13) if self.pfs_enabled else 0
         flags |= (1 << 0) if self.tmp_sessions is not None else 0
         flags |= (1 << 7) if self.autoupdate_url_prefix is not None else 0
         flags |= (1 << 9) if self.gif_search_username is not None else 0

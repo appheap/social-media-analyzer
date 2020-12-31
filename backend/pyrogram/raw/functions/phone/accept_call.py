@@ -34,7 +34,7 @@ class AcceptCall(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3bd2b4a0``
 
     Parameters:

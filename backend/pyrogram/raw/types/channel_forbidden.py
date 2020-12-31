@@ -34,7 +34,7 @@ class ChannelForbidden(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Chat`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x289da732``
 
     Parameters:
@@ -81,8 +81,8 @@ class ChannelForbidden(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 5) if self.broadcast is not None else 0
-        flags |= (1 << 8) if self.megagroup is not None else 0
+        flags |= (1 << 5) if self.broadcast else 0
+        flags |= (1 << 8) if self.megagroup else 0
         flags |= (1 << 16) if self.until_date is not None else 0
         data.write(Int(flags))
 

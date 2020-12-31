@@ -34,7 +34,7 @@ class DeleteHistory(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1c015b09``
 
     Parameters:
@@ -76,8 +76,8 @@ class DeleteHistory(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.just_clear is not None else 0
-        flags |= (1 << 1) if self.revoke is not None else 0
+        flags |= (1 << 0) if self.just_clear else 0
+        flags |= (1 << 1) if self.revoke else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())

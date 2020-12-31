@@ -34,7 +34,7 @@ class WebPagePending(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.WebPage`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc586da1c``
 
     Parameters:

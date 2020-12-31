@@ -34,7 +34,7 @@ class InputMessagesFilterPhoneCalls(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessagesFilter`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x80c99768``
 
     Parameters:
@@ -61,7 +61,7 @@ class InputMessagesFilterPhoneCalls(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.missed is not None else 0
+        flags |= (1 << 0) if self.missed else 0
         data.write(Int(flags))
 
         return data.getvalue()

@@ -34,7 +34,7 @@ class GetTmpPassword(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x449e0b51``
 
     Parameters:

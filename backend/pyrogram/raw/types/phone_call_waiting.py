@@ -34,7 +34,7 @@ class PhoneCallWaiting(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhoneCall`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1b8f4ad1``
 
     Parameters:
@@ -93,7 +93,7 @@ class PhoneCallWaiting(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 6) if self.video is not None else 0
+        flags |= (1 << 6) if self.video else 0
         flags |= (1 << 0) if self.receive_date is not None else 0
         data.write(Int(flags))
 

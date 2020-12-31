@@ -34,7 +34,7 @@ class GetFullChat(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3b831c66``
 
     Parameters:

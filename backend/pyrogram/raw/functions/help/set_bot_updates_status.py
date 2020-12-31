@@ -34,7 +34,7 @@ class SetBotUpdatesStatus(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xec22cfcd``
 
     Parameters:

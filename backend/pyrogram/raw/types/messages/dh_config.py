@@ -34,7 +34,7 @@ class DhConfig(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.DhConfig`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x2c221edd``
 
     Parameters:

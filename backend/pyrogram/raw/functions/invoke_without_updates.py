@@ -34,7 +34,7 @@ class InvokeWithoutUpdates(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xbf9459b7``
 
     Parameters:

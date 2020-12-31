@@ -34,7 +34,7 @@ class DialogFilter(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DialogFilter`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x7438f7e8``
 
     Parameters:
@@ -123,14 +123,14 @@ class DialogFilter(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.contacts is not None else 0
-        flags |= (1 << 1) if self.non_contacts is not None else 0
-        flags |= (1 << 2) if self.groups is not None else 0
-        flags |= (1 << 3) if self.broadcasts is not None else 0
-        flags |= (1 << 4) if self.bots is not None else 0
-        flags |= (1 << 11) if self.exclude_muted is not None else 0
-        flags |= (1 << 12) if self.exclude_read is not None else 0
-        flags |= (1 << 13) if self.exclude_archived is not None else 0
+        flags |= (1 << 0) if self.contacts else 0
+        flags |= (1 << 1) if self.non_contacts else 0
+        flags |= (1 << 2) if self.groups else 0
+        flags |= (1 << 3) if self.broadcasts else 0
+        flags |= (1 << 4) if self.bots else 0
+        flags |= (1 << 11) if self.exclude_muted else 0
+        flags |= (1 << 12) if self.exclude_read else 0
+        flags |= (1 << 13) if self.exclude_archived else 0
         flags |= (1 << 25) if self.emoticon is not None else 0
         data.write(Int(flags))
 

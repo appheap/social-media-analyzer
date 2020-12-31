@@ -34,7 +34,7 @@ class ResendPasswordEmail(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x7a7f2a15``
 
     **No parameters required.**

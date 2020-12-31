@@ -34,7 +34,7 @@ class MessageRange(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageRange`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xae30253``
 
     Parameters:

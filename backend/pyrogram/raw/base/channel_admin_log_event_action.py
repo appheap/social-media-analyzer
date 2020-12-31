@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 ChannelAdminLogEventAction = Union[
-    raw.types.ChannelAdminLogEventActionChangeAbout, raw.types.ChannelAdminLogEventActionChangeLinkedChat, raw.types.ChannelAdminLogEventActionChangeLocation, raw.types.ChannelAdminLogEventActionChangePhoto, raw.types.ChannelAdminLogEventActionChangeStickerSet, raw.types.ChannelAdminLogEventActionChangeTitle, raw.types.ChannelAdminLogEventActionChangeUsername, raw.types.ChannelAdminLogEventActionDefaultBannedRights, raw.types.ChannelAdminLogEventActionDeleteMessage, raw.types.ChannelAdminLogEventActionEditMessage, raw.types.ChannelAdminLogEventActionParticipantInvite, raw.types.ChannelAdminLogEventActionParticipantJoin, raw.types.ChannelAdminLogEventActionParticipantLeave, raw.types.ChannelAdminLogEventActionParticipantToggleAdmin, raw.types.ChannelAdminLogEventActionParticipantToggleBan, raw.types.ChannelAdminLogEventActionStopPoll, raw.types.ChannelAdminLogEventActionToggleInvites, raw.types.ChannelAdminLogEventActionTogglePreHistoryHidden, raw.types.ChannelAdminLogEventActionToggleSignatures, raw.types.ChannelAdminLogEventActionToggleSlowMode, raw.types.ChannelAdminLogEventActionUpdatePinned]
+    raw.types.ChannelAdminLogEventActionChangeAbout, raw.types.ChannelAdminLogEventActionChangeLinkedChat, raw.types.ChannelAdminLogEventActionChangeLocation, raw.types.ChannelAdminLogEventActionChangePhoto, raw.types.ChannelAdminLogEventActionChangeStickerSet, raw.types.ChannelAdminLogEventActionChangeTitle, raw.types.ChannelAdminLogEventActionChangeUsername, raw.types.ChannelAdminLogEventActionDefaultBannedRights, raw.types.ChannelAdminLogEventActionDeleteMessage, raw.types.ChannelAdminLogEventActionDiscardGroupCall, raw.types.ChannelAdminLogEventActionEditMessage, raw.types.ChannelAdminLogEventActionParticipantInvite, raw.types.ChannelAdminLogEventActionParticipantJoin, raw.types.ChannelAdminLogEventActionParticipantLeave, raw.types.ChannelAdminLogEventActionParticipantMute, raw.types.ChannelAdminLogEventActionParticipantToggleAdmin, raw.types.ChannelAdminLogEventActionParticipantToggleBan, raw.types.ChannelAdminLogEventActionParticipantUnmute, raw.types.ChannelAdminLogEventActionStartGroupCall, raw.types.ChannelAdminLogEventActionStopPoll, raw.types.ChannelAdminLogEventActionToggleGroupCallSetting, raw.types.ChannelAdminLogEventActionToggleInvites, raw.types.ChannelAdminLogEventActionTogglePreHistoryHidden, raw.types.ChannelAdminLogEventActionToggleSignatures, raw.types.ChannelAdminLogEventActionToggleSlowMode, raw.types.ChannelAdminLogEventActionUpdatePinned]
 
 
 # noinspection PyRedeclaration
 class ChannelAdminLogEventAction:  # type: ignore
-    """This base type has 21 constructors available.
+    """This base type has 26 constructors available.
 
     Constructors:
         .. hlist::
@@ -47,13 +47,18 @@ class ChannelAdminLogEventAction:  # type: ignore
             - :obj:`ChannelAdminLogEventActionChangeUsername <pyrogram.raw.types.ChannelAdminLogEventActionChangeUsername>`
             - :obj:`ChannelAdminLogEventActionDefaultBannedRights <pyrogram.raw.types.ChannelAdminLogEventActionDefaultBannedRights>`
             - :obj:`ChannelAdminLogEventActionDeleteMessage <pyrogram.raw.types.ChannelAdminLogEventActionDeleteMessage>`
+            - :obj:`ChannelAdminLogEventActionDiscardGroupCall <pyrogram.raw.types.ChannelAdminLogEventActionDiscardGroupCall>`
             - :obj:`ChannelAdminLogEventActionEditMessage <pyrogram.raw.types.ChannelAdminLogEventActionEditMessage>`
             - :obj:`ChannelAdminLogEventActionParticipantInvite <pyrogram.raw.types.ChannelAdminLogEventActionParticipantInvite>`
             - :obj:`ChannelAdminLogEventActionParticipantJoin <pyrogram.raw.types.ChannelAdminLogEventActionParticipantJoin>`
             - :obj:`ChannelAdminLogEventActionParticipantLeave <pyrogram.raw.types.ChannelAdminLogEventActionParticipantLeave>`
+            - :obj:`ChannelAdminLogEventActionParticipantMute <pyrogram.raw.types.ChannelAdminLogEventActionParticipantMute>`
             - :obj:`ChannelAdminLogEventActionParticipantToggleAdmin <pyrogram.raw.types.ChannelAdminLogEventActionParticipantToggleAdmin>`
             - :obj:`ChannelAdminLogEventActionParticipantToggleBan <pyrogram.raw.types.ChannelAdminLogEventActionParticipantToggleBan>`
+            - :obj:`ChannelAdminLogEventActionParticipantUnmute <pyrogram.raw.types.ChannelAdminLogEventActionParticipantUnmute>`
+            - :obj:`ChannelAdminLogEventActionStartGroupCall <pyrogram.raw.types.ChannelAdminLogEventActionStartGroupCall>`
             - :obj:`ChannelAdminLogEventActionStopPoll <pyrogram.raw.types.ChannelAdminLogEventActionStopPoll>`
+            - :obj:`ChannelAdminLogEventActionToggleGroupCallSetting <pyrogram.raw.types.ChannelAdminLogEventActionToggleGroupCallSetting>`
             - :obj:`ChannelAdminLogEventActionToggleInvites <pyrogram.raw.types.ChannelAdminLogEventActionToggleInvites>`
             - :obj:`ChannelAdminLogEventActionTogglePreHistoryHidden <pyrogram.raw.types.ChannelAdminLogEventActionTogglePreHistoryHidden>`
             - :obj:`ChannelAdminLogEventActionToggleSignatures <pyrogram.raw.types.ChannelAdminLogEventActionToggleSignatures>`

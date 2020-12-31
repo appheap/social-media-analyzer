@@ -34,7 +34,7 @@ class ChatEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Chat`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x9ba2d800``
 
     Parameters:

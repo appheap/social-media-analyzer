@@ -34,7 +34,7 @@ class Authorization(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Authorization`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xad01d61d``
 
     Parameters:
@@ -131,9 +131,9 @@ class Authorization(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.current is not None else 0
-        flags |= (1 << 1) if self.official_app is not None else 0
-        flags |= (1 << 2) if self.password_pending is not None else 0
+        flags |= (1 << 0) if self.current else 0
+        flags |= (1 << 1) if self.official_app else 0
+        flags |= (1 << 2) if self.password_pending else 0
         data.write(Int(flags))
 
         data.write(Long(self.hash))

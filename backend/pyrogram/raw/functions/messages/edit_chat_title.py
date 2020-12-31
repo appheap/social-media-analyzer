@@ -34,7 +34,7 @@ class EditChatTitle(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xdc452855``
 
     Parameters:

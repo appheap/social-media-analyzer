@@ -34,7 +34,7 @@ class GetAllStickers(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1c9618b1``
 
     Parameters:

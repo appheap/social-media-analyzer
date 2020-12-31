@@ -34,7 +34,7 @@ class Folder(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Folder`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xff544e65``
 
     Parameters:
@@ -84,9 +84,9 @@ class Folder(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.autofill_new_broadcasts is not None else 0
-        flags |= (1 << 1) if self.autofill_public_groups is not None else 0
-        flags |= (1 << 2) if self.autofill_new_correspondents is not None else 0
+        flags |= (1 << 0) if self.autofill_new_broadcasts else 0
+        flags |= (1 << 1) if self.autofill_public_groups else 0
+        flags |= (1 << 2) if self.autofill_new_correspondents else 0
         flags |= (1 << 3) if self.photo is not None else 0
         data.write(Int(flags))
 

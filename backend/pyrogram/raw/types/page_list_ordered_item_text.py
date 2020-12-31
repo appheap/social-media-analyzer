@@ -34,7 +34,7 @@ class PageListOrderedItemText(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PageListOrderedItem`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x5e068047``
 
     Parameters:

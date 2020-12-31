@@ -34,7 +34,7 @@ class AffectedHistory(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.AffectedHistory`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb45c69d1``
 
     Parameters:

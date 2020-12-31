@@ -34,7 +34,7 @@ class InputBotInlineResult(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputBotInlineResult`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x88bf9319``
 
     Parameters:

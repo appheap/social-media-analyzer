@@ -34,7 +34,7 @@ class SecurePasswordKdfAlgoSHA512(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.SecurePasswordKdfAlgo`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x86471d92``
 
     Parameters:

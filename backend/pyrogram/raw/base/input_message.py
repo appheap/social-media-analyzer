@@ -26,17 +26,19 @@ from typing import Union
 from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
-InputMessage = Union[raw.types.InputMessageID, raw.types.InputMessagePinned, raw.types.InputMessageReplyTo]
+InputMessage = Union[
+    raw.types.InputMessageCallbackQuery, raw.types.InputMessageID, raw.types.InputMessagePinned, raw.types.InputMessageReplyTo]
 
 
 # noinspection PyRedeclaration
 class InputMessage:  # type: ignore
-    """This base type has 3 constructors available.
+    """This base type has 4 constructors available.
 
     Constructors:
         .. hlist::
             :columns: 2
 
+            - :obj:`InputMessageCallbackQuery <pyrogram.raw.types.InputMessageCallbackQuery>`
             - :obj:`InputMessageID <pyrogram.raw.types.InputMessageID>`
             - :obj:`InputMessagePinned <pyrogram.raw.types.InputMessagePinned>`
             - :obj:`InputMessageReplyTo <pyrogram.raw.types.InputMessageReplyTo>`

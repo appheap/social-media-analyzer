@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class Country(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.help.Country`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc3878e23``
 
     Parameters:
@@ -78,7 +77,7 @@ class Country(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.hidden is not None else 0
+        flags |= (1 << 0) if self.hidden else 0
         flags |= (1 << 1) if self.name is not None else 0
         data.write(Int(flags))
 

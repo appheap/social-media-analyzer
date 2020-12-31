@@ -34,7 +34,7 @@ class GetAppConfig(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x98914110``
 
     **No parameters required.**

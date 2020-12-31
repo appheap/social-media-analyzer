@@ -34,7 +34,7 @@ class PollResults(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PollResults`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xbadcc1a3``
 
     Parameters:
@@ -83,7 +83,7 @@ class PollResults(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.min is not None else 0
+        flags |= (1 << 0) if self.min else 0
         flags |= (1 << 1) if self.results is not None else 0
         flags |= (1 << 2) if self.total_voters is not None else 0
         flags |= (1 << 3) if self.recent_voters is not None else 0

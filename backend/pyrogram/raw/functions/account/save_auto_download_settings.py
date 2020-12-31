@@ -34,7 +34,7 @@ class SaveAutoDownloadSettings(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x76f36233``
 
     Parameters:
@@ -72,8 +72,8 @@ class SaveAutoDownloadSettings(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.low is not None else 0
-        flags |= (1 << 1) if self.high is not None else 0
+        flags |= (1 << 0) if self.low else 0
+        flags |= (1 << 1) if self.high else 0
         data.write(Int(flags))
 
         data.write(self.settings.write())

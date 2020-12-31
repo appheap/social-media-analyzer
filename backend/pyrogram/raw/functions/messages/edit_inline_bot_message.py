@@ -34,7 +34,7 @@ class EditInlineBotMessage(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x83557dba``
 
     Parameters:
@@ -87,7 +87,7 @@ class EditInlineBotMessage(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.no_webpage is not None else 0
+        flags |= (1 << 1) if self.no_webpage else 0
         flags |= (1 << 11) if self.message is not None else 0
         flags |= (1 << 14) if self.media is not None else 0
         flags |= (1 << 2) if self.reply_markup is not None else 0

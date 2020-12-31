@@ -34,7 +34,7 @@ class MaskCoords(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MaskCoords`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xaed6dbb2``
 
     Parameters:

@@ -34,7 +34,7 @@ class LangPackString(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.LangPackString`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xcad181f6``
 
     Parameters:

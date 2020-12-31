@@ -173,6 +173,8 @@ from .message_action_secure_values_sent_me import MessageActionSecureValuesSentM
 from .message_action_secure_values_sent import MessageActionSecureValuesSent
 from .message_action_contact_sign_up import MessageActionContactSignUp
 from .message_action_geo_proximity_reached import MessageActionGeoProximityReached
+from .message_action_group_call import MessageActionGroupCall
+from .message_action_invite_to_group_call import MessageActionInviteToGroupCall
 from .dialog import Dialog
 from .dialog_folder import DialogFolder
 from .photo_empty import PhotoEmpty
@@ -182,6 +184,7 @@ from .photo_size import PhotoSize
 from .photo_cached_size import PhotoCachedSize
 from .photo_stripped_size import PhotoStrippedSize
 from .photo_size_progressive import PhotoSizeProgressive
+from .photo_path_size import PhotoPathSize
 from .geo_point_empty import GeoPointEmpty
 from .geo_point import GeoPoint
 from .input_notify_peer import InputNotifyPeer
@@ -306,6 +309,9 @@ from .update_peer_blocked import UpdatePeerBlocked
 from .update_channel_user_typing import UpdateChannelUserTyping
 from .update_pinned_messages import UpdatePinnedMessages
 from .update_pinned_channel_messages import UpdatePinnedChannelMessages
+from .update_chat import UpdateChat
+from .update_group_call_participants import UpdateGroupCallParticipants
+from .update_group_call import UpdateGroupCall
 from .updates_too_long import UpdatesTooLong
 from .update_short_message import UpdateShortMessage
 from .update_short_chat_message import UpdateShortChatMessage
@@ -351,6 +357,7 @@ from .send_message_choose_contact_action import SendMessageChooseContactAction
 from .send_message_game_play_action import SendMessageGamePlayAction
 from .send_message_record_round_action import SendMessageRecordRoundAction
 from .send_message_upload_round_action import SendMessageUploadRoundAction
+from .speaking_in_group_call_action import SpeakingInGroupCallAction
 from .input_privacy_key_status_timestamp import InputPrivacyKeyStatusTimestamp
 from .input_privacy_key_chat_invite import InputPrivacyKeyChatInvite
 from .input_privacy_key_phone_call import InputPrivacyKeyPhoneCall
@@ -613,6 +620,11 @@ from .channel_admin_log_event_action_stop_poll import ChannelAdminLogEventAction
 from .channel_admin_log_event_action_change_linked_chat import ChannelAdminLogEventActionChangeLinkedChat
 from .channel_admin_log_event_action_change_location import ChannelAdminLogEventActionChangeLocation
 from .channel_admin_log_event_action_toggle_slow_mode import ChannelAdminLogEventActionToggleSlowMode
+from .channel_admin_log_event_action_start_group_call import ChannelAdminLogEventActionStartGroupCall
+from .channel_admin_log_event_action_discard_group_call import ChannelAdminLogEventActionDiscardGroupCall
+from .channel_admin_log_event_action_participant_mute import ChannelAdminLogEventActionParticipantMute
+from .channel_admin_log_event_action_participant_unmute import ChannelAdminLogEventActionParticipantUnmute
+from .channel_admin_log_event_action_toggle_group_call_setting import ChannelAdminLogEventActionToggleGroupCallSetting
 from .channel_admin_log_event import ChannelAdminLogEvent
 from .channel_admin_log_events_filter import ChannelAdminLogEventsFilter
 from .popular_contact import PopularContact
@@ -626,6 +638,7 @@ from .web_authorization import WebAuthorization
 from .input_message_id import InputMessageID
 from .input_message_reply_to import InputMessageReplyTo
 from .input_message_pinned import InputMessagePinned
+from .input_message_callback_query import InputMessageCallbackQuery
 from .input_dialog_peer import InputDialogPeer
 from .input_dialog_peer_folder import InputDialogPeerFolder
 from .dialog_peer import DialogPeer
@@ -758,5 +771,14 @@ from .message_views import MessageViews
 from .message_reply_header import MessageReplyHeader
 from .message_replies import MessageReplies
 from .peer_blocked import PeerBlocked
+from .group_call_discarded import GroupCallDiscarded
+from .group_call import GroupCall
+from .input_group_call import InputGroupCall
+from .group_call_participant import GroupCallParticipant
+from .inline_query_peer_type_same_bot_pm import InlineQueryPeerTypeSameBotPM
+from .inline_query_peer_type_pm import InlineQueryPeerTypePM
+from .inline_query_peer_type_chat import InlineQueryPeerTypeChat
+from .inline_query_peer_type_megagroup import InlineQueryPeerTypeMegagroup
+from .inline_query_peer_type_broadcast import InlineQueryPeerTypeBroadcast
 from . import help, storage, auth, contacts, messages, updates, photos, upload, account, channels, payments, phone, \
     stats

@@ -34,7 +34,7 @@ class Updates(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Updates`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x74ae4240``
 
     Parameters:
@@ -45,7 +45,7 @@ class Updates(TLObject):  # type: ignore
         seq: ``int`` ``32-bit``
 
     See Also:
-        This object can be returned by 47 methods:
+        This object can be returned by 54 methods:
 
         .. hlist::
             :columns: 2
@@ -95,6 +95,13 @@ class Updates(TLObject):  # type: ignore
             - :obj:`channels.ToggleSlowMode <pyrogram.raw.functions.channels.ToggleSlowMode>`
             - :obj:`phone.DiscardCall <pyrogram.raw.functions.phone.DiscardCall>`
             - :obj:`phone.SetCallRating <pyrogram.raw.functions.phone.SetCallRating>`
+            - :obj:`phone.CreateGroupCall <pyrogram.raw.functions.phone.CreateGroupCall>`
+            - :obj:`phone.JoinGroupCall <pyrogram.raw.functions.phone.JoinGroupCall>`
+            - :obj:`phone.LeaveGroupCall <pyrogram.raw.functions.phone.LeaveGroupCall>`
+            - :obj:`phone.EditGroupCallMember <pyrogram.raw.functions.phone.EditGroupCallMember>`
+            - :obj:`phone.InviteToGroupCall <pyrogram.raw.functions.phone.InviteToGroupCall>`
+            - :obj:`phone.DiscardGroupCall <pyrogram.raw.functions.phone.DiscardGroupCall>`
+            - :obj:`phone.ToggleGroupCallSettings <pyrogram.raw.functions.phone.ToggleGroupCallSettings>`
             - :obj:`folders.EditPeerFolders <pyrogram.raw.functions.folders.EditPeerFolders>`
             - :obj:`folders.DeleteFolder <pyrogram.raw.functions.folders.DeleteFolder>`
     """

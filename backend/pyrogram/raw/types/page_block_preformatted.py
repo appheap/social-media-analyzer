@@ -34,7 +34,7 @@ class PageBlockPreformatted(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PageBlock`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc070d93e``
 
     Parameters:

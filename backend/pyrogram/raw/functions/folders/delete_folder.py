@@ -34,7 +34,7 @@ class DeleteFolder(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x1c295881``
 
     Parameters:

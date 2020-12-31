@@ -34,7 +34,7 @@ class FileLocationToBeDeprecated(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.FileLocation`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xbc7fc6cd``
 
     Parameters:

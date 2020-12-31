@@ -34,7 +34,7 @@ class InputMediaPoll(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputMedia`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf94e5f1``
 
     Parameters:

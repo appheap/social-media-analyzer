@@ -34,7 +34,7 @@ class ResetWebAuthorizations(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x682d2594``
 
     **No parameters required.**

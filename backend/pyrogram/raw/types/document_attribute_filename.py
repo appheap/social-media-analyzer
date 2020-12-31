@@ -34,7 +34,7 @@ class DocumentAttributeFilename(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.DocumentAttribute`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x15590068``
 
     Parameters:

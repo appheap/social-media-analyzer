@@ -34,7 +34,7 @@ class ChannelParticipantAdmin(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChannelParticipant`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xccbebbaf``
 
     Parameters:
@@ -90,8 +90,8 @@ class ChannelParticipantAdmin(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.can_edit is not None else 0
-        flags |= (1 << 1) if self.is_self is not None else 0
+        flags |= (1 << 0) if self.can_edit else 0
+        flags |= (1 << 1) if self.is_self else 0
         flags |= (1 << 1) if self.inviter_id is not None else 0
         flags |= (1 << 2) if self.rank is not None else 0
         data.write(Int(flags))

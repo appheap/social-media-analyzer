@@ -34,7 +34,7 @@ class SentCodeTypeSms(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.auth.SentCodeType`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc000bba2``
 
     Parameters:

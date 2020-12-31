@@ -34,7 +34,7 @@ class UpdatePinnedDialogs(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xfa0f3ca2``
 
     Parameters:

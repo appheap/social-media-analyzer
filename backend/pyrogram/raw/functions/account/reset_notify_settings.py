@@ -34,7 +34,7 @@ class ResetNotifySettings(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xdb7e1747``
 
     **No parameters required.**

@@ -34,7 +34,7 @@ class UpdateServiceNotification(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xebe46819``
 
     Parameters:
@@ -83,7 +83,7 @@ class UpdateServiceNotification(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.popup is not None else 0
+        flags |= (1 << 0) if self.popup else 0
         flags |= (1 << 1) if self.inbox_date is not None else 0
         data.write(Int(flags))
 

@@ -34,7 +34,7 @@ class ToggleStickerSets(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb5052fea``
 
     Parameters:
@@ -75,9 +75,9 @@ class ToggleStickerSets(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.uninstall is not None else 0
-        flags |= (1 << 1) if self.archive is not None else 0
-        flags |= (1 << 2) if self.unarchive is not None else 0
+        flags |= (1 << 0) if self.uninstall else 0
+        flags |= (1 << 1) if self.archive else 0
+        flags |= (1 << 2) if self.unarchive else 0
         data.write(Int(flags))
 
         data.write(Vector(self.stickersets))

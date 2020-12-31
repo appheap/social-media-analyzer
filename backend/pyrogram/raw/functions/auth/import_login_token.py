@@ -34,7 +34,7 @@ class ImportLoginToken(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x95ac5ce4``
 
     Parameters:

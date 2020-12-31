@@ -34,8 +34,8 @@ class UpdateBotInlineQuery(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Update`.
 
     Details:
-        - Layer: ``120``
-        - ID: ``0x54826690``
+        - Layer: ``122``
+        - ID: ``0x3f2038db``
 
     Parameters:
         query_id: ``int`` ``64-bit``
@@ -43,20 +43,22 @@ class UpdateBotInlineQuery(TLObject):  # type: ignore
         query: ``str``
         offset: ``str``
         geo (optional): :obj:`GeoPoint <pyrogram.raw.base.GeoPoint>`
+        peer_type (optional): :obj:`InlineQueryPeerType <pyrogram.raw.base.InlineQueryPeerType>`
     """
 
-    __slots__: List[str] = ["query_id", "user_id", "query", "offset", "geo"]
+    __slots__: List[str] = ["query_id", "user_id", "query", "offset", "geo", "peer_type"]
 
-    ID = 0x54826690
+    ID = 0x3f2038db
     QUALNAME = "types.UpdateBotInlineQuery"
 
-    def __init__(self, *, query_id: int, user_id: int, query: str, offset: str,
-                 geo: "raw.base.GeoPoint" = None) -> None:
+    def __init__(self, *, query_id: int, user_id: int, query: str, offset: str, geo: "raw.base.GeoPoint" = None,
+                 peer_type: "raw.base.InlineQueryPeerType" = None) -> None:
         self.query_id = query_id  # long
         self.user_id = user_id  # int
         self.query = query  # string
         self.offset = offset  # string
         self.geo = geo  # flags.0?GeoPoint
+        self.peer_type = peer_type  # flags.1?InlineQueryPeerType
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "UpdateBotInlineQuery":
@@ -70,9 +72,12 @@ class UpdateBotInlineQuery(TLObject):  # type: ignore
 
         geo = TLObject.read(data) if flags & (1 << 0) else None
 
+        peer_type = TLObject.read(data) if flags & (1 << 1) else None
+
         offset = String.read(data)
 
-        return UpdateBotInlineQuery(query_id=query_id, user_id=user_id, query=query, offset=offset, geo=geo)
+        return UpdateBotInlineQuery(query_id=query_id, user_id=user_id, query=query, offset=offset, geo=geo,
+                                    peer_type=peer_type)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -80,6 +85,7 @@ class UpdateBotInlineQuery(TLObject):  # type: ignore
 
         flags = 0
         flags |= (1 << 0) if self.geo is not None else 0
+        flags |= (1 << 1) if self.peer_type is not None else 0
         data.write(Int(flags))
 
         data.write(Long(self.query_id))
@@ -90,6 +96,9 @@ class UpdateBotInlineQuery(TLObject):  # type: ignore
 
         if self.geo is not None:
             data.write(self.geo.write())
+
+        if self.peer_type is not None:
+            data.write(self.peer_type.write())
 
         data.write(String(self.offset))
 

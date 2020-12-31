@@ -34,7 +34,7 @@ class InitTakeoutSession(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf05b4804``
 
     Parameters:
@@ -88,12 +88,12 @@ class InitTakeoutSession(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.contacts is not None else 0
-        flags |= (1 << 1) if self.message_users is not None else 0
-        flags |= (1 << 2) if self.message_chats is not None else 0
-        flags |= (1 << 3) if self.message_megagroups is not None else 0
-        flags |= (1 << 4) if self.message_channels is not None else 0
-        flags |= (1 << 5) if self.files is not None else 0
+        flags |= (1 << 0) if self.contacts else 0
+        flags |= (1 << 1) if self.message_users else 0
+        flags |= (1 << 2) if self.message_chats else 0
+        flags |= (1 << 3) if self.message_megagroups else 0
+        flags |= (1 << 4) if self.message_channels else 0
+        flags |= (1 << 5) if self.files else 0
         flags |= (1 << 5) if self.file_max_size is not None else 0
         data.write(Int(flags))
 

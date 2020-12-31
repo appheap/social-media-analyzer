@@ -34,7 +34,7 @@ class CreateTheme(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8432c21f``
 
     Parameters:

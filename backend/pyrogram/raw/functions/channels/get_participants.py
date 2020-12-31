@@ -34,7 +34,7 @@ class GetParticipants(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x123e05e9``
 
     Parameters:

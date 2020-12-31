@@ -34,7 +34,7 @@ class MigrateChat(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x15a3b8e3``
 
     Parameters:

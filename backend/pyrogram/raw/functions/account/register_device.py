@@ -34,7 +34,7 @@ class RegisterDevice(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x68976c6f``
 
     Parameters:
@@ -86,7 +86,7 @@ class RegisterDevice(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.no_muted is not None else 0
+        flags |= (1 << 0) if self.no_muted else 0
         data.write(Int(flags))
 
         data.write(Int(self.token_type))

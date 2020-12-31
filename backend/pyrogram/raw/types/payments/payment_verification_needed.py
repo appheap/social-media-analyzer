@@ -34,7 +34,7 @@ class PaymentVerificationNeeded(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.payments.PaymentResult`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd8411139``
 
     Parameters:

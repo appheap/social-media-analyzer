@@ -34,7 +34,7 @@ class SendSignalingData(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xff7a9383``
 
     Parameters:

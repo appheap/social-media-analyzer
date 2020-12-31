@@ -34,7 +34,7 @@ class CheckUsername(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x2714d86c``
 
     Parameters:

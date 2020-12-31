@@ -34,7 +34,7 @@ class InputStickerSetItem(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputStickerSetItem`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xffa0a496``
 
     Parameters:

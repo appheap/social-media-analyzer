@@ -34,7 +34,7 @@ class GetNotifyExceptions(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x53577479``
 
     Parameters:
@@ -68,7 +68,7 @@ class GetNotifyExceptions(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.compare_sound is not None else 0
+        flags |= (1 << 1) if self.compare_sound else 0
         flags |= (1 << 0) if self.peer is not None else 0
         data.write(Int(flags))
 

@@ -34,7 +34,7 @@ class SetGameScore(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8ef8ecc0``
 
     Parameters:
@@ -84,8 +84,8 @@ class SetGameScore(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.edit_message is not None else 0
-        flags |= (1 << 1) if self.force is not None else 0
+        flags |= (1 << 0) if self.edit_message else 0
+        flags |= (1 << 1) if self.force else 0
         data.write(Int(flags))
 
         data.write(self.peer.write())

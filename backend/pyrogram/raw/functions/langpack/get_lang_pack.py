@@ -34,7 +34,7 @@ class GetLangPack(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf2f2330a``
 
     Parameters:

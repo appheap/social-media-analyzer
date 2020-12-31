@@ -250,5 +250,9 @@ from .message_views import MessageViews
 from .message_reply_header import MessageReplyHeader
 from .message_replies import MessageReplies
 from .peer_blocked import PeerBlocked
+from .group_call import GroupCall
+from .input_group_call import InputGroupCall
+from .group_call_participant import GroupCallParticipant
+from .inline_query_peer_type import InlineQueryPeerType
 from . import help, storage, auth, contacts, messages, updates, photos, upload, account, channels, payments, phone, \
     stats

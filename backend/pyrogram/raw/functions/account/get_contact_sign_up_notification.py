@@ -34,7 +34,7 @@ class GetContactSignUpNotification(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x9f07c728``
 
     **No parameters required.**

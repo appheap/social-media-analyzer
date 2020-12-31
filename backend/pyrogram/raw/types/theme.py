@@ -34,7 +34,7 @@ class Theme(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Theme`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x28f1114``
 
     Parameters:
@@ -106,8 +106,8 @@ class Theme(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.creator is not None else 0
-        flags |= (1 << 1) if self.default is not None else 0
+        flags |= (1 << 0) if self.creator else 0
+        flags |= (1 << 1) if self.default else 0
         flags |= (1 << 2) if self.document is not None else 0
         flags |= (1 << 3) if self.settings is not None else 0
         data.write(Int(flags))

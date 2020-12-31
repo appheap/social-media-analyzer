@@ -34,7 +34,7 @@ class RestrictionReason(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.RestrictionReason`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd072acb4``
 
     Parameters:

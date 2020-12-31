@@ -34,7 +34,7 @@ class SaveDeveloperInfo(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x9a5f6e95``
 
     Parameters:

@@ -34,7 +34,7 @@ class PeerNotifySettings(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PeerNotifySettings`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xaf509d20``
 
     Parameters:

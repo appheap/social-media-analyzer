@@ -34,7 +34,7 @@ class PromoData(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.help.PromoData`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8c39793f``
 
     Parameters:
@@ -94,7 +94,7 @@ class PromoData(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.proxy is not None else 0
+        flags |= (1 << 0) if self.proxy else 0
         flags |= (1 << 1) if self.psa_type is not None else 0
         flags |= (1 << 2) if self.psa_message is not None else 0
         data.write(Int(flags))

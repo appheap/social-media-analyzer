@@ -34,7 +34,7 @@ class WallPaper(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.WallPaper`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xa437c3ed``
 
     Parameters:
@@ -105,10 +105,10 @@ class WallPaper(TLObject):  # type: ignore
 
         data.write(Long(self.id))
         flags = 0
-        flags |= (1 << 0) if self.creator is not None else 0
-        flags |= (1 << 1) if self.default is not None else 0
-        flags |= (1 << 3) if self.pattern is not None else 0
-        flags |= (1 << 4) if self.dark is not None else 0
+        flags |= (1 << 0) if self.creator else 0
+        flags |= (1 << 1) if self.default else 0
+        flags |= (1 << 3) if self.pattern else 0
+        flags |= (1 << 4) if self.dark else 0
         flags |= (1 << 2) if self.settings is not None else 0
         data.write(Int(flags))
 

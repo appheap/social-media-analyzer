@@ -34,7 +34,7 @@ class ForwardMessages(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xd9fee60e``
 
     Parameters:
@@ -93,9 +93,9 @@ class ForwardMessages(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 5) if self.silent is not None else 0
-        flags |= (1 << 6) if self.background is not None else 0
-        flags |= (1 << 8) if self.with_my_score is not None else 0
+        flags |= (1 << 5) if self.silent else 0
+        flags |= (1 << 6) if self.background else 0
+        flags |= (1 << 8) if self.with_my_score else 0
         flags |= (1 << 10) if self.schedule_date is not None else 0
         data.write(Int(flags))
 

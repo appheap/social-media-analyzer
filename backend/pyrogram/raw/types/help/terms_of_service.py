@@ -34,7 +34,7 @@ class TermsOfService(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.help.TermsOfService`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x780a0310``
 
     Parameters:
@@ -77,7 +77,7 @@ class TermsOfService(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.popup is not None else 0
+        flags |= (1 << 0) if self.popup else 0
         flags |= (1 << 1) if self.min_age_confirm is not None else 0
         data.write(Int(flags))
 

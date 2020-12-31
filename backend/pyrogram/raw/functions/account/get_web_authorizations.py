@@ -34,7 +34,7 @@ class GetWebAuthorizations(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x182e6d6f``
 
     **No parameters required.**

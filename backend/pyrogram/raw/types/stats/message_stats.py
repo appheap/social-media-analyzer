@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,7 +34,7 @@ class MessageStats(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.stats.MessageStats`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x8999f295``
 
     Parameters:

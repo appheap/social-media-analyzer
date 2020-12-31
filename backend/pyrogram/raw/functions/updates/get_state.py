@@ -34,7 +34,7 @@ class GetState(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xedd4882a``
 
     **No parameters required.**

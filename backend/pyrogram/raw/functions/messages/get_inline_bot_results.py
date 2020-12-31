@@ -34,7 +34,7 @@ class GetInlineBotResults(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x514e999d``
 
     Parameters:

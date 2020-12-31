@@ -34,7 +34,7 @@ class InlineBotSwitchPM(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InlineBotSwitchPM`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3c20629f``
 
     Parameters:

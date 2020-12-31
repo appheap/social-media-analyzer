@@ -34,7 +34,7 @@ class PageBlockTable(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PageBlock`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xbf4dea82``
 
     Parameters:
@@ -73,8 +73,8 @@ class PageBlockTable(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.bordered is not None else 0
-        flags |= (1 << 1) if self.striped is not None else 0
+        flags |= (1 << 0) if self.bordered else 0
+        flags |= (1 << 1) if self.striped else 0
         data.write(Int(flags))
 
         data.write(self.title.write())

@@ -34,7 +34,7 @@ class ChannelDifferenceTooLong(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.updates.ChannelDifference`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xa4bcc6fe``
 
     Parameters:
@@ -91,7 +91,7 @@ class ChannelDifferenceTooLong(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.final is not None else 0
+        flags |= (1 << 0) if self.final else 0
         flags |= (1 << 1) if self.timeout is not None else 0
         data.write(Int(flags))
 

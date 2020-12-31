@@ -34,7 +34,7 @@ class GetPollVotes(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb86e380e``
 
     Parameters:

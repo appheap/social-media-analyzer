@@ -34,7 +34,7 @@ class ReportPeer(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xae189d5f``
 
     Parameters:

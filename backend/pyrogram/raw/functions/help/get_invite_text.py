@@ -34,7 +34,7 @@ class GetInviteText(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x4d392343``
 
     **No parameters required.**

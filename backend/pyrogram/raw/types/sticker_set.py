@@ -34,8 +34,8 @@ class StickerSet(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.StickerSet`.
 
     Details:
-        - Layer: ``120``
-        - ID: ``0xeeb46f27``
+        - Layer: ``122``
+        - ID: ``0x40e237a8``
 
     Parameters:
         id: ``int`` ``64-bit``
@@ -49,20 +49,20 @@ class StickerSet(TLObject):  # type: ignore
         masks (optional): ``bool``
         animated (optional): ``bool``
         installed_date (optional): ``int`` ``32-bit``
-        thumb (optional): :obj:`PhotoSize <pyrogram.raw.base.PhotoSize>`
+        thumbs (optional): List of :obj:`PhotoSize <pyrogram.raw.base.PhotoSize>`
         thumb_dc_id (optional): ``int`` ``32-bit``
     """
 
     __slots__: List[str] = ["id", "access_hash", "title", "short_name", "count", "hash", "archived", "official",
-                            "masks", "animated", "installed_date", "thumb", "thumb_dc_id"]
+                            "masks", "animated", "installed_date", "thumbs", "thumb_dc_id"]
 
-    ID = 0xeeb46f27
+    ID = 0x40e237a8
     QUALNAME = "types.StickerSet"
 
     def __init__(self, *, id: int, access_hash: int, title: str, short_name: str, count: int, hash: int,
                  archived: Union[None, bool] = None, official: Union[None, bool] = None,
                  masks: Union[None, bool] = None, animated: Union[None, bool] = None,
-                 installed_date: Union[None, int] = None, thumb: "raw.base.PhotoSize" = None,
+                 installed_date: Union[None, int] = None, thumbs: Union[None, List["raw.base.PhotoSize"]] = None,
                  thumb_dc_id: Union[None, int] = None) -> None:
         self.id = id  # long
         self.access_hash = access_hash  # long
@@ -75,7 +75,7 @@ class StickerSet(TLObject):  # type: ignore
         self.masks = masks  # flags.3?true
         self.animated = animated  # flags.5?true
         self.installed_date = installed_date  # flags.0?int
-        self.thumb = thumb  # flags.4?PhotoSize
+        self.thumbs = thumbs  # flags.4?Vector<PhotoSize>
         self.thumb_dc_id = thumb_dc_id  # flags.4?int
 
     @staticmethod
@@ -95,7 +95,7 @@ class StickerSet(TLObject):  # type: ignore
 
         short_name = String.read(data)
 
-        thumb = TLObject.read(data) if flags & (1 << 4) else None
+        thumbs = TLObject.read(data) if flags & (1 << 4) else []
 
         thumb_dc_id = Int.read(data) if flags & (1 << 4) else None
         count = Int.read(data)
@@ -104,19 +104,19 @@ class StickerSet(TLObject):  # type: ignore
 
         return StickerSet(id=id, access_hash=access_hash, title=title, short_name=short_name, count=count, hash=hash,
                           archived=archived, official=official, masks=masks, animated=animated,
-                          installed_date=installed_date, thumb=thumb, thumb_dc_id=thumb_dc_id)
+                          installed_date=installed_date, thumbs=thumbs, thumb_dc_id=thumb_dc_id)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.archived is not None else 0
-        flags |= (1 << 2) if self.official is not None else 0
-        flags |= (1 << 3) if self.masks is not None else 0
-        flags |= (1 << 5) if self.animated is not None else 0
+        flags |= (1 << 1) if self.archived else 0
+        flags |= (1 << 2) if self.official else 0
+        flags |= (1 << 3) if self.masks else 0
+        flags |= (1 << 5) if self.animated else 0
         flags |= (1 << 0) if self.installed_date is not None else 0
-        flags |= (1 << 4) if self.thumb is not None else 0
+        flags |= (1 << 4) if self.thumbs is not None else 0
         flags |= (1 << 4) if self.thumb_dc_id is not None else 0
         data.write(Int(flags))
 
@@ -131,8 +131,8 @@ class StickerSet(TLObject):  # type: ignore
 
         data.write(String(self.short_name))
 
-        if self.thumb is not None:
-            data.write(self.thumb.write())
+        if self.thumbs is not None:
+            data.write(Vector(self.thumbs))
 
         if self.thumb_dc_id is not None:
             data.write(Int(self.thumb_dc_id))

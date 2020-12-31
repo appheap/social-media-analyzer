@@ -34,7 +34,7 @@ class InputMediaGeoLive(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputMedia`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x971fa843``
 
     Parameters:
@@ -77,7 +77,7 @@ class InputMediaGeoLive(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.stopped is not None else 0
+        flags |= (1 << 0) if self.stopped else 0
         flags |= (1 << 2) if self.heading is not None else 0
         flags |= (1 << 1) if self.period is not None else 0
         flags |= (1 << 3) if self.proximity_notification_radius is not None else 0

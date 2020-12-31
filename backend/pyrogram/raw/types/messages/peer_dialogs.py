@@ -34,7 +34,7 @@ class PeerDialogs(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.PeerDialogs`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3371c354``
 
     Parameters:

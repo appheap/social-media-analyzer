@@ -34,7 +34,7 @@ class SearchStickerSets(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xc2b7d08b``
 
     Parameters:
@@ -72,7 +72,7 @@ class SearchStickerSets(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.exclude_featured is not None else 0
+        flags |= (1 << 0) if self.exclude_featured else 0
         data.write(Int(flags))
 
         data.write(String(self.q))

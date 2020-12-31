@@ -34,7 +34,7 @@ class GetOnlines(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x6e2be050``
 
     Parameters:

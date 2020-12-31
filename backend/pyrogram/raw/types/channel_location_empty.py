@@ -34,7 +34,7 @@ class ChannelLocationEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChannelLocation`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xbfb5ad8b``
 
     **No parameters required.**

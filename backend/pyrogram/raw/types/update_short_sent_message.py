@@ -34,7 +34,7 @@ class UpdateShortSentMessage(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Updates`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x11f1331c``
 
     Parameters:
@@ -47,7 +47,7 @@ class UpdateShortSentMessage(TLObject):  # type: ignore
         entities (optional): List of :obj:`MessageEntity <pyrogram.raw.base.MessageEntity>`
 
     See Also:
-        This object can be returned by 47 methods:
+        This object can be returned by 54 methods:
 
         .. hlist::
             :columns: 2
@@ -97,6 +97,13 @@ class UpdateShortSentMessage(TLObject):  # type: ignore
             - :obj:`channels.ToggleSlowMode <pyrogram.raw.functions.channels.ToggleSlowMode>`
             - :obj:`phone.DiscardCall <pyrogram.raw.functions.phone.DiscardCall>`
             - :obj:`phone.SetCallRating <pyrogram.raw.functions.phone.SetCallRating>`
+            - :obj:`phone.CreateGroupCall <pyrogram.raw.functions.phone.CreateGroupCall>`
+            - :obj:`phone.JoinGroupCall <pyrogram.raw.functions.phone.JoinGroupCall>`
+            - :obj:`phone.LeaveGroupCall <pyrogram.raw.functions.phone.LeaveGroupCall>`
+            - :obj:`phone.EditGroupCallMember <pyrogram.raw.functions.phone.EditGroupCallMember>`
+            - :obj:`phone.InviteToGroupCall <pyrogram.raw.functions.phone.InviteToGroupCall>`
+            - :obj:`phone.DiscardGroupCall <pyrogram.raw.functions.phone.DiscardGroupCall>`
+            - :obj:`phone.ToggleGroupCallSettings <pyrogram.raw.functions.phone.ToggleGroupCallSettings>`
             - :obj:`folders.EditPeerFolders <pyrogram.raw.functions.folders.EditPeerFolders>`
             - :obj:`folders.DeleteFolder <pyrogram.raw.functions.folders.DeleteFolder>`
     """
@@ -142,7 +149,7 @@ class UpdateShortSentMessage(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 1) if self.out is not None else 0
+        flags |= (1 << 1) if self.out else 0
         flags |= (1 << 9) if self.media is not None else 0
         flags |= (1 << 7) if self.entities is not None else 0
         data.write(Int(flags))

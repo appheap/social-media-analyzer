@@ -34,7 +34,7 @@ class PeerSettings(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PeerSettings`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x733f2961``
 
     Parameters:
@@ -96,13 +96,13 @@ class PeerSettings(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.report_spam is not None else 0
-        flags |= (1 << 1) if self.add_contact is not None else 0
-        flags |= (1 << 2) if self.block_contact is not None else 0
-        flags |= (1 << 3) if self.share_contact is not None else 0
-        flags |= (1 << 4) if self.need_contacts_exception is not None else 0
-        flags |= (1 << 5) if self.report_geo is not None else 0
-        flags |= (1 << 7) if self.autoarchived is not None else 0
+        flags |= (1 << 0) if self.report_spam else 0
+        flags |= (1 << 1) if self.add_contact else 0
+        flags |= (1 << 2) if self.block_contact else 0
+        flags |= (1 << 3) if self.share_contact else 0
+        flags |= (1 << 4) if self.need_contacts_exception else 0
+        flags |= (1 << 5) if self.report_geo else 0
+        flags |= (1 << 7) if self.autoarchived else 0
         flags |= (1 << 6) if self.geo_distance is not None else 0
         data.write(Int(flags))
 

@@ -34,7 +34,7 @@ class GetFile(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xb15a9afc``
 
     Parameters:
@@ -80,8 +80,8 @@ class GetFile(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.precise is not None else 0
-        flags |= (1 << 1) if self.cdn_supported is not None else 0
+        flags |= (1 << 0) if self.precise else 0
+        flags |= (1 << 1) if self.cdn_supported else 0
         data.write(Int(flags))
 
         data.write(self.location.write())

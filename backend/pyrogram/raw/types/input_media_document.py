@@ -34,22 +34,25 @@ class InputMediaDocument(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputMedia`.
 
     Details:
-        - Layer: ``120``
-        - ID: ``0x23ab23d2``
+        - Layer: ``122``
+        - ID: ``0x33473058``
 
     Parameters:
         id: :obj:`InputDocument <pyrogram.raw.base.InputDocument>`
         ttl_seconds (optional): ``int`` ``32-bit``
+        query (optional): ``str``
     """
 
-    __slots__: List[str] = ["id", "ttl_seconds"]
+    __slots__: List[str] = ["id", "ttl_seconds", "query"]
 
-    ID = 0x23ab23d2
+    ID = 0x33473058
     QUALNAME = "types.InputMediaDocument"
 
-    def __init__(self, *, id: "raw.base.InputDocument", ttl_seconds: Union[None, int] = None) -> None:
+    def __init__(self, *, id: "raw.base.InputDocument", ttl_seconds: Union[None, int] = None,
+                 query: Union[None, str] = None) -> None:
         self.id = id  # InputDocument
         self.ttl_seconds = ttl_seconds  # flags.0?int
+        self.query = query  # flags.1?string
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "InputMediaDocument":
@@ -58,7 +61,8 @@ class InputMediaDocument(TLObject):  # type: ignore
         id = TLObject.read(data)
 
         ttl_seconds = Int.read(data) if flags & (1 << 0) else None
-        return InputMediaDocument(id=id, ttl_seconds=ttl_seconds)
+        query = String.read(data) if flags & (1 << 1) else None
+        return InputMediaDocument(id=id, ttl_seconds=ttl_seconds, query=query)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -66,11 +70,15 @@ class InputMediaDocument(TLObject):  # type: ignore
 
         flags = 0
         flags |= (1 << 0) if self.ttl_seconds is not None else 0
+        flags |= (1 << 1) if self.query is not None else 0
         data.write(Int(flags))
 
         data.write(self.id.write())
 
         if self.ttl_seconds is not None:
             data.write(Int(self.ttl_seconds))
+
+        if self.query is not None:
+            data.write(String(self.query))
 
         return data.getvalue()

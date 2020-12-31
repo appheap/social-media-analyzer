@@ -34,7 +34,7 @@ class PhoneCallProtocol(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhoneCallProtocol`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xfc878fc8``
 
     Parameters:
@@ -78,8 +78,8 @@ class PhoneCallProtocol(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.udp_p2p is not None else 0
-        flags |= (1 << 1) if self.udp_reflector is not None else 0
+        flags |= (1 << 0) if self.udp_p2p else 0
+        flags |= (1 << 1) if self.udp_reflector else 0
         data.write(Int(flags))
 
         data.write(Int(self.min_layer))

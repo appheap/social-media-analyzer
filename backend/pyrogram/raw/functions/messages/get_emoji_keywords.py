@@ -34,7 +34,7 @@ class GetEmojiKeywords(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x35a0e062``
 
     Parameters:

@@ -34,7 +34,7 @@ class RemoveStickerFromSet(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xf7760f51``
 
     Parameters:

@@ -34,7 +34,7 @@ class ReplyKeyboardMarkup(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ReplyMarkup`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x3502758c``
 
     Parameters:
@@ -72,9 +72,9 @@ class ReplyKeyboardMarkup(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.resize is not None else 0
-        flags |= (1 << 1) if self.single_use is not None else 0
-        flags |= (1 << 2) if self.selective is not None else 0
+        flags |= (1 << 0) if self.resize else 0
+        flags |= (1 << 1) if self.single_use else 0
+        flags |= (1 << 2) if self.selective else 0
         data.write(Int(flags))
 
         data.write(Vector(self.rows))

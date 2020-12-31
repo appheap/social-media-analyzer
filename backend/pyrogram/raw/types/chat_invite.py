@@ -34,7 +34,7 @@ class ChatInvite(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatInvite`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0xdfc2f58e``
 
     Parameters:
@@ -99,10 +99,10 @@ class ChatInvite(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.channel is not None else 0
-        flags |= (1 << 1) if self.broadcast is not None else 0
-        flags |= (1 << 2) if self.public is not None else 0
-        flags |= (1 << 3) if self.megagroup is not None else 0
+        flags |= (1 << 0) if self.channel else 0
+        flags |= (1 << 1) if self.broadcast else 0
+        flags |= (1 << 2) if self.public else 0
+        flags |= (1 << 3) if self.megagroup else 0
         flags |= (1 << 4) if self.participants is not None else 0
         data.write(Int(flags))
 

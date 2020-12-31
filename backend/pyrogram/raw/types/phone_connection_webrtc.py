@@ -34,7 +34,7 @@ class PhoneConnectionWebrtc(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PhoneConnection`.
 
     Details:
-        - Layer: ``120``
+        - Layer: ``122``
         - ID: ``0x635fe375``
 
     Parameters:
@@ -90,8 +90,8 @@ class PhoneConnectionWebrtc(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
-        flags |= (1 << 0) if self.turn is not None else 0
-        flags |= (1 << 1) if self.stun is not None else 0
+        flags |= (1 << 0) if self.turn else 0
+        flags |= (1 << 1) if self.stun else 0
         data.write(Int(flags))
 
         data.write(Long(self.id))
