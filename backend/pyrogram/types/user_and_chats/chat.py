@@ -17,80 +17,6 @@ class Chat(Object):
 
         type (``str``):
             Type of chat, can be either "private", "bot", "group", "supergroup" or "channel".
-
-        is_verified (``bool``, *optional*):
-            True, if this chat has been verified by Telegram. Supergroups, channels and bots_and_keyboards only.
-
-        is_restricted (``bool``, *optional*):
-            True, if this chat has been restricted. Supergroups, channels and bots_and_keyboards only.
-            See *restriction_reason* for details.
-
-        is_creator (``bool``, *optional*):
-            True, if this chat owner is the current user. Supergroups, channels and groups only.
-
-        is_scam (``bool``, *optional*):
-            True, if this chat has been flagged for scam. Supergroups, channels and bots_and_keyboards only.
-
-        is_support (``bool``):
-            True, if this chat is part of the Telegram support team. Users and bots_and_keyboards only.
-
-        title (``str``, *optional*):
-            Title, for supergroups, channels and basic group chats.
-
-        username (``str``, *optional*):
-            Username, for private chats, bots_and_keyboards, supergroups and channels if available.
-
-        first_name (``str``, *optional*):
-            First name of the other party in a private chat, for private chats and bots_and_keyboards.
-
-        last_name (``str``, *optional*):
-            Last name of the other party in a private chat, for private chats.
-
-        photo (:obj:`~pyrogram.types.ChatPhoto`, *optional*):
-            Chat photo. Suitable for downloads only.
-
-        description (``str``, *optional*):
-            Bio, for private chats and bots_and_keyboards or description for groups, supergroups and channels.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        dc_id (``int``, *optional*):
-            The chat assigned DC (data center). Available only in case the chat has a photo.
-            Note that this information is approximate; it is based on where Telegram stores the current chat photo.
-            It is accurate only in case the owner has set the chat photo, otherwise the dc_id will be the one assigned
-            to the administrator who set the current chat photo.
-
-        invite_link (``str``, *optional*):
-            Chat invite link, for groups, supergroups and channels.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        pinned_message (:obj:`~pyrogram.types.Message`, *optional*):
-            Pinned message, for groups, supergroups channels and own chat.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        sticker_set_name (``str``, *optional*):
-            For supergroups, name of group sticker set.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        can_set_sticker_set (``bool``, *optional*):
-            True, if the group sticker set can be changed by you.
-            Returned only in :meth:`~pyrogram.Client.get_chat`.
-
-        members_count (``int``, *optional*):
-            Chat members count, for groups, supergroups and channels only.
-
-        restrictions (List of :obj:`~pyrogram.types.Restriction`, *optional*):
-            The list of reasons why this chat might be unavailable to some users.
-            This field is available only in case *is_restricted* is True.
-
-        permissions (:obj:`~pyrogram.types.ChatPermissions` *optional*):
-            Default chat member permissions, for groups and supergroups.
-
-        distance (``int``, *optional*):
-            Distance in meters of this group chat from your location.
-            Returned only in :meth:`~pyrogram.Client.get_nearby_chats`.
-
-        linked_chat (:obj:`~pyrogram.types.Chat`, *optional*):
-            The linked discussion group (in case of channels) or the linked channel (in case of supergroups).
     """
 
     def __init__(
@@ -749,7 +675,7 @@ class Chat(Object):
                 chat.get_member(user_id)
 
         Returns:
-            :obj:`~pyrogram.types.ChatParticipant`: On success, a chat member is returned.
+            :obj:`~pyrogram.types.ChatMember`: On success, a chat member is returned.
         """
 
         return await self._client.get_chat_member(
@@ -779,7 +705,7 @@ class Chat(Object):
                 chat.get_members()
 
         Returns:
-            List of :obj:`~pyrogram.types.ChatParticipant`: On success, a list of chat members is returned.
+            List of :obj:`~pyrogram.types.ChatMember`: On success, a list of chat members is returned.
         """
 
         return await self._client.get_chat_members(
