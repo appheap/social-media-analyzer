@@ -33,6 +33,13 @@ class FileMigrate(SeeOther):
     MESSAGE = __doc__
 
 
+class NetworkMigrate(SeeOther):
+    """The source IP address is associated with DC{x} (for registration)"""
+    ID = "NETWORK_MIGRATE_X"
+    """``str``: RPC Error ID"""
+    MESSAGE = __doc__
+
+
 class PhoneMigrate(SeeOther):
     """The phone number a user is trying to use for authorization is associated with DC{x}"""
     ID = "PHONE_MIGRATE_X"
@@ -40,9 +47,9 @@ class PhoneMigrate(SeeOther):
     MESSAGE = __doc__
 
 
-class NetworkMigrate(SeeOther):
-    """The source IP address is associated with DC{x} (for registration)"""
-    ID = "NETWORK_MIGRATE_X"
+class StatsMigrate(SeeOther):
+    """The statistics of the group/channel are stored in DC{x}"""
+    ID = "STATS_MIGRATE_X"
     """``str``: RPC Error ID"""
     MESSAGE = __doc__
 

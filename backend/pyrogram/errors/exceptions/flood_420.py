@@ -26,6 +26,13 @@ class Flood(RPCError):
     NAME = __doc__
 
 
+class FloodTestPhoneWait(Flood):
+    """A wait of {x} seconds is required in the test servers"""
+    ID = "FLOOD_TEST_PHONE_WAIT_X"
+    """``str``: RPC Error ID"""
+    MESSAGE = __doc__
+
+
 class FloodWait(Flood):
     """A wait of {x} seconds is required"""
     ID = "FLOOD_WAIT_X"
@@ -33,15 +40,15 @@ class FloodWait(Flood):
     MESSAGE = __doc__
 
 
-class TakeoutInitDelay(Flood):
-    """You have to confirm the data export request using one of your mobile devices or wait {x} seconds"""
-    ID = "TAKEOUT_INIT_DELAY_X"
+class SlowmodeWait(Flood):
+    """A wait of {x} seconds is required to send messages in this chat."""
+    ID = "SLOWMODE_WAIT_X"
     """``str``: RPC Error ID"""
     MESSAGE = __doc__
 
 
-class SlowmodeWait(Flood):
-    """A wait of {x} seconds is required to send messages in this chat."""
-    ID = "SLOWMODE_WAIT_X"
+class TakeoutInitDelay(Flood):
+    """You have to confirm the data export request using one of your mobile devices or wait {x} seconds"""
+    ID = "TAKEOUT_INIT_DELAY_X"
     """``str``: RPC Error ID"""
     MESSAGE = __doc__
