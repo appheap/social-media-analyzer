@@ -39,10 +39,11 @@ class Object(metaclass=Meta):
             **{
                 attr: (
                     str(datetime.fromtimestamp(getattr(obj, attr)))
-                    if attr.endswith("date") else
+                    if "date" in attr else
                     getattr(obj, attr)
                 )
-                for attr in filter(lambda x: not x.startswith("_"), obj.__dict__)
+                for attr in
+                filter(lambda x: not x.startswith("_"), obj.__dict__ if getattr(obj, '__dict__', None) else [])
                 if getattr(obj, attr) is not None
             }
         }

@@ -18,14 +18,14 @@
 
 from base64 import b64encode
 from struct import pack
-from typing import Union, List, Match
+from typing import Union, List, Match, Optional
 
 import pyrogram
 from pyrogram import raw
 from pyrogram import types
 from ..object import Object
-from pyrogram.types.update import Update
-from pyrogram import utils
+from ..update import Update
+from ... import utils
 
 
 class CallbackQuery(Object, Update):
@@ -171,7 +171,7 @@ class CallbackQuery(Object, Update):
     async def edit_message_text(
             self,
             text: str,
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
             disable_web_page_preview: bool = None,
             reply_markup: "types.InlineKeyboardMarkup" = None
     ) -> Union["types.Message", bool]:
@@ -224,7 +224,7 @@ class CallbackQuery(Object, Update):
     async def edit_message_caption(
             self,
             caption: str,
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
             reply_markup: "types.InlineKeyboardMarkup" = None
     ) -> Union["types.Message", bool]:
         """Edit the caption of media messages attached to callback queries.
