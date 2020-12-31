@@ -22,7 +22,7 @@ import pyrogram
 from pyrogram import raw
 from pyrogram import types
 from ..object import Object
-from pyrogram.types.update import Update
+from ..update import Update
 
 
 class Poll(Object, Update):
