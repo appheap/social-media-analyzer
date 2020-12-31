@@ -19,6 +19,8 @@
 import asyncio
 import logging
 
+from typing import Optional
+
 from .transport import *
 from ..session.internals import DataCenter
 
@@ -54,7 +56,7 @@ class Connection:
                 log.info("Connecting...")
                 await self.protocol.connect(self.address)
             except OSError as e:
-                log.warning(e)  # TODO: Remove
+                log.warning(f"Unable to connect due to network issues: {e}")
                 self.protocol.close()
                 await asyncio.sleep(1)
             else:
@@ -79,5 +81,5 @@ class Connection:
         except Exception:
             raise OSError
 
-    async def recv(self) -> bytes or None:
+    async def recv(self) -> Optional[bytes]:
         return await self.protocol.recv()
