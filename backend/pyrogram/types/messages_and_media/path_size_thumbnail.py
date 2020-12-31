@@ -21,8 +21,8 @@ from pyrogram import raw
 from ..object import Object
 
 
-class StrippedThumbnail(Object):
-    """A stripped thumbnail
+class PathSizeThumbnail(Object):
+    """A photo size thumbnail
 
     Parameters:
         data (``bytes``):
@@ -45,9 +45,9 @@ class StrippedThumbnail(Object):
         self.type = type
 
     @staticmethod
-    def _parse(client, stripped_thumbnail: "raw.types.PhotoStrippedSize") -> "StrippedThumbnail":
-        return StrippedThumbnail(
-            data=stripped_thumbnail.bytes,
-            type=stripped_thumbnail.type,
+    def _parse(client, path_size_thumbnail: "raw.types.PhotoPathSize") -> "PathSizeThumbnail":
+        return PathSizeThumbnail(
+            data=path_size_thumbnail.bytes,
+            type=path_size_thumbnail.type,
             client=client
         )

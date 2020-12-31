@@ -13,6 +13,9 @@ from .poll import Poll
 from .poll_option import PollOption
 from .sticker import Sticker
 from .stripped_thumbnail import StrippedThumbnail
+from .progressive_thumbnail import ProgressiveThumbnail
+from .cached_thumbnail import CachedThumbnail
+from .path_size_thumbnail import PathSizeThumbnail
 from .thumbnail import Thumbnail
 from .venue import Venue
 from .video import Video
@@ -22,13 +25,6 @@ from .webpage import WebPage
 
 # added
 from .sticker_set import StickerSet
-from .photo_size_base import PhotoSizeBase
-from .photo_size_empty import PhotoSizeEmpty
-from .photo_size import PhotoSize
-from .photo_cached_size import PhotoCachedSize
-from .photo_stripped_size import PhotoStrippedSize
-from .photo_size_progressive import PhotoSizeProgressive
-from .photo_path_size import PhotoPathSize
 from .file_location import FileLocation
 from .message_views import MessageViews
 from .message_replies import MessageReplies
@@ -83,17 +79,13 @@ from .search_counter import SearchCounter
 
 __all__ = [
     "Animation", "Audio", "Contact", "Document", "Game", "Location", "Message", "MessageEntity", "Photo", "Thumbnail",
-    "StrippedThumbnail", "Poll", "PollOption", "Sticker", "Venue", "Video", "VideoNote", "Voice", "WebPage", "Dice",
+    "StrippedThumbnail", "ProgressiveThumbnail", "PathSizeThumbnail", "CachedThumbnail", "Poll", "PollOption",
+    "Sticker", "Venue", "Video",
+    "VideoNote",
+    "Voice", "WebPage", "Dice",
 
     # added
     "StickerSet",
-    "PhotoSizeBase",
-    "PhotoSizeEmpty",
-    "PhotoSize",
-    "PhotoCachedSize",
-    "PhotoStrippedSize",
-    "PhotoSizeProgressive",
-    "PhotoPathSize",
     "MessageViews",
     "MessageReplies",
     "MessageNormal",

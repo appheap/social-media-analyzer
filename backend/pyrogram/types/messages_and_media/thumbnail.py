@@ -69,7 +69,7 @@ class Thumbnail(Object):
     @staticmethod
     def _parse(
             client,
-            media: Union["raw.types.Photo", "raw.types.Document"]
+            media: Union["raw.types.Photo", "raw.types.Document", "raw.types.StickerSet"]
     ) -> Optional[List[Union["types.StrippedThumbnail", "Thumbnail"]]]:
         if isinstance(media, raw.types.Photo):
             raw_thumbnails = media.sizes[:-1]
@@ -77,6 +77,11 @@ class Thumbnail(Object):
             raw_thumbnails = media.thumbs
 
             if not raw_thumbnails:
+                return None
+        elif isinstance(media, raw.types.StickerSet):
+            raw_thumbnails = media.thumbs
+
+            if raw_thumbnails is None:
                 return None
         else:
             return None
@@ -88,9 +93,15 @@ class Thumbnail(Object):
 
         for thumbnail in raw_thumbnails:
             # TODO: Enable this
-            # if isinstance(thumbnail, types.PhotoStrippedSize):
-            #     thumbnails.append(StrippedThumbnail._parse(client, thumbnail))
-            if isinstance(thumbnail, raw.types.PhotoSize):
+            if isinstance(thumbnail, types.StrippedThumbnail):
+                thumbnails.append(
+                    types.StrippedThumbnail._parse(client, thumbnail)
+                )
+            elif isinstance(thumbnail, types.PathSizeThumbnail):
+                thumbnails.append(
+                    types.PathSizeThumbnail._parse(client, thumbnail)
+                )
+            elif isinstance(thumbnail, raw.types.PhotoSize):
                 thumbnails.append(
                     Thumbnail(
                         file_id=FileId(
@@ -114,6 +125,64 @@ class Thumbnail(Object):
                         width=thumbnail.w,
                         height=thumbnail.h,
                         file_size=thumbnail.size,
+                        type=thumbnail.type,
+                        client=client
+                    )
+                )
+
+            elif isinstance(thumbnail, raw.types.PhotoSizeProgressive):
+                thumbnails.append(
+                    types.ProgressiveThumbnail(
+                        file_id=FileId(
+                            file_type=file_type,
+                            dc_id=media.dc_id,
+                            media_id=media.id,
+                            access_hash=media.access_hash,
+                            file_reference=media.file_reference,
+                            thumbnail_file_type=thumbnail_file_type,
+                            thumbnail_source=ThumbnailSource.THUMBNAIL,
+                            thumbnail_size=thumbnail.type,
+                            volume_id=thumbnail.location.volume_id,
+                            local_id=thumbnail.location.local_id
+                        ).encode(),
+                        file_unique_id=FileUniqueId(
+                            file_unique_type=FileUniqueType.PHOTO,
+                            media_id=media.id,
+                            volume_id=thumbnail.location.volume_id,
+                            local_id=thumbnail.location.local_id
+                        ).encode(),
+                        width=thumbnail.w,
+                        height=thumbnail.h,
+                        sizes=thumbnail.sizes,
+                        type=thumbnail.type,
+                        client=client
+                    )
+                )
+
+            elif isinstance(thumbnail, raw.types.PhotoCachedSize):
+                thumbnails.append(
+                    types.CachedThumbnail(
+                        file_id=FileId(
+                            file_type=file_type,
+                            dc_id=media.dc_id,
+                            media_id=media.id,
+                            access_hash=media.access_hash,
+                            file_reference=media.file_reference,
+                            thumbnail_file_type=thumbnail_file_type,
+                            thumbnail_source=ThumbnailSource.THUMBNAIL,
+                            thumbnail_size=thumbnail.type,
+                            volume_id=thumbnail.location.volume_id,
+                            local_id=thumbnail.location.local_id
+                        ).encode(),
+                        file_unique_id=FileUniqueId(
+                            file_unique_type=FileUniqueType.PHOTO,
+                            media_id=media.id,
+                            volume_id=thumbnail.location.volume_id,
+                            local_id=thumbnail.location.local_id
+                        ).encode(),
+                        width=thumbnail.w,
+                        height=thumbnail.h,
+                        data=thumbnail.bytes,
                         type=thumbnail.type,
                         client=client
                     )

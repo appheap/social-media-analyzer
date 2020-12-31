@@ -1,6 +1,7 @@
 from ..object import Object
 import pyrogram
 from pyrogram import types, raw
+from typing import List
 
 
 class StickerSet(Object):
@@ -17,7 +18,7 @@ class StickerSet(Object):
             access_hash: int = None,
             title: str = None,
             short_name: str = None,
-            thumb: "" = None,
+            thumbs: List["types.Thumbnail"] = None,
             thumb_dc_id: int = None,
             count: int = None,
             hash: int = None,
@@ -33,7 +34,7 @@ class StickerSet(Object):
         self.access_hash = access_hash
         self.title = title
         self.short_name = short_name
-        self.thumb = thumb
+        self.thumbs = thumbs
         self.thumb_dc_id = thumb_dc_id
         self.count = count
         self.hash = hash
@@ -55,7 +56,7 @@ class StickerSet(Object):
             access_hash=getattr(sticker_set, 'access_hash', None),
             title=getattr(sticker_set, 'title', None),
             short_name=getattr(sticker_set, 'short_name', None),
-            thumb=types.PhotoSizeBase._parse(client, getattr(sticker_set, 'thumb', None)),
+            thumbs=types.Thumbnail._parse(client, getattr(sticker_set, 'thumbs', None)),
             thumb_dc_id=getattr(sticker_set, 'thumb_dc_id', None),
             count=getattr(sticker_set, 'count', None),
             hash=getattr(sticker_set, 'hash', None),
