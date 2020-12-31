@@ -16,9 +16,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from typing import Optional, List
 
 from .input_media import InputMedia
+from ..messages_and_media import MessageEntity
 
 
 class InputMediaVideo(InputMedia):
@@ -31,10 +32,6 @@ class InputMediaVideo(InputMedia):
             Pass a file_id as string to send a video that exists on the Telegram servers or
             pass a file path as string to upload a new video that exists on your local machine.
             Sending video by a URL is currently unsupported.
-
-        file_ref (``str``, *optional*):
-            A valid file reference obtained by a recently fetched media message.
-            To be used in combination with a file id in case a file reference is needed.
 
         thumb (``str``):
             Thumbnail of the video sent.
@@ -52,6 +49,9 @@ class InputMediaVideo(InputMedia):
             Pass "html" to enable HTML-style parsing only.
             Pass None to completely disable style parsing.
 
+        caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+            List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
+
         width (``int``, *optional*):
             Video width.
 
@@ -68,16 +68,16 @@ class InputMediaVideo(InputMedia):
     def __init__(
             self,
             media: str,
-            file_ref: str = None,
             thumb: str = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List[MessageEntity] = None,
             width: int = 0,
             height: int = 0,
             duration: int = 0,
             supports_streaming: bool = True
     ):
-        super().__init__(media, file_ref, caption, parse_mode)
+        super().__init__(media, caption, parse_mode, caption_entities)
 
         self.thumb = thumb
         self.width = width

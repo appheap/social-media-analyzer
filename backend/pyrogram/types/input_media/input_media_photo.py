@@ -16,9 +16,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from typing import Optional, List
 
 from .input_media import InputMedia
+from ..messages_and_media import MessageEntity
 
 
 class InputMediaPhoto(InputMedia):
@@ -32,10 +33,6 @@ class InputMediaPhoto(InputMedia):
             pass a file path as string to upload a new photo that exists on your local machine.
             Sending photo by a URL is currently unsupported.
 
-        file_ref (``str``, *optional*):
-            A valid file reference obtained by a recently fetched media message.
-            To be used in combination with a file id in case a file reference is needed.
-
         caption (``str``, *optional*):
             Caption of the photo to be sent, 0-1024 characters
 
@@ -45,13 +42,16 @@ class InputMediaPhoto(InputMedia):
             Pass "markdown" or "md" to enable Markdown-style parsing only.
             Pass "html" to enable HTML-style parsing only.
             Pass None to completely disable style parsing.
+
+        caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+            List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
     """
 
     def __init__(
             self,
             media: str,
-            file_ref: str = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object
+            parse_mode: Optional[str] = object,
+            caption_entities: List[MessageEntity] = None
     ):
-        super().__init__(media, file_ref, caption, parse_mode)
+        super().__init__(media, caption, parse_mode, caption_entities)

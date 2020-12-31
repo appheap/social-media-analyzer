@@ -16,9 +16,10 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union
+from typing import Optional, List
 
 from .input_media import InputMedia
+from ..messages_and_media import MessageEntity
 
 
 class InputMediaDocument(InputMedia):
@@ -29,10 +30,6 @@ class InputMediaDocument(InputMedia):
             File to send.
             Pass a file_id as string to send a file that exists on the Telegram servers or
             pass a file path as string to upload a new file that exists on your local machine.
-
-        file_ref (``str``, *optional*):
-            A valid file reference obtained by a recently fetched media message.
-            To be used in combination with a file id in case a file reference is needed.
 
         thumb (``str``):
             Thumbnail of the file sent.
@@ -49,16 +46,19 @@ class InputMediaDocument(InputMedia):
             Pass "markdown" or "md" to enable Markdown-style parsing only.
             Pass "html" to enable HTML-style parsing only.
             Pass None to completely disable style parsing.
+
+        caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+            List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
     """
 
     def __init__(
             self,
             media: str,
-            file_ref: str = None,
             thumb: str = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object
+            parse_mode: Optional[str] = object,
+            caption_entities: List[MessageEntity] = None
     ):
-        super().__init__(media, file_ref, caption, parse_mode)
+        super().__init__(media, caption, parse_mode, caption_entities)
 
         self.thumb = thumb
