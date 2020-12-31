@@ -1,14 +1,14 @@
 from pyrogram import raw
 
 from ..object import Object
-import telegram.client as tg
+import pyrogram
 
 
 class PeerNotifySettings(Object):
     def __init__(
             self,
             *,
-            client: "tg.Client" = None,
+            client: "pyrogram.Client" = None,
             show_previews: bool = None,
             silent: bool = None,
             mute_until: int = None,
