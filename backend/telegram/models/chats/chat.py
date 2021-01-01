@@ -10,6 +10,7 @@ from ..analyzers import AdminLogAnalyzerMetaDataUpdater
 from ..analyzers import ChatMembersAnalyzerMetaDataUpdater
 from ..analyzers import ChatSharedMediaAnalyzerMetaDataUpdater
 from ..analyzers import MessageViewsAnalyzerMetaDataUpdater
+from ..analyzers import ChatMemberCountAnalyzerMetaDataUpdater
 
 
 class ChatTypes(models.TextChoices):
@@ -167,6 +168,7 @@ class Chat(
     ChatMembersAnalyzerMetaDataUpdater,
     ChatSharedMediaAnalyzerMetaDataUpdater,
     MessageViewsAnalyzerMetaDataUpdater,
+    ChatMemberCountAnalyzerMetaDataUpdater,
 ):
     chat_id = models.BigIntegerField(primary_key=True)  # fixme: what about private/bot chats?
     type = models.CharField(

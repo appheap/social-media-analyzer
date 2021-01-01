@@ -4,6 +4,9 @@ from .admin_log_analyzer import AdminLogAnalyzerMetaDataManager
 from .admin_log_analyzer_updater import AdminLogAnalyzerMetaDataUpdater
 
 from .chat_member_count_analyzer import ChatMemberCountAnalyzerMetaData
+from .chat_member_count_analyzer import ChatMemberCountAnalyzerMetaDataManager
+from .chat_member_count_analyzer import ChatMemberCountAnalyzerMetaDataQuerySet
+from .chat_member_count_analyzer_updater import ChatMemberCountAnalyzerMetaDataUpdater
 
 from .chat_members_analyzer import ChatMembersAnalyzerMetaData
 from .chat_members_analyzer import ChatMembersAnalyzerMetaDataManager
@@ -39,6 +42,9 @@ __all__ = [
     "AdminLogAnalyzerMetaDataUpdater",
 
     "ChatMemberCountAnalyzerMetaData",
+    "ChatMemberCountAnalyzerMetaDataQuerySet",
+    "ChatMemberCountAnalyzerMetaDataManager",
+    "ChatMemberCountAnalyzerMetaDataUpdater",
 
     "ChatMembersAnalyzerMetaData",
     "ChatMembersAnalyzerMetaDataManager",
