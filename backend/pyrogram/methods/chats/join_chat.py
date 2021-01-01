@@ -59,7 +59,7 @@ class JoinChat(Scaffold):
                 )
             )
             if isinstance(chat.chats[0], raw.types.Chat):
-                return types.Chat._parse_group_chat(self, chat.chats[0])
+                return await types.Chat._parse_group_chat(self, chat.chats[0])
             elif isinstance(chat.chats[0], raw.types.Channel):
                 return types.Chat._parse_channel_chat(self, chat.chats[0])
         else:

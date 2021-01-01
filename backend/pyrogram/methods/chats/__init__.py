@@ -24,6 +24,7 @@ from .create_supergroup import CreateSupergroup
 from .delete_channel import DeleteChannel
 from .delete_chat_photo import DeleteChatPhoto
 from .delete_supergroup import DeleteSupergroup
+from .delete_user_history import DeleteUserHistory
 from .export_chat_invite_link import ExportChatInviteLink
 from .get_chat import GetChat
 from .get_chat_member import GetChatMember
@@ -48,8 +49,10 @@ from .set_chat_title import SetChatTitle
 from .set_slow_mode import SetSlowMode
 from .unarchive_chats import UnarchiveChats
 from .unban_chat_member import UnbanChatMember
+from .unpin_all_chat_messages import UnpinAllChatMessages
 from .unpin_chat_message import UnpinChatMessage
 from .update_chat_username import UpdateChatUsername
+from .mark_chat_unread import MarkChatUnread
 
 # added
 from .get_admin_log import GetAdminLog
@@ -90,8 +93,12 @@ class Chats(
     GetNearbyChats,
     SetAdministratorTitle,
     SetSlowMode,
+    DeleteUserHistory,
+    UnpinAllChatMessages,
+    MarkChatUnread,
 
     # added
     GetAdminLog,
+
 ):
     pass

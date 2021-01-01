@@ -86,7 +86,7 @@ class GetChatMembers(Scaffold):
         .. [2] A query string is applicable only for *"all"*, *"kicked"* and *"restricted"* filters only.
 
         Returns:
-            List of :obj:`~pyrogram.types.ChatParticipant`: On success, a list of chat members is returned.
+            List of :obj:`~pyrogram.types.ChatMember`: On success, a list of chat members is returned.
 
         Raises:
             ValueError: In case you used an invalid filter or a chat id that belongs to a user.
