@@ -154,7 +154,7 @@ class SaveFile(Scaffold):
                     chunk = fp.read(part_size)
 
                     if not chunk:
-                        if not is_big:
+                        if not is_big and not is_missing_part:
                             md5_sum = "".join([hex(i)[2:].zfill(2) for i in md5_sum.digest()])
                         break
 
@@ -177,22 +177,22 @@ class SaveFile(Scaffold):
                     if is_missing_part:
                         return
 
-                    if not is_big:
+                    if not is_big and not is_missing_part:
                         md5_sum.update(chunk)
 
                     file_part += 1
 
                     if progress:
-                        if inspect.iscoroutinefunction(progress):
-                            await progress(min(file_part * part_size, file_size), file_size, *progress_args)
-                        else:
-                            func = functools.partial(
-                                progress,
-                                min(file_part * part_size, file_size),
-                                file_size,
-                                *progress_args
-                            )
+                        func = functools.partial(
+                            progress,
+                            min(file_part * part_size, file_size),
+                            file_size,
+                            *progress_args
+                        )
 
+                        if inspect.iscoroutinefunction(progress):
+                            await func()
+                        else:
                             await self.loop.run_in_executor(self.executor, func)
         except StopTransmission:
             raise
