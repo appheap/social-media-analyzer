@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from .copy_message import CopyMessage
 from .delete_messages import DeleteMessages
 from .download_media import DownloadMedia
 from .edit_inline_caption import EditInlineCaption
@@ -29,6 +30,7 @@ from .edit_message_text import EditMessageText
 from .forward_messages import ForwardMessages
 from .get_history import GetHistory
 from .get_history_count import GetHistoryCount
+from .get_media_group import GetMediaGroup
 from .get_messages import GetMessages
 from .get_messages_views import GetMessagesViews
 from .get_stickerset import GetStickerSet
@@ -67,6 +69,7 @@ class Messages(
     EditMessageText,
     ForwardMessages,
     GetHistory,
+    GetMediaGroup,
     GetMessages,
     GetMessagesViews,
     GetStickerSet,
@@ -100,6 +103,7 @@ class Messages(
     SendDice,
     GetSearchCounters,
     SearchMessages,
-    SearchGlobal
+    SearchGlobal,
+    CopyMessage
 ):
     pass

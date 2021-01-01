@@ -16,18 +16,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Pyrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Union, Optional
+import logging
+from typing import Union, List, Optional
 
-from pyrogram import raw
 from pyrogram import types
 from pyrogram.scaffold import Scaffold
 
+log = logging.getLogger(__name__)
 
-class SendDice(Scaffold):
-    async def send_dice(
+
+class CopyMessage(Scaffold):
+    async def copy_message(
             self,
             chat_id: Union[int, str],
-            emoji: str = "🎲",
+            from_chat_id: Union[int, str],
+            message_id: int,
+            caption: str = None,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
             schedule_date: int = None,
@@ -37,8 +43,11 @@ class SendDice(Scaffold):
                 "types.ReplyKeyboardRemove",
                 "types.ForceReply"
             ] = None
-    ) -> Optional["types.Message"]:
-        """Send a dice with a random value from 1 to 6.
+    ) -> List["types.Message"]:
+        """Copy messages of any kind.
+
+        The method is analogous to the method :meth:`~Client.forward_messages`, but the copied message doesn't have a
+        link to the original message.
 
         Parameters:
             chat_id (``int`` | ``str``):
@@ -46,9 +55,28 @@ class SendDice(Scaffold):
                 For your personal cloud (Saved Messages) you can simply use "me" or "self".
                 For a contact that exists in your Telegram address book you can use his phone number (str).
 
-            emoji (``str``, *optional*):
-                Emoji on which the dice throw animation is based. Currently, must be one of "🎲",  "🎯", "🏀" or "⚽️".
-                Defaults to "🎲".
+            from_chat_id (``int`` | ``str``):
+                Unique identifier (int) or username (str) of the source chat where the original message was sent.
+                For your personal cloud (Saved Messages) you can simply use "me" or "self".
+                For a contact that exists in your Telegram address book you can use his phone number (str).
+
+            message_id (``int``):
+                Message identifier in the chat specified in *from_chat_id*.
+
+            caption (``string``, *optional*):
+                New caption for media, 0-1024 characters after entities parsing.
+                If not specified, the original caption is kept.
+                Pass "" (empty string) to remove the caption.
+
+            parse_mode (``str``, *optional*):
+                By default, texts are parsed using both Markdown and HTML styles.
+                You can combine both syntaxes together.
+                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "html" to enable HTML-style parsing only.
+                Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the new caption, which can be specified instead of *parse_mode*.
 
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
@@ -65,41 +93,24 @@ class SendDice(Scaffold):
                 instructions to remove reply keyboard or to force a reply from the user.
 
         Returns:
-            :obj:`~pyrogram.types.Message`: On success, the sent dice message is returned.
+            :obj:`~pyrogram.types.Message`: On success, the copied message is returned.
 
         Example:
             .. code-block:: python
 
-                # Send a dice
-                app.send_dice("pyrogramlounge")
+                # Copy a message
+                app.copy_messages("me", "pyrogram", 20)
 
-                # Send a dart
-                app.send_dice("pyrogramlounge", "🎯")
-
-                # Send a basketball
-                app.send_dice("pyrogramlounge", "🏀")
         """
+        message: types.Message = await self.get_messages(from_chat_id, message_id)
 
-        r = await self.send(
-            raw.functions.messages.SendMedia(
-                peer=await self.resolve_peer(chat_id),
-                media=raw.types.InputMediaDice(emoticon=emoji),
-                silent=disable_notification or None,
-                reply_to_msg_id=reply_to_message_id,
-                random_id=self.rnd_id(),
-                schedule_date=schedule_date,
-                reply_markup=reply_markup.write() if reply_markup else None,
-                message=""
-            )
+        return await message.copy(
+            chat_id=chat_id,
+            caption=caption,
+            parse_mode=parse_mode,
+            caption_entities=caption_entities,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            schedule_date=schedule_date,
+            reply_markup=reply_markup
         )
-
-        for i in r.updates:
-            if isinstance(i, (raw.types.UpdateNewMessage,
-                              raw.types.UpdateNewChannelMessage,
-                              raw.types.UpdateNewScheduledMessage)):
-                return await types.Message._parse(
-                    self, i.message,
-                    {i.id: i for i in r.users},
-                    {i.id: i for i in r.chats},
-                    is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage)
-                )
