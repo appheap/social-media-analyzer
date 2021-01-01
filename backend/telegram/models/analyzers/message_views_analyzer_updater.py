@@ -1,12 +1,12 @@
 from django.db import models
 
-from .chat_shared_media_analyzer import SharedMediaAnalyzerMetaData
+from .message_views_analyzer import ChatMessageViewsAnalyzerMetaData
 
 
-class ChatSharedMediaAnalyzerMetaDataUpdater:
+class MessageViewsAnalyzerMetaDataUpdater:
 
     @staticmethod
-    def update_or_create_chat_shared_media_analyzer(
+    def update_or_create_message_views_analyzer(
             model: models.Model,
             field_name: str,
             chat_id: int,
@@ -17,7 +17,7 @@ class ChatSharedMediaAnalyzerMetaDataUpdater:
             return
 
         field = getattr(model, field_name, None)
-        if field and not isinstance(field, SharedMediaAnalyzerMetaData):
+        if field and not isinstance(field, ChatMessageViewsAnalyzerMetaData):
             return
 
         if field:
@@ -36,7 +36,7 @@ class ChatSharedMediaAnalyzerMetaDataUpdater:
                 setattr(
                     model,
                     field_name,
-                    SharedMediaAnalyzerMetaData.objects.update_or_create_analyzer(
+                    ChatMessageViewsAnalyzerMetaData.objects.update_or_create_analyzer(
                         chat_id=chat_id,
                         enabled=enabled
                     )

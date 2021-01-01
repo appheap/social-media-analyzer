@@ -9,6 +9,7 @@ from pyrogram import types
 from ..analyzers import AdminLogAnalyzerMetaDataUpdater
 from ..analyzers import ChatMembersAnalyzerMetaDataUpdater
 from ..analyzers import ChatSharedMediaAnalyzerMetaDataUpdater
+from ..analyzers import MessageViewsAnalyzerMetaDataUpdater
 
 
 class ChatTypes(models.TextChoices):
@@ -165,6 +166,7 @@ class Chat(
     AdminLogAnalyzerMetaDataUpdater,
     ChatMembersAnalyzerMetaDataUpdater,
     ChatSharedMediaAnalyzerMetaDataUpdater,
+    MessageViewsAnalyzerMetaDataUpdater,
 ):
     chat_id = models.BigIntegerField(primary_key=True)  # fixme: what about private/bot chats?
     type = models.CharField(
