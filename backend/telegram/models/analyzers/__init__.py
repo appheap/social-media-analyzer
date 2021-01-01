@@ -4,7 +4,12 @@ from .admin_log_analyzer import AdminLogAnalyzerMetaDataManager
 from .admin_log_analyzer_updater import AdminLogAnalyzerMetaDataUpdater
 
 from .chat_member_count_analyzer import ChatMemberCountAnalyzerMetaData
+
 from .chat_members_analyzer import ChatMembersAnalyzerMetaData
+from .chat_members_analyzer import ChatMembersAnalyzerMetaDataManager
+from .chat_members_analyzer import ChatMembersAnalyzerMetaDataQuerySet
+from .chat_members_analyzer_updater import ChatMembersAnalyzerMetaDataUpdater
+
 from .chat_shared_media_analyzer import SharedMediaAnalyzerMetaData
 from .message_views_analyzer import ChatMessageViewsAnalyzerMetaData
 
@@ -27,7 +32,12 @@ __all__ = [
     "AdminLogAnalyzerMetaDataUpdater",
 
     "ChatMemberCountAnalyzerMetaData",
+
     "ChatMembersAnalyzerMetaData",
+    "ChatMembersAnalyzerMetaDataManager",
+    "ChatMembersAnalyzerMetaDataQuerySet",
+    "ChatMembersAnalyzerMetaDataUpdater",
+
     "SharedMediaAnalyzerMetaData",
     "ChatMessageViewsAnalyzerMetaData",
 
