@@ -10,15 +10,15 @@ class GeoPoint(Object):
             *,
             client: "pyrogram.Client" = None,
 
-            long: float = None,
-            lat: float = None,
+            longitude: float = None,
+            latitude: float = None,
             access_hash: int = None,
             accuracy_radius: int = None,
     ):
         super().__init__(client)
 
-        self.long = long
-        self.lat = lat
+        self.longitude = longitude
+        self.latitude = latitude
         self.access_hash = access_hash
         self.accuracy_radius = accuracy_radius
 
@@ -33,8 +33,8 @@ class GeoPoint(Object):
             return GeoPoint(
                 client=client,
 
-                long=getattr(geo_point, 'long', None),
-                lat=getattr(geo_point, 'lat', None),
+                longitude=getattr(geo_point, 'long', None),
+                latitude=getattr(geo_point, 'lat', None),
                 access_hash=getattr(geo_point, 'access_hash', None),
                 accuracy_radius=getattr(geo_point, 'accuracy_radius', None),
             )
