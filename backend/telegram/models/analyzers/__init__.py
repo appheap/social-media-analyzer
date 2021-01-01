@@ -11,6 +11,10 @@ from .chat_members_analyzer import ChatMembersAnalyzerMetaDataQuerySet
 from .chat_members_analyzer_updater import ChatMembersAnalyzerMetaDataUpdater
 
 from .chat_shared_media_analyzer import SharedMediaAnalyzerMetaData
+from .chat_shared_media_analyzer import SharedMediaAnalyzerMetaDataManager
+from .chat_shared_media_analyzer import SharedMediaAnalyzerMetaDataQuerySet
+from .chat_shared_media_analyzer_updater import ChatSharedMediaAnalyzerMetaDataUpdater
+
 from .message_views_analyzer import ChatMessageViewsAnalyzerMetaData
 
 from .chat_member_count import ChatMemberCount
@@ -39,6 +43,10 @@ __all__ = [
     "ChatMembersAnalyzerMetaDataUpdater",
 
     "SharedMediaAnalyzerMetaData",
+    "SharedMediaAnalyzerMetaDataQuerySet",
+    "SharedMediaAnalyzerMetaDataManager",
+    "ChatSharedMediaAnalyzerMetaDataUpdater",
+
     "ChatMessageViewsAnalyzerMetaData",
 
     "ChatMemberCount",
