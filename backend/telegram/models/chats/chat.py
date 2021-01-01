@@ -7,6 +7,7 @@ from telegram.globals import logger
 from telegram import models as tg_models
 from pyrogram import types
 from ..analyzers import AdminLogAnalyzerMetaDataUpdater
+from ..analyzers import ChatMembersAnalyzerMetaDataUpdater
 
 
 class ChatTypes(models.TextChoices):
@@ -157,7 +158,12 @@ class SupergroupsManger(BaseChatManager):
         return False
 
 
-class Chat(BaseModel, SoftDeletableBaseModel, AdminLogAnalyzerMetaDataUpdater):
+class Chat(
+    BaseModel,
+    SoftDeletableBaseModel,
+    AdminLogAnalyzerMetaDataUpdater,
+    ChatMembersAnalyzerMetaDataUpdater
+):
     chat_id = models.BigIntegerField(primary_key=True)  # fixme: what about private/bot chats?
     type = models.CharField(
         ChatTypes.choices,
