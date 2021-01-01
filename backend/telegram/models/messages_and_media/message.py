@@ -157,12 +157,12 @@ class MessageManager(models.Manager):
         if db_message and raw_message:
             db_message.update_or_create_chat_from_raw(
                 model=db_message,
-                field_name='from_chat',
+                field_name='sender_chat',
                 raw_chat=raw_message.content.from_chat
             )
             db_message.update_or_create_user_from_raw(
                 model=db_message,
-                field_name='from_user',
+                field_name='user',
                 raw_user=raw_message.content.from_user
             )
             if raw_message.content.forward_header:
@@ -213,8 +213,8 @@ class MessageManager(models.Manager):
             return {}
 
         r = {
-            'id': f"{chat_id}:{raw_message.id}:{getattr(raw_message.content, 'edit_date', 0)}",
-            'message_id': raw_message.id,
+            'id': f"{chat_id}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}",
+            'message_id': raw_message.message_id,
             'date_ts': raw_message.date,
             'type': MessageTypes.message,
             "edit_date_ts": content.edit_date,
@@ -279,14 +279,14 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
     from_scheduled = models.BooleanField(null=True, blank=True)
     edit_hide = models.BooleanField(null=True, blank=True)
     media_group_id = models.BigIntegerField(null=True, blank=True)
-    from_chat = models.ForeignKey(
+    sender_chat = models.ForeignKey(
         'telegram.Chat',
         related_name='sent_messages',
         null=True, blank=True,
         on_delete=models.CASCADE,
     )
     # Sender, null for messages sent to channels or sender user got deleted
-    from_user = models.ForeignKey(
+    user = models.ForeignKey(
         'telegram.User',
         related_name='sent_messages',
         null=True, blank=True,
