@@ -1,4 +1,6 @@
 from .admin_log_analyzer import AdminLogAnalyzerMetaData
+from .admin_log_analyzer import AdminLogAnalyzerMetaDataQuerySet
+from .admin_log_analyzer import AdminLogAnalyzerMetaDataManager
 from .admin_log_analyzer_updater import AdminLogAnalyzerMetaDataUpdater
 
 from .chat_member_count_analyzer import ChatMemberCountAnalyzerMetaData
@@ -20,6 +22,8 @@ from .message_views import MessageViewManager
 
 __all__ = [
     "AdminLogAnalyzerMetaData",
+    "AdminLogAnalyzerMetaDataManager",
+    "AdminLogAnalyzerMetaDataQuerySet",
     "AdminLogAnalyzerMetaDataUpdater",
 
     "ChatMemberCountAnalyzerMetaData",
