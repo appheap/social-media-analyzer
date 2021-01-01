@@ -155,21 +155,10 @@ class Chat(Object):
         )
 
     @staticmethod
-    async def _parse(client, message: raw.types.Message or raw.types.MessageService, users: dict,
+    async def _parse(client, message: Union[raw.types.Message, raw.types.MessageService], users: dict,
                      chats: dict) -> "Chat":
         if isinstance(message.peer_id, raw.types.PeerUser):
-            if message.out:
-                _peer_id = message.peer_id.user_id
-            else:
-                if message.from_id:
-                    _peer_id = message.from_id.user_id
-                else:
-                    if users[message.peer_id.user_id].is_self:
-                        _peer_id = message.peer_id.user_id
-                    else:
-                        _peer_id = None
-            return Chat._parse_user_chat(client,
-                                         users[_peer_id])
+            return Chat._parse_user_chat(client, users[message.peer_id.user_id])
 
         if isinstance(message.peer_id, raw.types.PeerChat):
             return await Chat._parse_group_chat(client, chats[message.peer_id.chat_id])

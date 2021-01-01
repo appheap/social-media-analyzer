@@ -18,16 +18,15 @@
 
 import logging
 from functools import partial
-from typing import List, Match, Union, BinaryIO
+from typing import List, Match, Union, BinaryIO, Optional
 
 import pyrogram
 from pyrogram import raw
 from pyrogram import types
 from pyrogram import utils
-from pyrogram.errors import MessageIdsEmpty
 from pyrogram.parser import utils as parser_utils, Parser
-from ..object import Object
 from pyrogram.types.update import Update
+from ..object import Object
 
 log = logging.getLogger(__name__)
 
@@ -265,14 +264,12 @@ class Message(Object, Update):
             Generate a link to this message, only for groups and channels.
     """
 
-    # TODO: Add game missing field. Also invoice, successful_payment, connected_website
-
     def __init__(
             self,
             *,
             client: "pyrogram.Client" = None,
 
-            id: int,
+            message_id: int,
             date: int = None,
             chat: "types.Chat" = None,
             type: str = None,  # `service` | `empty` | `message`
@@ -280,16 +277,16 @@ class Message(Object, Update):
 
             matches: List[Match] = None,
             command: List[str] = None,
-            reply_markup: Union[
-                "types.InlineKeyboardMarkup",
-                "types.ReplyKeyboardMarkup",
-                "types.ReplyKeyboardRemove",
-                "types.ForceReply"
-            ] = None
+            # reply_markup: Union[
+            #     "types.InlineKeyboardMarkup",
+            #     "types.ReplyKeyboardMarkup",
+            #     "types.ReplyKeyboardRemove",
+            #     "types.ForceReply"
+            # ] = None
     ):
         super().__init__(client)
 
-        self.id = id
+        self.message_id = message_id
         self.date = date
         self.chat = chat
         self.type = type
@@ -297,7 +294,7 @@ class Message(Object, Update):
 
         self.matches = matches
         self.command = command
-        self.reply_markup = reply_markup
+        # self.reply_markup = reply_markup
 
     @staticmethod
     async def _parse(
@@ -312,14 +309,14 @@ class Message(Object, Update):
             return Message(
                 client=client,
 
-                id=message.id,
+                message_id=message.id,
                 type='empty',
             )
 
         if isinstance(message, raw.types.MessageService):
             content = await types.MessageService._parse(client, message, users, chats)
             return Message(
-                id=message.id,
+                message_id=message.id,
                 date=message.date,
                 type='service',
                 chat=await types.Chat._parse(client, message, users, chats),
@@ -329,7 +326,7 @@ class Message(Object, Update):
         if isinstance(message, raw.types.Message):
             content = await types.MessageNormal._parse(client, message, users, chats)
             return Message(
-                id=message.id,
+                message_id=message.id,
                 date=message.date,
                 type='message',
                 chat=await types.Chat._parse(client, message, users, chats),
@@ -344,6 +341,110 @@ class Message(Object, Update):
             return None
 
     @property
+    def media(self):
+        if self.type == 'message':
+            return self.content.media
+        else:
+            return None
+
+    @property
+    def text(self):
+        if self.type == 'message':
+            return self.content.text
+        else:
+            return None
+
+    @property
+    def outgoing(self):
+        return self.content.is_outgoing if self.content else None
+
+    @property
+    def empty(self):
+        return self.type == 'empty'
+
+    @property
+    def service(self):
+        return self.type == 'service'
+
+    @property
+    def photo(self):
+        return self.media if self.media_type == 'photo' else None
+
+    @property
+    def audio(self):
+        return self.media if self.media_type == 'audio' else None
+
+    @property
+    def document(self):
+        return self.media if self.media_type == 'document' else None
+
+    @property
+    def video(self):
+        return self.media if self.media_type == 'video' else None
+
+    @property
+    def animation(self):
+        return self.media if self.media_type == 'animation' else None
+
+    @property
+    def voice(self):
+        return self.media if self.media_type == 'voice' else None
+
+    @property
+    def sticker(self):
+        return self.media if self.media_type == 'sticker' else None
+
+    @property
+    def video_note(self):
+        return self.media if self.media_type == 'video_note' else None
+
+    @property
+    def contact(self):
+        return self.media if self.media_type == 'contact' else None
+
+    @property
+    def location(self):
+        return self.media if self.media_type == 'location' else None
+
+    @property
+    def venue(self):
+        return self.media if self.media_type == 'venue' else None
+
+    @property
+    def poll(self):
+        return self.media if self.media_type == 'poll' else None
+
+    @property
+    def game(self):
+        return self.media if self.media_type == 'game' else None
+
+    @property
+    def web_page(self):
+        return self.media if self.media_type == 'webpage' else None
+
+    @property
+    def entities(self):
+        return self.content.entities if self.type == 'message' else None
+
+    @property
+    def caption(self):
+        if self.media:
+            return self.text
+        else:
+            return None
+
+    @property
+    def caption_entities(self):
+        if self.media:
+            return self.entities
+        else:
+            return None
+
+    @property
+    def reply_markup(self):
+        return self.content.reply_markup if self.content else None
+
+    @property
     def link(self) -> str:
         if self.chat.type in ("group", "supergroup", "channel") and self.chat.username:
             return f"https://t.me/{self.chat.username}/{self.message_id}"
@@ -354,7 +455,8 @@ class Message(Object, Update):
             self,
             text: str,
             quote: bool = None,
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            entities: List["types.MessageEntity"] = None,
             disable_web_page_preview: bool = None,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
@@ -393,6 +495,9 @@ class Message(Object, Update):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
+            entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in message text, which can be specified instead of *parse_mode*.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
 
@@ -423,6 +528,7 @@ class Message(Object, Update):
             chat_id=self.chat.id,
             text=text,
             parse_mode=parse_mode,
+            entities=entities,
             disable_web_page_preview=disable_web_page_preview,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
@@ -434,10 +540,10 @@ class Message(Object, Update):
     async def reply_animation(
             self,
             animation: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             duration: int = 0,
             width: int = 0,
             height: int = 0,
@@ -476,10 +582,6 @@ class Message(Object, Update):
                 pass an HTTP URL as a string for Telegram to get an animation from the Internet, or
                 pass a file path as string to upload a new animation that exists on your local machine.
 
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
-
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -494,6 +596,9 @@ class Message(Object, Update):
                 Pass "markdown" or "md" to enable Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
             duration (``int``, *optional*):
                 Duration of sent animation in seconds.
@@ -560,9 +665,9 @@ class Message(Object, Update):
         return await self._client.send_animation(
             chat_id=self.chat.id,
             animation=animation,
-            file_ref=file_ref,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
             duration=duration,
             width=width,
             height=height,
@@ -577,10 +682,10 @@ class Message(Object, Update):
     async def reply_audio(
             self,
             audio: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             duration: int = 0,
             performer: str = None,
             title: str = None,
@@ -619,10 +724,6 @@ class Message(Object, Update):
                 pass an HTTP URL as a string for Telegram to get an audio file from the Internet, or
                 pass a file path as string to upload a new audio file that exists on your local machine.
 
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
-
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -637,6 +738,9 @@ class Message(Object, Update):
                 Pass "markdown" or "md" to enable Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
             duration (``int``, *optional*):
                 Duration of the audio in seconds.
@@ -703,9 +807,9 @@ class Message(Object, Update):
         return await self._client.send_audio(
             chat_id=self.chat.id,
             audio=audio,
-            file_ref=file_ref,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
             duration=duration,
             performer=performer,
             title=title,
@@ -720,10 +824,10 @@ class Message(Object, Update):
     async def reply_cached_media(
             self,
             file_id: str,
-            file_ref: str = None,
             quote: bool = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
             reply_markup: Union[
@@ -754,10 +858,6 @@ class Message(Object, Update):
                 Media to send.
                 Pass a file_id as string to send a media that exists on the Telegram servers.
 
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
-
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -772,6 +872,9 @@ class Message(Object, Update):
                 Pass "markdown" or "md" to enable Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
@@ -794,14 +897,14 @@ class Message(Object, Update):
             quote = self.chat.type != "private"
 
         if reply_to_message_id is None and quote:
-            reply_to_message_id = self.id
+            reply_to_message_id = self.message_id
 
         return await self._client.send_cached_media(
             chat_id=self.chat.id,
             file_id=file_id,
-            file_ref=file_ref,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
             reply_markup=reply_markup
@@ -917,7 +1020,7 @@ class Message(Object, Update):
             quote = self.chat.type != "private"
 
         if reply_to_message_id is None and quote:
-            reply_to_message_id = self.id
+            reply_to_message_id = self.message_id
 
         return await self._client.send_contact(
             chat_id=self.chat.id,
@@ -933,11 +1036,11 @@ class Message(Object, Update):
     async def reply_document(
             self,
             document: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             thumb: str = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
             reply_markup: Union[
@@ -972,10 +1075,6 @@ class Message(Object, Update):
                 pass an HTTP URL as a string for Telegram to get a file from the Internet, or
                 pass a file path as string to upload a new file that exists on your local machine.
 
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
-
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -996,6 +1095,9 @@ class Message(Object, Update):
                 Pass "markdown" or "md" to enable Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
@@ -1047,10 +1149,10 @@ class Message(Object, Update):
         return await self._client.send_document(
             chat_id=self.chat.id,
             document=document,
-            file_ref=file_ref,
             thumb=thumb,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
             reply_markup=reply_markup,
@@ -1335,10 +1437,10 @@ class Message(Object, Update):
     async def reply_photo(
             self,
             photo: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             ttl_seconds: int = None,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
@@ -1374,10 +1476,6 @@ class Message(Object, Update):
                 pass an HTTP URL as a string for Telegram to get a photo from the Internet, or
                 pass a file path as string to upload a new photo that exists on your local machine.
 
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
-
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -1392,6 +1490,9 @@ class Message(Object, Update):
                 Pass "markdown" or "md" to enable Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
             ttl_seconds (``int``, *optional*):
                 Self-Destruct Timer.
@@ -1448,9 +1549,9 @@ class Message(Object, Update):
         return await self._client.send_photo(
             chat_id=self.chat.id,
             photo=photo,
-            file_ref=file_ref,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
             ttl_seconds=ttl_seconds,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
@@ -1464,8 +1565,13 @@ class Message(Object, Update):
             question: str,
             options: List[str],
             quote: bool = None,
+            is_anonymous: bool = True,
+            allows_multiple_answers: bool = None,
+            type: str = "regular",
+            correct_option_id: int = None,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
+            schedule_date: int = None,
             reply_markup: Union[
                 "types.InlineKeyboardMarkup",
                 "types.ReplyKeyboardMarkup",
@@ -1502,12 +1608,31 @@ class Message(Object, Update):
                 If *reply_to_message_id* is passed, this parameter will be ignored.
                 Defaults to ``True`` in group chats and ``False`` in private chats.
 
+            is_anonymous (``bool``, *optional*):
+                True, if the poll needs to be anonymous.
+                Defaults to True.
+
+            type (``str``, *optional*):
+                Poll type, "quiz" or "regular".
+                Defaults to "regular"
+
+            allows_multiple_answers (``bool``, *optional*):
+                True, if the poll allows multiple answers, ignored for polls in quiz mode.
+                Defaults to False
+
+            correct_option_id (``int``, *optional*):
+                0-based identifier of the correct answer option (the index of the correct option)
+                Required for polls in quiz mode.
+
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
                 Users will receive a notification with no sound.
 
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
+
+            schedule_date (``int``, *optional*):
+                Date when the message will be automatically sent. Unix time.
 
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardRemove` | :obj:`~pyrogram.types.ForceReply`, *optional*):
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
@@ -1529,15 +1654,19 @@ class Message(Object, Update):
             chat_id=self.chat.id,
             question=question,
             options=options,
+            is_anonymous=is_anonymous,
+            allows_multiple_answers=allows_multiple_answers,
+            type=type,
+            correct_option_id=correct_option_id,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
+            schedule_date=schedule_date,
             reply_markup=reply_markup
         )
 
     async def reply_sticker(
             self,
             sticker: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
@@ -1572,10 +1701,6 @@ class Message(Object, Update):
                 Pass a file_id as string to send a sticker that exists on the Telegram servers,
                 pass an HTTP URL as a string for Telegram to get a .webp sticker file from the Internet, or
                 pass a file path as string to upload a new sticker that exists on your local machine.
-
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
 
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
@@ -1632,7 +1757,6 @@ class Message(Object, Update):
         return await self._client.send_sticker(
             chat_id=self.chat.id,
             sticker=sticker,
-            file_ref=file_ref,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
             reply_markup=reply_markup,
@@ -1741,10 +1865,11 @@ class Message(Object, Update):
     async def reply_video(
             self,
             video: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
+            ttl_seconds: int = None,
             duration: int = 0,
             width: int = 0,
             height: int = 0,
@@ -1784,10 +1909,6 @@ class Message(Object, Update):
                 pass an HTTP URL as a string for Telegram to get a video from the Internet, or
                 pass a file path as string to upload a new video that exists on your local machine.
 
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
-
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -1802,6 +1923,14 @@ class Message(Object, Update):
                 Pass "markdown" or "md" to enable Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
+
+            ttl_seconds (``int``, *optional*):
+                Self-Destruct Timer.
+                If you set a timer, the video will self-destruct in *ttl_seconds*
+                seconds after it was viewed.
 
             duration (``int``, *optional*):
                 Duration of sent video in seconds.
@@ -1871,9 +2000,10 @@ class Message(Object, Update):
         return await self._client.send_video(
             chat_id=self.chat.id,
             video=video,
-            file_ref=file_ref,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
+            ttl_seconds=ttl_seconds,
             duration=duration,
             width=width,
             height=height,
@@ -1889,7 +2019,6 @@ class Message(Object, Update):
     async def reply_video_note(
             self,
             video_note: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             duration: int = 0,
             length: int = 1,
@@ -1927,10 +2056,6 @@ class Message(Object, Update):
                 Pass a file_id as string to send a video note that exists on the Telegram servers, or
                 pass a file path as string to upload a new video note that exists on your local machine.
                 Sending video notes by a URL is currently unsupported.
-
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
 
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
@@ -1999,7 +2124,6 @@ class Message(Object, Update):
         return await self._client.send_video_note(
             chat_id=self.chat.id,
             video_note=video_note,
-            file_ref=file_ref,
             duration=duration,
             length=length,
             thumb=thumb,
@@ -2013,10 +2137,10 @@ class Message(Object, Update):
     async def reply_voice(
             self,
             voice: Union[str, BinaryIO],
-            file_ref: str = None,
             quote: bool = None,
             caption: str = "",
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             duration: int = 0,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
@@ -2052,10 +2176,6 @@ class Message(Object, Update):
                 pass an HTTP URL as a string for Telegram to get an audio from the Internet, or
                 pass a file path as string to upload a new audio that exists on your local machine.
 
-            file_ref (``str``, *optional*):
-                A valid file reference obtained by a recently fetched media message.
-                To be used in combination with a file id in case a file reference is needed.
-
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -2070,6 +2190,9 @@ class Message(Object, Update):
                 Pass "markdown" or "md" to enable Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
             duration (``int``, *optional*):
                 Duration of the voice message in seconds.
@@ -2124,9 +2247,9 @@ class Message(Object, Update):
         return await self._client.send_voice(
             chat_id=self.chat.id,
             voice=voice,
-            file_ref=file_ref,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
             duration=duration,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
@@ -2138,7 +2261,8 @@ class Message(Object, Update):
     async def edit_text(
             self,
             text: str,
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            entities: List["types.MessageEntity"] = None,
             disable_web_page_preview: bool = None,
             reply_markup: "types.InlineKeyboardMarkup" = None
     ) -> "Message":
@@ -2170,6 +2294,9 @@ class Message(Object, Update):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
+            entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in message text, which can be specified instead of *parse_mode*.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
 
@@ -2187,6 +2314,7 @@ class Message(Object, Update):
             message_id=self.message_id,
             text=text,
             parse_mode=parse_mode,
+            entities=entities,
             disable_web_page_preview=disable_web_page_preview,
             reply_markup=reply_markup
         )
@@ -2196,7 +2324,8 @@ class Message(Object, Update):
     async def edit_caption(
             self,
             caption: str,
-            parse_mode: Union[str, None] = object,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
             reply_markup: "types.InlineKeyboardMarkup" = None
     ) -> "Message":
         """Bound method *edit_caption* of :obj:`~pyrogram.types.Message`.
@@ -2227,6 +2356,9 @@ class Message(Object, Update):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
+
             reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
 
@@ -2241,6 +2373,7 @@ class Message(Object, Update):
             message_id=self.message_id,
             caption=caption,
             parse_mode=parse_mode,
+            caption_entities=caption_entities,
             reply_markup=reply_markup
         )
 
@@ -2323,10 +2456,8 @@ class Message(Object, Update):
 
     async def forward(
             self,
-            chat_id: int or str,
+            chat_id: Union[int, str],
             disable_notification: bool = None,
-            as_copy: bool = False,
-            remove_caption: bool = False,
             schedule_date: int = None
     ) -> Union["types.Message", List["types.Message"]]:
         """Bound method *forward* of :obj:`~pyrogram.types.Message`.
@@ -2356,15 +2487,6 @@ class Message(Object, Update):
                 Sends the message silently.
                 Users will receive a notification with no sound.
 
-            as_copy (``bool``, *optional*):
-                Pass True to forward messages without the forward header (i.e.: send a copy of the message content).
-                Defaults to False.
-
-            remove_caption (``bool``, *optional*):
-                If set to True and *as_copy* is enabled as well, media captions are not preserved when copying the
-                message. Has no effect if *as_copy* is not enabled.
-                Defaults to False.
-
             schedule_date (``int``, *optional*):
                 Date when the message will be automatically sent. Unix time.
 
@@ -2374,117 +2496,193 @@ class Message(Object, Update):
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
-        if as_copy:
-            if self.service:
-                log.warning(f"Service messages cannot be copied. "
-                            f"chat_id: {self.chat.id}, message_id: {self.message_id}")
-            elif self.game and not await self._client.storage.is_bot():
-                log.warning(f"Users cannot send messages with Game media type. "
-                            f"chat_id: {self.chat.id}, message_id: {self.message_id}")
-            elif self.text:
-                return await self._client.send_message(
-                    chat_id,
-                    text=self.text.html,
-                    parse_mode="html",
-                    disable_web_page_preview=not self.web_page,
-                    disable_notification=disable_notification,
-                    schedule_date=schedule_date
-                )
-            elif self.media:
-                caption = self.caption.html if self.caption and not remove_caption else ""
+        return await self._client.forward_messages(
+            chat_id=chat_id,
+            from_chat_id=self.chat.id,
+            message_ids=self.message_id,
+            disable_notification=disable_notification,
+            schedule_date=schedule_date
+        )
 
-                send_media = partial(
-                    self._client.send_cached_media,
-                    chat_id=chat_id,
-                    disable_notification=disable_notification,
-                    schedule_date=schedule_date
-                )
+    async def copy(
+            self,
+            chat_id: Union[int, str],
+            caption: str = None,
+            parse_mode: Optional[str] = object,
+            caption_entities: List["types.MessageEntity"] = None,
+            disable_notification: bool = None,
+            reply_to_message_id: int = None,
+            schedule_date: int = None,
+            reply_markup: Union[
+                "types.InlineKeyboardMarkup",
+                "types.ReplyKeyboardMarkup",
+                "types.ReplyKeyboardRemove",
+                "types.ForceReply"
+            ] = None
+    ) -> Union["types.Message", List["types.Message"]]:
+        """Bound method *copy* of :obj:`~pyrogram.types.Message`.
 
-                if self.photo:
-                    file_id = self.photo.file_id
-                    file_ref = self.photo.file_ref
-                elif self.audio:
-                    file_id = self.audio.file_id
-                    file_ref = self.audio.file_ref
-                elif self.document:
-                    file_id = self.document.file_id
-                    file_ref = self.document.file_ref
-                elif self.video:
-                    file_id = self.video.file_id
-                    file_ref = self.video.file_ref
-                elif self.animation:
-                    file_id = self.animation.file_id
-                    file_ref = self.animation.file_ref
-                elif self.voice:
-                    file_id = self.voice.file_id
-                    file_ref = self.voice.file_ref
-                elif self.sticker:
-                    file_id = self.sticker.file_id
-                    file_ref = self.sticker.file_ref
-                elif self.video_note:
-                    file_id = self.video_note.file_id
-                    file_ref = self.video_note.file_ref
-                elif self.contact:
-                    return await self._client.send_contact(
-                        chat_id,
-                        phone_number=self.contact.phone_number,
-                        first_name=self.contact.first_name,
-                        last_name=self.contact.last_name,
-                        vcard=self.contact.vcard,
-                        disable_notification=disable_notification,
-                        schedule_date=schedule_date
-                    )
-                elif self.location:
-                    return await self._client.send_location(
-                        chat_id,
-                        latitude=self.location.latitude,
-                        longitude=self.location.longitude,
-                        disable_notification=disable_notification,
-                        schedule_date=schedule_date
-                    )
-                elif self.venue:
-                    return await self._client.send_venue(
-                        chat_id,
-                        latitude=self.venue.location.latitude,
-                        longitude=self.venue.location.longitude,
-                        title=self.venue.title,
-                        address=self.venue.address,
-                        foursquare_id=self.venue.foursquare_id,
-                        foursquare_type=self.venue.foursquare_type,
-                        disable_notification=disable_notification,
-                        schedule_date=schedule_date
-                    )
-                elif self.poll:
-                    return await self._client.send_poll(
-                        chat_id,
-                        question=self.poll.question,
-                        options=[opt.text for opt in self.poll.options],
-                        disable_notification=disable_notification,
-                        schedule_date=schedule_date
-                    )
-                elif self.game:
-                    return await self._client.send_game(
-                        chat_id,
-                        game_short_name=self.game.short_name,
-                        disable_notification=disable_notification
-                    )
-                else:
-                    raise ValueError("Unknown media type")
+        Use as a shortcut for:
 
-                if self.sticker or self.video_note:  # Sticker and VideoNote should have no caption
-                    return await send_media(file_id=file_id, file_ref=file_ref)
-                else:
-                    return await send_media(file_id=file_id, file_ref=file_ref, caption=caption, parse_mode="html")
-            else:
-                raise ValueError("Can't copy this message")
-        else:
-            return await self._client.forward_messages(
+        .. code-block:: python
+
+            client.copy_message(
                 chat_id=chat_id,
-                from_chat_id=self.chat.id,
-                message_ids=self.message_id,
-                disable_notification=disable_notification,
-                schedule_date=schedule_date
+                from_chat_id=message.chat.id,
+                message_ids=message.message_id
             )
+
+        Example:
+            .. code-block:: python
+
+                message.copy(chat_id)
+
+        Parameters:
+            chat_id (``int`` | ``str``):
+                Unique identifier (int) or username (str) of the target chat.
+                For your personal cloud (Saved Messages) you can simply use "me" or "self".
+                For a contact that exists in your Telegram address book you can use his phone number (str).
+
+            caption (``string``, *optional*):
+                New caption for media, 0-1024 characters after entities parsing.
+                If not specified, the original caption is kept.
+                Pass "" (empty string) to remove the caption.
+
+            parse_mode (``str``, *optional*):
+                By default, texts are parsed using both Markdown and HTML styles.
+                You can combine both syntaxes together.
+                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "html" to enable HTML-style parsing only.
+                Pass None to completely disable style parsing.
+
+            caption_entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in the new caption, which can be specified instead of *parse_mode*.
+
+            disable_notification (``bool``, *optional*):
+                Sends the message silently.
+                Users will receive a notification with no sound.
+
+            reply_to_message_id (``int``, *optional*):
+                If the message is a reply, ID of the original message.
+
+            schedule_date (``int``, *optional*):
+                Date when the message will be automatically sent. Unix time.
+
+            reply_markup (:obj:`~pyrogram.types.InlineKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardMarkup` | :obj:`~pyrogram.types.ReplyKeyboardRemove` | :obj:`~pyrogram.types.ForceReply`, *optional*):
+                Additional interface options. An object for an inline keyboard, custom reply keyboard,
+                instructions to remove reply keyboard or to force a reply from the user.
+
+        Returns:
+            :obj:`~pyrogram.types.Message`: On success, the copied message is returned.
+
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+        """
+        if self.service:
+            log.warning(f"Service messages cannot be copied. "
+                        f"chat_id: {self.chat.id}, message_id: {self.message_id}")
+        elif self.game and not await self._client.storage.is_bot():
+            log.warning(f"Users cannot send messages with Game media type. "
+                        f"chat_id: {self.chat.id}, message_id: {self.message_id}")
+        elif self.text:
+            return await self._client.send_message(
+                chat_id,
+                text=self.text,
+                entities=self.entities,
+                disable_web_page_preview=not self.web_page,
+                disable_notification=disable_notification,
+                reply_to_message_id=reply_to_message_id,
+                schedule_date=schedule_date,
+                reply_markup=self.reply_markup or reply_markup
+            )
+        elif self.media:
+            send_media = partial(
+                self._client.send_cached_media,
+                chat_id=chat_id,
+                disable_notification=disable_notification,
+                reply_to_message_id=reply_to_message_id,
+                schedule_date=schedule_date,
+                reply_markup=self.reply_markup or reply_markup
+            )
+
+            if self.photo:
+                file_id = self.photo.file_id
+            elif self.audio:
+                file_id = self.audio.file_id
+            elif self.document:
+                file_id = self.document.file_id
+            elif self.video:
+                file_id = self.video.file_id
+            elif self.animation:
+                file_id = self.animation.file_id
+            elif self.voice:
+                file_id = self.voice.file_id
+            elif self.sticker:
+                file_id = self.sticker.file_id
+            elif self.video_note:
+                file_id = self.video_note.file_id
+            elif self.contact:
+                return await self._client.send_contact(
+                    chat_id,
+                    phone_number=self.contact.phone_number,
+                    first_name=self.contact.first_name,
+                    last_name=self.contact.last_name,
+                    vcard=self.contact.vcard,
+                    disable_notification=disable_notification,
+                    schedule_date=schedule_date
+                )
+            elif self.location:
+                return await self._client.send_location(
+                    chat_id,
+                    latitude=self.location.latitude,
+                    longitude=self.location.longitude,
+                    disable_notification=disable_notification,
+                    schedule_date=schedule_date
+                )
+            elif self.venue:
+                return await self._client.send_venue(
+                    chat_id,
+                    latitude=self.venue.location.latitude,
+                    longitude=self.venue.location.longitude,
+                    title=self.venue.title,
+                    address=self.venue.address,
+                    foursquare_id=self.venue.foursquare_id,
+                    foursquare_type=self.venue.foursquare_type,
+                    disable_notification=disable_notification,
+                    schedule_date=schedule_date
+                )
+            elif self.poll:
+                return await self._client.send_poll(
+                    chat_id,
+                    question=self.poll.question,
+                    options=[opt.text for opt in self.poll.options],
+                    disable_notification=disable_notification,
+                    schedule_date=schedule_date
+                )
+            elif self.game:
+                return await self._client.send_game(
+                    chat_id,
+                    game_short_name=self.game.short_name,
+                    disable_notification=disable_notification
+                )
+            else:
+                raise ValueError("Unknown media type")
+
+            if self.sticker or self.video_note:  # Sticker and VideoNote should have no caption
+                return await send_media(file_id=file_id)
+            else:
+                if caption is None:
+                    caption = self.caption or ""
+                    caption_entities = self.caption_entities
+
+                return await send_media(
+                    file_id=file_id,
+                    caption=caption,
+                    parse_mode=parse_mode,
+                    caption_entities=caption_entities
+                )
+        else:
+            raise ValueError("Can't copy this message")
 
     async def delete(self, revoke: bool = True):
         """Bound method *delete* of :obj:`~pyrogram.types.Message`.
@@ -2522,7 +2720,7 @@ class Message(Object, Update):
             revoke=revoke
         )
 
-    async def click(self, x: int or str = 0, y: int = None, quote: bool = None, timeout: int = 10):
+    async def click(self, x: Union[int, str] = 0, y: int = None, quote: bool = None, timeout: int = 10):
         """Bound method *click* of :obj:`~pyrogram.types.Message`.
 
         Use as a shortcut for clicking a button attached to the message instead of:
@@ -2780,7 +2978,7 @@ class Message(Object, Update):
             options=option
         )
 
-    async def pin(self, disable_notification: bool = None) -> bool:
+    async def pin(self, disable_notification: bool = False, both_sides: bool = False) -> bool:
         """Bound method *pin* of :obj:`~pyrogram.types.Message`.
 
         Use as a shortcut for:
@@ -2802,6 +3000,10 @@ class Message(Object, Update):
                 Pass True, if it is not necessary to send a notification to all chat members about the new pinned
                 message. Notifications are always disabled in channels.
 
+            both_sides (``bool``, *optional*):
+                Pass True to pin the message for both sides (you and recipient).
+                Applicable to private chats only. Defaults to False.
+
         Returns:
             True on success.
 
@@ -2811,5 +3013,34 @@ class Message(Object, Update):
         return await self._client.pin_chat_message(
             chat_id=self.chat.id,
             message_id=self.message_id,
-            disable_notification=disable_notification
+            disable_notification=disable_notification,
+            both_sides=both_sides
+        )
+
+    async def unpin(self) -> bool:
+        """Bound method *unpin* of :obj:`~pyrogram.types.Message`.
+
+        Use as a shortcut for:
+
+        .. code-block:: python
+
+            client.unpin_chat_message(
+                chat_id=message.chat.id,
+                message_id=message_id
+            )
+
+        Example:
+            .. code-block:: python
+
+                message.unpin()
+
+        Returns:
+            True on success.
+
+        Raises:
+            RPCError: In case of a Telegram RPC error.
+        """
+        return await self._client.pin_chat_message(
+            chat_id=self.chat.id,
+            message_id=self.message_id
         )

@@ -13,7 +13,7 @@ class MessageService(Object):
             *,
             client: "pyrogram.Client" = None,
 
-            outgoing: bool = None,
+            is_outgoing: bool = None,
             mentioned: bool = None,
             media_unread: bool = None,
             is_silent: bool = None,
@@ -26,7 +26,7 @@ class MessageService(Object):
     ):
         super().__init__(client=client)
 
-        self.outgoing = outgoing
+        self.is_outgoing = is_outgoing
         self.mentioned = mentioned
         self.media_unread = media_unread
         self.is_silent = is_silent
@@ -46,7 +46,7 @@ class MessageService(Object):
         return MessageService(
             client=client,
 
-            outgoing=getattr(message, 'out', None),
+            is_outgoing=getattr(message, 'out', None),
             mentioned=getattr(message, 'mentioned', None),
             media_unread=getattr(message, 'media_unread', None),
             is_silent=getattr(message, 'silent', None),

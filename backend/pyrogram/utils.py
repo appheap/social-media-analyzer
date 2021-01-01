@@ -311,7 +311,7 @@ def parse_deleted_messages(client, update) -> List["types.Message"]:
     for message in messages:
         parsed_messages.append(
             types.Message(
-                id=message,
+                message_id=message,
                 chat=types.Chat(
                     id=get_channel_id(channel_id),
                     type="channel",

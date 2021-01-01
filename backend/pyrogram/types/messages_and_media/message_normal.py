@@ -1,7 +1,8 @@
-import pyrogram
-from pyrogram import types, raw
-from ..object import Object
 from typing import List, Union
+
+import pyrogram
+from pyrogram import types, raw, utils
+from ..object import Object
 
 
 class MessageNormal(Object):
@@ -25,7 +26,7 @@ class MessageNormal(Object):
             edit_hide: bool = None,
             is_pinned: bool = None,
             media_group_id: int = None,
-            from_chat: "types.Chat" = None,
+            sender_chat: "types.Chat" = None,
             from_user: "types.User" = None,
             forward_header: "types.MessageForwardHeader" = None,
             via_bot: "types.User" = None,
@@ -70,7 +71,7 @@ class MessageNormal(Object):
         self.edit_hide = edit_hide
         self.is_pinned = is_pinned
         self.media_group_id = media_group_id
-        self.from_chat = from_chat
+        self.sender_chat = sender_chat
         self.from_user = from_user
         self.forward_header = forward_header
         self.via_bot = via_bot
@@ -91,19 +92,9 @@ class MessageNormal(Object):
         entities = [types.MessageEntity._parse(client, entity, users) for entity in message.entities]
         entities = types.List(filter(lambda x: x is not None, entities))
 
-        from_id = message.from_id
-        from_chat = None
-        from_user = None
-        if from_id:
-            if isinstance(from_id, raw.types.PeerUser):
-                from_user = types.User._parse(client, users.get(from_id.user_id, None))
-            else:
-                if isinstance(from_id, raw.types.PeerChannel):
-                    _peer_id = from_id.channel_id
-                else:
-                    _peer_id = from_id.chat_id
-
-                from_chat = types.Chat._parse_chat(client, chats.get(_peer_id, None))
+        user = utils.get_raw_peer_id(message.from_id) or utils.get_raw_peer_id(message.peer_id)
+        from_user = types.User._parse(client, users.get(user, None))
+        sender_chat = await types.Chat._parse(client, message, users, chats) if not from_user else None
 
         reply_markup = message.reply_markup
 
@@ -231,8 +222,8 @@ class MessageNormal(Object):
             edit_hide=getattr(message, 'edit_hide', None),
             is_pinned=getattr(message, 'pinned', None),
             media_group_id=getattr(message, 'grouped_id', None),
-            from_chat=from_chat,
             from_user=from_user,
+            sender_chat=sender_chat,
             forward_header=await types.MessageForwardHeader._parse(client, getattr(message, 'fwd_from', None), users,
                                                                    chats),
             via_bot=users.get(message.via_bot_id, None) if getattr(message, 'via_bot_id', None) else None,
