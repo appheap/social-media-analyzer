@@ -12,6 +12,7 @@ class ChatMembersAnalyzerMetaDataUpdater:
             db_telegram_channel,
             chat_id: int,
             enabled: bool,
+            create: bool = True,
             **kwargs,
     ):
         if not db_telegram_channel or chat_id is None:
@@ -33,7 +34,7 @@ class ChatMembersAnalyzerMetaDataUpdater:
                 field.delete()
                 model.save(model)
         else:
-            if db_telegram_channel:
+            if create and db_telegram_channel:
                 setattr(
                     model,
                     field_name,

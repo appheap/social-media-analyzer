@@ -81,3 +81,6 @@ class ChatMemberCountAnalyzerMetaData(BaseModel):
 
     def __str__(self):
         return f"{self.id} : {self.enabled}"
+
+    def update_fields(self, **kwargs) -> bool:
+        return self.objects.update_analyzer(id=id, **kwargs)

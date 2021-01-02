@@ -11,6 +11,7 @@ class ChatMemberCountAnalyzerMetaDataUpdater:
             field_name: str,
             chat_id: int,
             enabled: bool,
+            create: bool = True,
             **kwargs,
     ):
         if chat_id is None:
@@ -32,7 +33,7 @@ class ChatMemberCountAnalyzerMetaDataUpdater:
                 field.delete()
                 model.save(model)
         else:
-            if enabled is not None:
+            if create and enabled is not None:
                 setattr(
                     model,
                     field_name,
