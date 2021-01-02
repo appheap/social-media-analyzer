@@ -50,7 +50,7 @@ class TelegramChannelManager(models.Manager):
             *,
             raw_chat: types.Chat,
             db_site_user: 'site_models.SiteUser',
-            db_account: 'tg_models.User',
+            db_account: 'tg_models.TelegramAccount',
             db_chat: 'tg_models.Chat',
     ) -> Optional['TelegramChannel']:
 
