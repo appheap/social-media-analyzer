@@ -67,18 +67,18 @@ class DialogManager(models.Manager):
     def update_or_create_dialog(
             self,
             *,
-            chat: "tg_models.Chat",
-            account: "tg_models.TelegramAccount",
+            db_chat: "tg_models.Chat",
+            db_account: "tg_models.TelegramAccount",
             is_member: bool = True,
             left_date_ts: int = None,
     ) -> Optional["Dialog"]:
 
-        if not chat or not account:
+        if not db_chat or not db_account:
             return None
         kwargs = {
-            'id': f'{account.user_id}:{chat.chat_id}',
-            'chat': chat,
-            'account': account,
+            'id': f'{db_account.user_id}:{db_chat.chat_id}',
+            'chat': db_chat,
+            'account': db_account,
             'is_member': is_member,
         }
         if left_date_ts:
