@@ -54,6 +54,19 @@ class MembershipQuerySet(models.QuerySet):
 
         return db_membership
 
+    def get_by_user_id_and_chat(self, *, user_id: int, db_chat: 'tg_models.Chat') -> Optional['Membership']:
+        db_membership = None
+        try:
+            db_membership = self.get(user__user_id=user_id, chat=db_chat)
+        except Membership.DoesNotExist as e:
+            pass
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return db_membership
+
 
 class MembershipManager(models.Manager):
     def get_queryset(self) -> MembershipQuerySet:
@@ -82,6 +95,14 @@ class MembershipManager(models.Manager):
 
     def get_membership(self, *, db_user: 'tg_models.User', db_chat: 'tg_models.Chat') -> Optional['Membership']:
         return self.get_queryset().get_by_user_and_chat(db_user=db_user, db_chat=db_chat)
+
+    def get_membership_by_user_id(
+            self,
+            *,
+            user_id: int,
+            db_chat: 'tg_models.Chat',
+    ) -> Optional['Membership']:
+        return self.get_queryset().get_by_user_id_and_chat(user_id=user_id, db_chat=db_chat)
 
     def is_status_changed(
             self,
