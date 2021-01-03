@@ -1,6 +1,8 @@
-from .methods import Methods
+from .methods import TelegramMethods
 from .scaffold import Scaffold
 
 
-class DataBaseManager(Methods, Scaffold):
-    pass
+class DataBaseManager(Scaffold):
+
+    def __int__(self):
+        self.telegram = TelegramMethods()
