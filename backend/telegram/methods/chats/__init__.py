@@ -1,8 +1,8 @@
-from .update_chat import UpdateChat
+from .get_updated_chat import GetUpdatedChat
 
 
 class Chats(
-    UpdateChat,
+    GetUpdatedChat,
 
 ):
     pass

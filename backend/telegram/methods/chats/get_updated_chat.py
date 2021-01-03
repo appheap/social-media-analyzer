@@ -5,8 +5,8 @@ from pyrogram import types
 from telegram import models as tg_models
 
 
-class UpdateChat(Scaffold):
-    def update_chat(
+class GetUpdatedChat(Scaffold):
+    def get_updated_chat(
             self,
             *,
             raw_chat: types.Chat,
