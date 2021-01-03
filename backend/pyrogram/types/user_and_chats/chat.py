@@ -123,6 +123,46 @@ class Chat(Object):
             username = self.user.username
         return username
 
+    @property
+    def is_creator(self):
+        if self.type in ('channel', 'supergroup',):
+            return self.channel.is_creator
+        elif self.type == 'group':
+            return self.group.is_creator
+        elif self.type in ('private', 'bot'):
+            return self.user.is_self  # fixme: make sense?
+        return False
+
+    @property
+    def is_admin(self):
+        if self.type in ('channel', 'supergroup',):
+            return self.channel.admin_rights is not None
+        elif self.type == 'group':
+            return self.group.admin_rights is not None
+        return False
+
+    @property
+    def admin_rights(self):
+        if self.type in ('channel', 'supergroup',):
+            return self.channel.admin_rights
+        elif self.type == 'group':
+            return self.group.admin_rights
+        return None
+
+    @property
+    def chat_permissions(self):
+        if self.type in ('channel', 'supergroup',):
+            return self.channel.banned_rights
+        return None
+
+    @property
+    def has_left(self):
+        if self.type in ('channel', 'supergroup',):
+            return self.channel.left
+        elif self.type == 'group':
+            return self.group.left
+        return False
+
     @staticmethod
     async def _parse_channel_full_chat(client, chat_full: raw.types.messages.ChatFull, users: dict,
                                        chats: dict) -> "Chat":

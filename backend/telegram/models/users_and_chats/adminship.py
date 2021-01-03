@@ -62,15 +62,24 @@ class AdminShipManger(models.Manager):
             *,
             db_account: 'tg_models.TelegramAccount',
             db_chat: 'tg_models.Chat',
-            role_type: Role,
             raw_chat: types.Chat,
     ) -> Optional['AdminShip']:
 
-        if db_account is None or db_chat is None or role_type is None or raw_chat is None:
+        if db_account is None or db_chat is None or raw_chat is None:
             return None
 
         parsed_object = self._parse(raw_chat=raw_chat)
         if len(parsed_object):
+            role_type = self.tg_models.Role.member
+            if raw_chat.is_creator:
+                role_type = self.tg_models.Role.creator
+
+            if raw_chat.is_admin:
+                role_type = self.tg_models.Role.administrator
+
+            if raw_chat.has_left:
+                role_type = self.tg_models.Role.left
+
             with transaction.atomic():
                 db_adminship = self.get_queryset().update_or_create_adminship(
                     **{

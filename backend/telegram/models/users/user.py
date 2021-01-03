@@ -108,6 +108,11 @@ class UserManager(models.Manager):
             self.create_restrictions(raw_user.user if is_full_type else raw_user, user)
         return user
 
+    def get_user_by_id(self, *, user_id: int) -> Optional['User']:
+        if user_id is None:
+            return None
+        return self.get_queryset().get_by_user_id(user_id=user_id)
+
     def user_deleted_account(self, *, user_id: int, delete_ts: int) -> bool:
         if user_id is None or delete_ts is None:
             return False
