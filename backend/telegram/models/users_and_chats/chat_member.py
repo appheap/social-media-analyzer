@@ -46,6 +46,20 @@ class ChatMemberQuerySet(models.QuerySet):
             logger.exception(e)
         return None
 
+    def update_chat_member(self, **kwargs) -> bool:
+        try:
+            return self.update(
+                **kwargs
+            )
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
+    def filter_by_id(self, *, id: int) -> 'ChatMemberQuerySet':
+        return self.filter(id=id)
+
 
 class ChatMemberManager(models.Manager):
     def get_queryset(self) -> ChatMemberQuerySet:
@@ -68,7 +82,7 @@ class ChatMemberManager(models.Manager):
 
     ) -> Optional['ChatMember']:
 
-        if raw_chat_member is None or db_membership is None or event_date_ts is None:
+        if raw_chat_member is None or event_date_ts is None:
             return None
 
         parsed_object = self._parse(raw_chat_member=raw_chat_member)
@@ -77,14 +91,17 @@ class ChatMemberManager(models.Manager):
                 parsed_object['type'] = ChatMemberTypes.left
 
             with transaction.atomic():
+                _dict = {
+                    **parsed_object,
+                    'event_date_ts': event_date_ts,
+                    'left_date_ts': left_date_ts,
+                    'is_previous': is_previous,
+                }
+                if db_membership:
+                    _dict['membership'] = db_membership
+
                 db_chat_member = self.get_queryset().update_or_create_chat_member(
-                    **{
-                        **parsed_object,
-                        'membership': db_membership,
-                        'event_date_ts': event_date_ts,
-                        'left_date_ts': left_date_ts,
-                        'is_previous': is_previous,
-                    }
+                    **_dict
                 )
                 if db_chat_member:
                     db_chat_member.update_or_create_user_from_raw(
@@ -123,6 +140,11 @@ class ChatMemberManager(models.Manager):
             return db_chat_member
 
         return None
+
+    def update_chat_member(self, id: int, **kwargs) -> bool:
+        return self.get_queryset().filter_by_id(id=id).update_chat_member(
+            **kwargs
+        )
 
     @staticmethod
     def _parse(*, raw_chat_member: types.ChatMember):
@@ -242,3 +264,6 @@ class ChatMember(BaseModel, UserUpdater, ChatPermissionsUpdater, ChatAdminRights
 
     def __str__(self):
         return f"participant {self.id} of type :{self.type}"
+
+    def update_fields(self, **kwargs) -> bool:
+        return self.objects.update_chat_member(id=self.id, **kwargs)

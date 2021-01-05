@@ -69,9 +69,6 @@ class ChannelAdminLogEventAction(Object):
         elif isinstance(action, raw.types.ChannelAdminLogEventActionDefaultBannedRights):
             return types.ChannelAdminLogEventActionDefaultBannedRights._parse(client, action, users, chats)
 
-        elif isinstance(action, raw.types.ChannelAdminLogEventActionDefaultBannedRights):
-            return types.ChannelAdminLogEventActionDefaultBannedRights._parse(client, action, users, chats)
-
         elif isinstance(action, raw.types.ChannelAdminLogEventActionStopPoll):
             return types.ChannelAdminLogEventActionStopPoll._parse(client, action, users, chats)
 
