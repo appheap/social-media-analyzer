@@ -4,7 +4,7 @@ from django.db import models, DatabaseError
 import arrow
 
 from ..base import BaseModel
-from telegram.globals import logger
+from core.globals import logger
 from telegram import models as tg_models
 
 

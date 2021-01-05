@@ -4,7 +4,7 @@ from ..base import BaseModel
 
 from typing import Optional
 
-from telegram.globals import logger
+from core.globals import logger
 
 
 class ChatMemberCountAnalyzerMetaDataQuerySet(models.QuerySet):

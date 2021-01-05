@@ -8,7 +8,7 @@ from db.models import SoftDeletableQS
 from db.models import SoftDeletableBaseModel
 from pyrogram import types
 from telegram import models as tg_models
-from telegram.globals import logger
+from core.globals import logger
 from users import models as site_models
 from ..base import BaseModel
 

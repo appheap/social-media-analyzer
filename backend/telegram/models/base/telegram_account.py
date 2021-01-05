@@ -6,7 +6,7 @@ from django.db import models, DatabaseError
 from ..base import BaseModel
 from db.models import SoftDeletableBaseModel
 from db.models import SoftDeletableQS
-from telegram.globals import logger
+from core.globals import logger
 from pyrogram import types
 import pyrogram
 from users import models as site_models

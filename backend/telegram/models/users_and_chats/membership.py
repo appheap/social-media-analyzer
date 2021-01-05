@@ -4,7 +4,7 @@ from django.db import models, DatabaseError
 
 from ..base import BaseModel
 from telegram import models as tg_models
-from telegram.globals import logger
+from core.globals import logger
 from pyrogram import types
 
 

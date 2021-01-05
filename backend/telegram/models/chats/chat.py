@@ -3,7 +3,7 @@ from ..base import BaseModel
 from typing import Optional
 from db.models import SoftDeletableBaseModel, SoftDeletableQS
 from django.db import DatabaseError
-from telegram.globals import logger
+from core.globals import logger
 from telegram import models as tg_models
 from pyrogram import types
 from ..analyzers import AdminLogAnalyzerMetaDataUpdater

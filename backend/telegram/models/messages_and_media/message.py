@@ -6,7 +6,7 @@ from pyrogram import types
 from db.models import SoftDeletableBaseModel
 from db.models import SoftDeletableQS
 from django.db import DatabaseError
-from telegram.globals import logger
+from core.globals import logger
 from ..chats import ChatUpdater
 from ..users import UserUpdater
 from telegram import models as tg_models

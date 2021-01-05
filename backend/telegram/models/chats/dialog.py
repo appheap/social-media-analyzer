@@ -4,7 +4,7 @@ from django.db import models
 from ..base import BaseModel
 from db.models import (SoftDeletableBaseModel, SoftDeletableQS)
 from telegram import models as tg_models
-from telegram.globals import logger
+from core.globals import logger
 
 
 class DialogQuerySet(SoftDeletableQS):

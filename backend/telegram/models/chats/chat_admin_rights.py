@@ -3,7 +3,7 @@ from typing import Optional
 from django.db import models, DatabaseError
 from ..base import BaseModel
 from pyrogram import types
-from telegram.globals import logger
+from core.globals import logger
 
 
 class ChatAdminRightsQuerySet(models.QuerySet):

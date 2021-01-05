@@ -5,7 +5,7 @@ import arrow
 from pyrogram import types
 from telegram import models as tg_models
 from ..base import BaseModel
-from telegram.globals import logger
+from core.globals import logger
 
 _filter_names = (
     'photo',

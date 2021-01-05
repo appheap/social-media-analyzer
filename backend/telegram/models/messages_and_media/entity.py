@@ -7,7 +7,7 @@ from ..users import UserUpdater
 from ..base import BaseModel
 from .entity_types import EntityTypes
 from .entity_types import EntitySourceTypes
-from telegram.globals import logger
+from core.globals import logger
 from pyrogram import types
 from telegram import models as tg_models
 

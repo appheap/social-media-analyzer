@@ -6,7 +6,7 @@ import arrow
 from ..chats import ChatUpdater
 from telegram import models as tg_models
 from pyrogram import types
-from telegram.globals import logger
+from core.globals import logger
 
 
 class MessageViewQuerySet(models.QuerySet):

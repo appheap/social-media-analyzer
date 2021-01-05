@@ -4,7 +4,7 @@ from django.db import DatabaseError
 from django.db import models, transaction
 
 from pyrogram import types
-from telegram.globals import logger
+from core.globals import logger
 from .chat_permissions_updater import ChatPermissionsUpdater
 from .chat_updater import ChatUpdater
 from ..base import BaseModel

@@ -6,7 +6,7 @@ import arrow
 
 from ..base import BaseModel
 from users import models as site_models
-from telegram.globals import logger
+from core.globals import logger
 
 
 class AddChannelRequestStatusTypes(models.TextChoices):
