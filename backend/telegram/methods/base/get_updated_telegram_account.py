@@ -6,9 +6,9 @@ from telegram import models as tg_models
 from users import models as site_models
 
 
-class CreateTelegramAccount(Scaffold):
+class GetUpdatedTelegramAccount(Scaffold):
 
-    def create_telegram_account(
+    def get_updated_telegram_account(
             self,
             db_site_user: 'site_models.SiteUser',
             db_user: 'tg_models.User',

@@ -8,9 +8,9 @@ from telegram import models as tg_models
 from users import models as site_models
 
 
-class CreateTelegramChannel(Scaffold):
+class GetUpdatedTelegramChannel(Scaffold):
 
-    def create_telegram_channel(
+    def get_updated_telegram_channel(
             self,
             raw_chat: types.Chat,
             db_site_user: 'site_models.SiteUser',
