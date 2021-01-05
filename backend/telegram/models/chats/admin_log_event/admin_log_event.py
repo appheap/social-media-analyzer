@@ -1,10 +1,11 @@
 from typing import Optional, Tuple
 
-from django.db import models, DatabaseError
-from ...base import BaseModel
-from telegram import models as tg_models
+from django.db import models, DatabaseError, transaction
+
 from pyrogram import types
+from telegram import models as tg_models
 from telegram.globals import logger
+from ...base import BaseModel
 
 
 class AdminLogEventQuerySet(models.QuerySet):
@@ -54,6 +55,17 @@ class AdminLogEventManager(models.Manager):
     def get_queryset(self) -> AdminLogEventQuerySet:
         return AdminLogEventQuerySet(self.model, using=self._db)
 
+    def admin_log_exists(
+            self,
+            *,
+            event_id: int,
+            chat_id: int,
+    ) -> bool:
+        return self.get_queryset().event_exists(
+            event_id=event_id,
+            chat_id=chat_id,
+        )
+
     def update_or_create_from_raw(
             self,
             *,
@@ -67,298 +79,300 @@ class AdminLogEventManager(models.Manager):
 
         parsed_object = self._parse(raw_event=raw_admin_log_event)
         if len(parsed_object):
-            db_event, created = self.get_queryset().update_or_create_event(
-                **{
-                    'id': f'{db_chat.chat_id}:{raw_admin_log_event.event_id}',
-                    'user': db_user,
-                    'chat': db_chat,
-                    'logged_by': logged_by,
-                    **parsed_object
-                }
-            )
-            if db_event and created and raw_admin_log_event.action:
-                action = raw_admin_log_event.action
+            with transaction.atomic():
+                db_event, created = self.get_queryset().update_or_create_event(
+                    **{
+                        'id': f'{db_chat.chat_id}:{raw_admin_log_event.event_id}',
+                        'user': db_user,
+                        'chat': db_chat,
+                        'logged_by': logged_by,
+                        **parsed_object
+                    }
+                )
+                if db_event and created and raw_admin_log_event.action:
+                    action = raw_admin_log_event.action
 
-                if isinstance(action, types.ChannelAdminLogEventActionChangeTitle):
-                    db_action_title = tg_models.AdminLogEventActionChangeTitle.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_change_title = db_action_title
-
-                elif isinstance(action, types.ChannelAdminLogEventActionChangeAbout):
-                    db_action_about = tg_models.AdminLogEventActionChangeAbout.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_change_about = db_action_about
-
-                elif isinstance(action, types.ChannelAdminLogEventActionChangeUsername):
-                    db_action_username = tg_models.AdminLogEventActionChangeUsername.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_change_username = db_action_username
-
-                elif isinstance(action, types.ChannelAdminLogEventActionChangePhoto):
-                    db_action_photo = tg_models.AdminLogEventActionChangePhoto.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_change_photo = db_action_photo
-
-                elif isinstance(action, types.ChannelAdminLogEventActionToggleInvites):
-                    db_action_invites = tg_models.AdminLogEventActionToggleInvites.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_toggle_invites = db_action_invites
-
-                elif isinstance(action, types.ChannelAdminLogEventActionToggleSignatures):
-                    db_action_signatures = tg_models.AdminLogEventActionToggleSignatures.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_toggle_signatures = db_action_signatures
-
-                elif isinstance(action, types.ChannelAdminLogEventActionUpdatePinned):
-                    db_action_pinned = tg_models.AdminLogEventActionUpdatePinned.objects.update_or_create_action(
-                        db_message=tg_models.Message.objects.update_or_create_from_raw(
-                            chat_id=db_chat.chat_id,
-                            raw_message=action.message,
-                            logger_account=logged_by,
+                    if isinstance(action, types.ChannelAdminLogEventActionChangeTitle):
+                        db_action_title = tg_models.AdminLogEventActionChangeTitle.objects.update_or_create_action(
+                            raw_action=action
                         )
-                    )
-                    db_event.action_update_pinned = db_action_pinned
+                        db_event.action_change_title = db_action_title
 
-                elif isinstance(action, types.ChannelAdminLogEventActionEditMessage):
-                    db_action_edit_message = tg_models.AdminLogEventActionEditMessage.objects.update_or_create_action(
-                        prev_db_message=tg_models.Message.objects.update_or_create_from_raw(
-                            chat_id=db_chat.chat_id,
-                            raw_message=action.prev_message,
-                            logger_account=logged_by,
-                        ),
-                        new_db_message=tg_models.Message.objects.update_or_create_from_raw(
-                            chat_id=db_chat.chat_id,
-                            raw_message=action.new_message,
-                            logger_account=logged_by,
+                    elif isinstance(action, types.ChannelAdminLogEventActionChangeAbout):
+                        db_action_about = tg_models.AdminLogEventActionChangeAbout.objects.update_or_create_action(
+                            raw_action=action
                         )
-                    )
-                    db_event.action_edit_message = db_action_edit_message
+                        db_event.action_change_about = db_action_about
 
-                elif isinstance(action, types.ChannelAdminLogEventActionDeleteMessage):
-                    db_action_delete_message = tg_models.AdminLogEventActionDeleteMessage.objects.update_or_create_action(
-                        db_message=tg_models.Message.objects.update_or_create_from_raw(
-                            chat_id=db_chat.chat_id,
-                            raw_message=action.message,
-                            logger_account=logged_by,
+                    elif isinstance(action, types.ChannelAdminLogEventActionChangeUsername):
+                        db_action_username = tg_models.AdminLogEventActionChangeUsername.objects.update_or_create_action(
+                            raw_action=action
                         )
-                    )
-                    db_event.action_delete_message = db_action_delete_message
+                        db_event.action_change_username = db_action_username
 
-                elif isinstance(action, types.ChannelAdminLogEventActionParticipantJoin):
-                    db_membership = tg_models.Membership.objects.get_membership_by_user_id(
-                        db_chat=db_chat,
-                        user_id=raw_admin_log_event.user.id,
-                    )
-                    raw_chat_member = types.ChatMember(
-                        user=raw_admin_log_event.user,
-                        join_date=raw_admin_log_event.date,
-                        status='member',
-                        is_current_user=raw_admin_log_event.user.is_self,
-                    )
+                    elif isinstance(action, types.ChannelAdminLogEventActionChangePhoto):
+                        db_action_photo = tg_models.AdminLogEventActionChangePhoto.objects.update_or_create_action(
+                            raw_action=action
+                        )
+                        db_event.action_change_photo = db_action_photo
 
-                    if db_membership:
-                        db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
-                            raw_chat_member=raw_chat_member,
-                            db_membership=db_membership,
-                            event_date_ts=raw_admin_log_event.date,
+                    elif isinstance(action, types.ChannelAdminLogEventActionToggleInvites):
+                        db_action_invites = tg_models.AdminLogEventActionToggleInvites.objects.update_or_create_action(
+                            raw_action=action
                         )
-                        db_membership.update_membership_status(
-                            new_status=db_chat_member,
-                            event_date_ts=raw_admin_log_event.date,
+                        db_event.action_toggle_invites = db_action_invites
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionToggleSignatures):
+                        db_action_signatures = tg_models.AdminLogEventActionToggleSignatures.objects.update_or_create_action(
+                            raw_action=action
                         )
-                    else:
-                        db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
-                            raw_chat_member=raw_chat_member,
-                            db_membership=None,
-                            event_date_ts=raw_admin_log_event.date,
+                        db_event.action_toggle_signatures = db_action_signatures
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionUpdatePinned):
+                        db_action_pinned = tg_models.AdminLogEventActionUpdatePinned.objects.update_or_create_action(
+                            db_message=tg_models.Message.objects.update_or_create_from_raw(
+                                chat_id=db_chat.chat_id,
+                                raw_message=action.message,
+                                logger_account=logged_by,
+                            )
                         )
-                        db_membership = tg_models.Membership.objects.update_or_create_membership(
-                            db_user=db_chat_member.user,
+                        db_event.action_update_pinned = db_action_pinned
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionEditMessage):
+                        db_action_edit_message = tg_models.AdminLogEventActionEditMessage.objects.update_or_create_action(
+                            prev_db_message=tg_models.Message.objects.update_or_create_from_raw(
+                                chat_id=db_chat.chat_id,
+                                raw_message=action.prev_message,
+                                logger_account=logged_by,
+                            ),
+                            new_db_message=tg_models.Message.objects.update_or_create_from_raw(
+                                chat_id=db_chat.chat_id,
+                                raw_message=action.new_message,
+                                logger_account=logged_by,
+                            )
+                        )
+                        db_event.action_edit_message = db_action_edit_message
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionDeleteMessage):
+                        db_action_delete_message = tg_models.AdminLogEventActionDeleteMessage.objects.update_or_create_action(
+                            db_message=tg_models.Message.objects.update_or_create_from_raw(
+                                chat_id=db_chat.chat_id,
+                                raw_message=action.message,
+                                logger_account=logged_by,
+                            )
+                        )
+                        db_event.action_delete_message = db_action_delete_message
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionParticipantJoin):
+                        db_membership = tg_models.Membership.objects.get_membership_by_user_id(
                             db_chat=db_chat,
-                            new_status=db_chat_member,
-                            event_date_ts=raw_admin_log_event.date
+                            user_id=raw_admin_log_event.user.id,
                         )
-                        db_chat_member.update_fields(
-                            **{
-                                'membership': db_membership,
-                            }
+                        raw_chat_member = types.ChatMember(
+                            user=raw_admin_log_event.user,
+                            join_date=raw_admin_log_event.date,
+                            status='member',
+                            is_current_user=raw_admin_log_event.user.is_self,
                         )
-                    db_event.action_participant_join = tg_models.AdminLogEventActionParticipantJoin.objects.update_or_create()
 
-                elif isinstance(action, types.ChannelAdminLogEventActionParticipantLeave):
-                    db_membership = tg_models.Membership.objects.get_membership_by_user_id(
-                        db_chat=db_chat,
-                        user_id=raw_admin_log_event.user.id,
-                    )
-                    raw_chat_member = types.ChatMember(
-                        user=raw_admin_log_event.user,
-                        status='left',
-                        is_current_user=raw_admin_log_event.user.is_self,
-                    )
+                        if db_membership:
+                            db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
+                                raw_chat_member=raw_chat_member,
+                                db_membership=db_membership,
+                                event_date_ts=raw_admin_log_event.date,
+                            )
+                            db_membership.update_membership_status(
+                                new_status=db_chat_member,
+                                event_date_ts=raw_admin_log_event.date,
+                            )
+                        else:
+                            db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
+                                raw_chat_member=raw_chat_member,
+                                db_membership=None,
+                                event_date_ts=raw_admin_log_event.date,
+                            )
+                            db_membership = tg_models.Membership.objects.update_or_create_membership(
+                                db_user=db_chat_member.user,
+                                db_chat=db_chat,
+                                new_status=db_chat_member,
+                                event_date_ts=raw_admin_log_event.date
+                            )
+                            db_chat_member.update_fields(
+                                **{
+                                    'membership': db_membership,
+                                }
+                            )
+                        db_event.action_participant_join = tg_models.AdminLogEventActionParticipantJoin.objects.update_or_create()
 
-                    if db_membership:
-                        db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
-                            raw_chat_member=raw_chat_member,
-                            db_membership=db_membership,
-                            event_date_ts=raw_admin_log_event.date,
-                            left_date_ts=raw_admin_log_event.date,
-                        )
-                        db_membership.update_membership_status(
-                            new_status=db_chat_member,
-                            event_date_ts=raw_admin_log_event.date,
-                        )
-                    else:
-                        db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
-                            raw_chat_member=raw_chat_member,
-                            db_membership=None,
-                            event_date_ts=raw_admin_log_event.date,
-                            left_date_ts=raw_admin_log_event.date,
-                        )
-                        db_membership = tg_models.Membership.objects.update_or_create_membership(
-                            db_user=db_chat_member.user,
+                    elif isinstance(action, types.ChannelAdminLogEventActionParticipantLeave):
+                        db_membership = tg_models.Membership.objects.get_membership_by_user_id(
                             db_chat=db_chat,
-                            new_status=db_chat_member,
-                            event_date_ts=raw_admin_log_event.date
+                            user_id=raw_admin_log_event.user.id,
                         )
-                        db_chat_member.update_fields(
-                            **{
-                                'membership': db_membership,
-                            }
+                        raw_chat_member = types.ChatMember(
+                            user=raw_admin_log_event.user,
+                            status='left',
+                            is_current_user=raw_admin_log_event.user.is_self,
                         )
 
-                    db_event.action_participant_leave = tg_models.AdminLogEventActionParticipantLeave.objects.update_or_create()
+                        if db_membership:
+                            db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
+                                raw_chat_member=raw_chat_member,
+                                db_membership=db_membership,
+                                event_date_ts=raw_admin_log_event.date,
+                                left_date_ts=raw_admin_log_event.date,
+                            )
+                            db_membership.update_membership_status(
+                                new_status=db_chat_member,
+                                event_date_ts=raw_admin_log_event.date,
+                            )
+                        else:
+                            db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
+                                raw_chat_member=raw_chat_member,
+                                db_membership=None,
+                                event_date_ts=raw_admin_log_event.date,
+                                left_date_ts=raw_admin_log_event.date,
+                            )
+                            db_membership = tg_models.Membership.objects.update_or_create_membership(
+                                db_user=db_chat_member.user,
+                                db_chat=db_chat,
+                                new_status=db_chat_member,
+                                event_date_ts=raw_admin_log_event.date
+                            )
+                            db_chat_member.update_fields(
+                                **{
+                                    'membership': db_membership,
+                                }
+                            )
 
-                elif isinstance(action, types.ChannelAdminLogEventActionParticipantInvite):
-                    db_chat_member = self._parse_chat_member(
-                        raw_chat_member=action.chat_member,
-                        db_chat=db_chat,
-                        db_user=db_user,
-                        raw_admin_log_event=raw_admin_log_event,
-                    )
+                        db_event.action_participant_leave = tg_models.AdminLogEventActionParticipantLeave.objects.update_or_create()
 
-                    db_action_participant_invite = tg_models.AdminLogEventActionParticipantInvite.objects.update_or_create_action(
-                        db_chat_member=db_chat_member,
-                    )
-                    db_event.action_participant_invite = db_action_participant_invite
+                    elif isinstance(action, types.ChannelAdminLogEventActionParticipantInvite):
+                        db_chat_member = self._parse_chat_member(
+                            raw_chat_member=action.chat_member,
+                            db_chat=db_chat,
+                            db_user=db_user,
+                            raw_admin_log_event=raw_admin_log_event,
+                        )
 
-                elif isinstance(action, types.ChannelAdminLogEventActionParticipantToggleBan):
-                    db_prev_chat_member = self._parse_chat_member(
-                        raw_chat_member=action.prev_chat_member,
-                        db_chat=db_chat,
-                        db_user=db_user,
-                        raw_admin_log_event=raw_admin_log_event,
-                        toggle_ban=True,
-                        is_previous=True,
-                    )
+                        db_action_participant_invite = tg_models.AdminLogEventActionParticipantInvite.objects.update_or_create_action(
+                            db_chat_member=db_chat_member,
+                        )
+                        db_event.action_participant_invite = db_action_participant_invite
 
-                    db_new_chat_member = self._parse_chat_member(
-                        raw_chat_member=action.new_chat_member,
-                        db_chat=db_chat,
-                        db_user=db_user,
-                        raw_admin_log_event=raw_admin_log_event,
-                        toggle_ban=True,
-                        is_previous=False,
-                    )
+                    elif isinstance(action, types.ChannelAdminLogEventActionParticipantToggleBan):
+                        db_prev_chat_member = self._parse_chat_member(
+                            raw_chat_member=action.prev_chat_member,
+                            db_chat=db_chat,
+                            db_user=db_user,
+                            raw_admin_log_event=raw_admin_log_event,
+                            toggle_ban=True,
+                            is_previous=True,
+                        )
 
-                    db_action_toggle_ban = tg_models.AdminLogEventActionToggleBan.objects.update_or_create_action(
-                        db_prev_chat_member=db_prev_chat_member,
-                        db_new_chat_member=db_new_chat_member,
-                    )
-                    db_event.action_participant_toggle_ban = db_action_toggle_ban
+                        db_new_chat_member = self._parse_chat_member(
+                            raw_chat_member=action.new_chat_member,
+                            db_chat=db_chat,
+                            db_user=db_user,
+                            raw_admin_log_event=raw_admin_log_event,
+                            toggle_ban=True,
+                            is_previous=False,
+                        )
 
-                elif isinstance(action, types.ChannelAdminLogEventActionParticipantToggleAdmin):
-                    promoted = None,
-                    demoted = None
-                    if action.prev_chat_member.status != action.new_chat_member.status:
-                        if action.new_chat_member.status in ('member', 'user', 'restricted', 'kicked'):
-                            demoted = True
-                        elif action.new_chat_member.status in ('administrator', 'creator'):
+                        db_action_toggle_ban = tg_models.AdminLogEventActionToggleBan.objects.update_or_create_action(
+                            db_prev_chat_member=db_prev_chat_member,
+                            db_new_chat_member=db_new_chat_member,
+                        )
+                        db_event.action_participant_toggle_ban = db_action_toggle_ban
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionParticipantToggleAdmin):
+                        promoted = None,
+                        demoted = None
+                        if action.prev_chat_member.status != action.new_chat_member.status:
+                            if action.new_chat_member.status in ('member', 'user', 'restricted', 'kicked'):
+                                demoted = True
+                            elif action.new_chat_member.status in ('administrator', 'creator'):
+                                promoted = True
+                        else:
                             promoted = True
-                    else:
-                        promoted = True
 
-                    db_prev_chat_member = self._parse_chat_member(
-                        raw_chat_member=action.prev_chat_member,
-                        db_chat=db_chat,
-                        db_user=db_user,
-                        raw_admin_log_event=raw_admin_log_event,
-                        is_previous=True,
-                        promoted=promoted,
-                        demoted=demoted,
-                    )
-
-                    db_new_chat_member = self._parse_chat_member(
-                        raw_chat_member=action.new_chat_member,
-                        db_chat=db_chat,
-                        db_user=db_user,
-                        raw_admin_log_event=raw_admin_log_event,
-                        is_previous=False,
-                        promoted=promoted,
-                        demoted=demoted,
-                    )
-
-                    db_action_toggle_admin = tg_models.AdminLogEventActionToggleAdmin.objects.update_or_create_action(
-                        db_prev_chat_member=db_prev_chat_member,
-                        db_new_chat_member=db_new_chat_member,
-                    )
-                    db_event.action_participant_toggle_admin = db_action_toggle_admin
-
-                elif isinstance(action, types.ChannelAdminLogEventActionChangeStickerSet):
-                    db_event.action_change_sticker_set = tg_models.AdminLogEventActionChangeStickerSet.objects.update_or_create()
-
-                elif isinstance(action, types.ChannelAdminLogEventActionTogglePreHistoryHidden):
-                    db_event.action_toggle_prehistory_hidden = tg_models.AdminLogEventActionTogglePreHistoryHidden.objects.update_or_create_action(
-                        raw_action=action
-                    )
-
-                elif isinstance(action, types.ChannelAdminLogEventActionDefaultBannedRights):
-                    db_action_default_banned_rights = tg_models.AdminLogEventActionDefaultBannedRights.objects.update_or_create_action(
-                        prev_banned_rights=tg_models.ChatPermissions.objects.update_or_create_chat_permissions_from_raw(
-                            raw_chat_permissions=action.prev_banned_rights
-                        ),
-                        new_banned_rights=tg_models.ChatPermissions.objects.update_or_create_chat_permissions_from_raw(
-                            raw_chat_permissions=action.new_banned_rights
+                        db_prev_chat_member = self._parse_chat_member(
+                            raw_chat_member=action.prev_chat_member,
+                            db_chat=db_chat,
+                            db_user=db_user,
+                            raw_admin_log_event=raw_admin_log_event,
+                            is_previous=True,
+                            promoted=promoted,
+                            demoted=demoted,
                         )
-                    )
-                    db_event.action_default_banned_rights = db_action_default_banned_rights
 
-                elif isinstance(action, types.ChannelAdminLogEventActionUpdatePinned):
-                    db_action_stop_poll = tg_models.AdminLogEventActionStopPoll.objects.update_or_create_action(
-                        db_message=tg_models.Message.objects.update_or_create_from_raw(
-                            chat_id=db_chat.chat_id,
-                            raw_message=action.message,
-                            logger_account=logged_by,
+                        db_new_chat_member = self._parse_chat_member(
+                            raw_chat_member=action.new_chat_member,
+                            db_chat=db_chat,
+                            db_user=db_user,
+                            raw_admin_log_event=raw_admin_log_event,
+                            is_previous=False,
+                            promoted=promoted,
+                            demoted=demoted,
                         )
-                    )
-                    db_event.action_stop_poll = db_action_stop_poll
 
-                elif isinstance(action, types.ChannelAdminLogEventActionChangeLinkedChat):
-                    db_action_change_linked_chat = tg_models.AdminLogEventActionChangeLinkedChat.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_change_linked_chat = db_action_change_linked_chat
+                        db_action_toggle_admin = tg_models.AdminLogEventActionToggleAdmin.objects.update_or_create_action(
+                            db_prev_chat_member=db_prev_chat_member,
+                            db_new_chat_member=db_new_chat_member,
+                        )
+                        db_event.action_participant_toggle_admin = db_action_toggle_admin
 
-                elif isinstance(action, types.ChannelAdminLogEventActionChangeLocation):
-                    db_action_change_location = tg_models.AdminLogEventActionChangeLocation.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_change_location = db_action_change_location
+                    elif isinstance(action, types.ChannelAdminLogEventActionChangeStickerSet):
+                        db_event.action_change_sticker_set = tg_models.AdminLogEventActionChangeStickerSet.objects.update_or_create()
 
-                elif isinstance(action, types.ChannelAdminLogEventActionToggleSlowMode):
-                    db_action_toggle_slow_mode = tg_models.AdminLogEventActionToggleSlowMode.objects.update_or_create_action(
-                        raw_action=action
-                    )
-                    db_event.action_toggle_slow_mode = db_action_toggle_slow_mode
+                    elif isinstance(action, types.ChannelAdminLogEventActionTogglePreHistoryHidden):
+                        db_event.action_toggle_prehistory_hidden = tg_models.AdminLogEventActionTogglePreHistoryHidden.objects.update_or_create_action(
+                            raw_action=action
+                        )
 
-                db_event.save()
+                    elif isinstance(action, types.ChannelAdminLogEventActionDefaultBannedRights):
+                        db_action_default_banned_rights = tg_models.AdminLogEventActionDefaultBannedRights.objects.update_or_create_action(
+                            prev_banned_rights=tg_models.ChatPermissions.objects.update_or_create_chat_permissions_from_raw(
+                                raw_chat_permissions=action.prev_banned_rights
+                            ),
+                            new_banned_rights=tg_models.ChatPermissions.objects.update_or_create_chat_permissions_from_raw(
+                                raw_chat_permissions=action.new_banned_rights
+                            )
+                        )
+                        db_event.action_default_banned_rights = db_action_default_banned_rights
 
-            return db_event
+                    elif isinstance(action, types.ChannelAdminLogEventActionUpdatePinned):
+                        db_action_stop_poll = tg_models.AdminLogEventActionStopPoll.objects.update_or_create_action(
+                            db_message=tg_models.Message.objects.update_or_create_from_raw(
+                                chat_id=db_chat.chat_id,
+                                raw_message=action.message,
+                                logger_account=logged_by,
+                            )
+                        )
+                        db_event.action_stop_poll = db_action_stop_poll
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionChangeLinkedChat):
+                        db_action_change_linked_chat = tg_models.AdminLogEventActionChangeLinkedChat.objects.update_or_create_action(
+                            raw_action=action
+                        )
+                        db_event.action_change_linked_chat = db_action_change_linked_chat
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionChangeLocation):
+                        db_action_change_location = tg_models.AdminLogEventActionChangeLocation.objects.update_or_create_action(
+                            raw_action=action
+                        )
+                        db_event.action_change_location = db_action_change_location
+
+                    elif isinstance(action, types.ChannelAdminLogEventActionToggleSlowMode):
+                        db_action_toggle_slow_mode = tg_models.AdminLogEventActionToggleSlowMode.objects.update_or_create_action(
+                            raw_action=action
+                        )
+                        db_event.action_toggle_slow_mode = db_action_toggle_slow_mode
+
+                    db_event.save()
+
+                return db_event
+
         return None
 
     @staticmethod
