@@ -334,6 +334,13 @@ class Message(Object, Update):
             )
 
     @property
+    def restrictions(self):
+        if self.type == 'message':
+            return self.content.restrictions
+        else:
+            return None
+
+    @property
     def media_type(self):
         if self.type == 'message':
             return self.content.media_type

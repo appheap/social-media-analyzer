@@ -163,6 +163,14 @@ class Chat(Object):
             return self.group.left
         return False
 
+    @property
+    def restrictions(self):
+        if self.type in ('channel', 'supergroup'):
+            return self.channel.restrictions
+        elif self.type in ('private', 'bot'):
+            return self.user.restrictions
+        return None
+
     @staticmethod
     async def _parse_channel_full_chat(client, chat_full: raw.types.messages.ChatFull, users: dict,
                                        chats: dict) -> "Chat":
