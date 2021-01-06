@@ -153,7 +153,7 @@ class MessageManager(models.Manager):
         return False
 
     @staticmethod
-    def _update_message_related_models(db_message, raw_message):
+    def _update_message_related_models(db_message: 'Message', raw_message: types.Message):
         if db_message and raw_message:
             db_message.update_or_create_chat_from_raw(
                 model=db_message,
@@ -203,6 +203,12 @@ class MessageManager(models.Manager):
                     raw_user=raw_message.content.reply_header.reply_to_user
                 )
 
+            if raw_message.restrictions:
+                MessageManager.create_restrictions(
+                    raw_message=raw_message,
+                    db_message=db_message,
+                )
+
     @staticmethod
     def _parse_normal(*, chat_id, raw_message: types.Message) -> dict:
         if not raw_message:
@@ -248,6 +254,14 @@ class MessageManager(models.Manager):
                 }
             )
         return
+
+    @staticmethod
+    def create_restrictions(raw_message: types.Message, db_message: "Message"):
+        if db_message and raw_message.restrictions:
+            tg_models.Restriction.objects.bulk_create_restrictions(
+                raw_restrictions=raw_message.restrictions,
+                db_message=db_message,
+            )
 
 
 class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):

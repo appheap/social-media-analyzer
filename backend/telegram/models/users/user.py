@@ -133,10 +133,7 @@ class UserManager(models.Manager):
     @staticmethod
     def create_restrictions(raw_user: types.User, user: "User"):
         if user and raw_user.restrictions:
-            tg_models.Restriction.objects.bulk_create_restrictions(
-                raw_restrictions=raw_user.restrictions,
-                user=user
-            )
+            tg_models.Restriction.objects.bulk_create_restrictions(raw_restrictions=raw_user.restrictions, db_user=user)
 
     @staticmethod
     def _parse_full_user(full_user: types.UserFull):  # todo: profile photo?

@@ -118,10 +118,27 @@ class BaseChatManager(models.Manager):
                 )
         else:
             pass
+
+        BaseChatManager.create_restrictions(
+            raw_chat=raw_chat,
+            db_chat=db_chat
+        )
+
         return db_chat
 
     def get_chat_by_id(self, *, chat_id: int) -> Optional['Chat']:
         return self.get_queryset().get_chat_by_id(chat_id=chat_id)
+
+    @staticmethod
+    def create_restrictions(
+            raw_chat: types.Chat,
+            db_chat: "Chat"
+    ):
+        if db_chat and raw_chat.restrictions:
+            tg_models.Restriction.objects.bulk_create_restrictions(
+                raw_restrictions=raw_chat.restrictions,
+                db_chat=db_chat,
+            )
 
 
 class ChannelsManager(BaseChatManager):

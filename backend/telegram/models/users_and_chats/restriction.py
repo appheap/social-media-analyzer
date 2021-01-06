@@ -68,13 +68,13 @@ class RestrictionManager(models.Manager):
             self,
             *,
             raw_restrictions: List['types.Restriction'],
-            user: "tg_models.User" = None,
-            chat: "tg_models.Chat" = None,
-            message: "tg_models.Message" = None
+            db_user: "tg_models.User" = None,
+            db_chat: "tg_models.Chat" = None,
+            db_message: "tg_models.Message" = None
     ):
         if raw_restrictions is None:
             return
-        self.get_queryset().clear_restrictions(db_user=user, db_chat=chat, db_message=message)
+        self.get_queryset().clear_restrictions(db_user=db_user, db_chat=db_chat, db_message=db_message)
 
         try:
             self.get_queryset() \
