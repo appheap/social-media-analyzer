@@ -121,8 +121,8 @@ class MessageView(BaseModel, ChatUpdater):
     objects = MessageViewManager()
 
     ###################################################
-    # fixme: add foreign key to this model from `user` and `chat`
-    # `recent_repliers` : last few comment posters for a specific thread
+    # `recent_user_repliers` : last few comment posters for a specific thread
+    # `recent_chat_repliers` : last few comment posters for a specific thread
 
     class Meta:
         ordering = ['-date_ts', 'message', ]
