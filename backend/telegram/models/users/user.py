@@ -96,7 +96,13 @@ class UserManager(models.Manager):
             self.create_restrictions(raw_user.user if is_full_type else raw_user, user_qs[0])
         return updated
 
-    def update_or_create_from_raw(self, *, raw_user: Union[types.User, types.UserFull]) -> Optional["User"]:
+    def update_or_create_from_raw(
+            self,
+            *,
+            raw_user: Union[types.User, types.UserFull],
+
+            db_message_view: 'tg_models.MessageView' = None,
+    ) -> Optional["User"]:
         if not raw_user:
             return None
         is_full_type = isinstance(raw_user, types.UserFull)
@@ -104,7 +110,13 @@ class UserManager(models.Manager):
         if parsed_object is None:
             return None
         with transaction.atomic():
-            user = self.get_queryset().update_or_create_user(**parsed_object)
+            user = self.get_queryset().update_or_create_user(
+                **{
+                    **parsed_object,
+
+                    'message_view': db_message_view,
+                }
+            )
             self.create_restrictions(raw_user.user if is_full_type else raw_user, user)
         return user
 
@@ -199,6 +211,13 @@ class User(BaseModel):
 
     ##############################################################
     user_deleted_ts = models.BigIntegerField(null=True, blank=True)
+
+    message_view = models.ForeignKey(
+        'telegram.MessageView',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='recent_user_repliers',
+    )
 
     users = UserManager()
 

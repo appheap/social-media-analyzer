@@ -73,7 +73,14 @@ class BaseChatManager(models.Manager):
         logger.info(f'running the base method in {self}')
         return False
 
-    def update_or_create_from_raw(self, *, raw_chat: types.Chat, creator: "tg_models.User" = None) -> Optional["Chat"]:
+    def update_or_create_from_raw(
+            self,
+            *,
+            raw_chat: types.Chat,
+            creator: "tg_models.User" = None,
+
+            db_message_view: 'tg_models.MessageView' = None
+    ) -> Optional["Chat"]:
         if raw_chat is None:
             return None
         db_chat = None
@@ -88,6 +95,8 @@ class BaseChatManager(models.Manager):
                     chat_id=raw_chat.id,
                     type=ChatTypes.channel if raw_chat.type == 'channel' else ChatTypes.supergroup,
                     channel=db_channel,
+
+                    message_view=db_message_view,
                 )
             else:
                 db_chat = None
@@ -104,6 +113,8 @@ class BaseChatManager(models.Manager):
                     chat_id=raw_chat.id,
                     type=ChatTypes.group,
                     group=db_group,
+
+                    message_view=db_message_view,
                 )
         else:
             pass
@@ -259,6 +270,13 @@ class Chat(
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='chat',
+    )
+
+    message_view = models.ForeignKey(
+        'telegram.MessageView',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='recent_chat_repliers',
     )
 
     #################################################

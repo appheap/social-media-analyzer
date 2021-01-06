@@ -11,6 +11,8 @@ class GetUpdatedChat(Scaffold):
             *,
             raw_chat: types.Chat,
             db_telegram_account: 'tg_models.TelegramAccount',
+
+            db_message_view: 'tg_models.MessageView' = None
     ) -> Optional["tg_models.Chat"]:
 
         if raw_chat is None or db_telegram_account is None:
@@ -26,5 +28,7 @@ class GetUpdatedChat(Scaffold):
 
         return self.tg_models.Chat.chats.update_or_create_from_raw(
             raw_chat=raw_chat,
-            creator=db_creator
+            creator=db_creator,
+
+            db_message_view=db_message_view,
         )

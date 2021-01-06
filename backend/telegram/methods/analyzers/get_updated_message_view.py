@@ -44,10 +44,14 @@ class GetUpdatedMessageView(Scaffold):
                             self.telegram.get_updated_chat(
                                 raw_chat=raw_replier,
                                 db_telegram_account=logger_account,
+
+                                db_message_view=db_message_view,
                             )
                         elif isinstance(raw_replier, types.User):
                             self.telegram.get_updated_user(
                                 raw_user=raw_replier,
+
+                                db_message_view=db_message_view,
                             )
 
             return db_message
