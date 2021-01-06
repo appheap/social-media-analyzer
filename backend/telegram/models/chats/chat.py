@@ -109,6 +109,9 @@ class BaseChatManager(models.Manager):
             pass
         return db_chat
 
+    def get_chat_by_id(self, *, chat_id: int) -> Optional['Chat']:
+        return self.get_queryset().get_chat_by_id(chat_id=chat_id)
+
 
 class ChannelsManager(BaseChatManager):
     def get_queryset(self):
