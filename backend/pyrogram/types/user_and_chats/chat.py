@@ -124,6 +124,15 @@ class Chat(Object):
         return username
 
     @property
+    def members_count(self):
+        if self.type in ('channel', 'supergroup',):
+            return self.channel.members_count
+        elif self.type == 'group':
+            return self.group.members_count
+
+        return 2
+
+    @property
     def is_creator(self):
         if self.type in ('channel', 'supergroup',):
             return self.channel.is_creator
