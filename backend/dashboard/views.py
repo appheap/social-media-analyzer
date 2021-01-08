@@ -51,7 +51,7 @@ class AccountsView(LoginRequiredMixin, ListView):
     login_url = 'login'
 
     def get_queryset(self):
-        self.queryset = tg_models.TelegramChannel.objects.filter(user=self.request.user)
+        self.queryset = tg_models.TelegramChannel.objects.filter(site_user=self.request.user)
         return super().get_queryset()
 
     def get_context_data(self, **kwargs):
