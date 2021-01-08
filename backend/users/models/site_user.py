@@ -13,7 +13,11 @@ class SiteUserQuerySet(db_models.SoftDeletableQS):
 
 
 class SiteUserManager(AbstractUserManager):
-    def get_user_by_id(self, user_id: int) -> "SiteUser":
+    def get_user_by_id(
+            self,
+            *,
+            user_id: int,
+    ) -> "SiteUser":
         site_user = None
         try:
             site_user = self.get_queryset().get(pk=user_id)
@@ -23,7 +27,11 @@ class SiteUserManager(AbstractUserManager):
             logger.exception(e)
         return site_user
 
-    def get_user_by_username(self, username: str) -> "SiteUser":
+    def get_user_by_username(
+            self,
+            *,
+            username: str,
+    ) -> "SiteUser":
         site_user = None
         try:
             site_user = self.get_queryset().get(username=username.lower())
