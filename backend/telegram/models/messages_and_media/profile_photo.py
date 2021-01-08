@@ -3,7 +3,7 @@ from ..base import BaseModel
 from db.models import SoftDeletableBaseModel
 
 
-class Photo(BaseModel, SoftDeletableBaseModel):
+class ProfilePhoto(BaseModel, SoftDeletableBaseModel):
     width = models.IntegerField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)
     file_size = models.IntegerField(blank=True, null=True)

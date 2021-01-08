@@ -15,7 +15,7 @@ from .message import MessageQuerySet
 from .message import ChatMediaTypes
 from .message_updater import MessageUpdater
 
-from .photo import Photo
+from .profile_photo import ProfilePhoto
 
 __all__ = [
     "Entity",
@@ -35,5 +35,5 @@ __all__ = [
     "ChatMediaTypes",
     "MessageUpdater",
 
-    "Photo",
+    "ProfilePhoto",
 ]

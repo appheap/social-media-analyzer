@@ -99,7 +99,7 @@ class MembershipInline(admin.TabularInline):
 
 
 class ProfilePhotoInline(admin.TabularInline):
-    model = Photo
+    model = ProfilePhoto
     verbose_name_plural = 'Profile Photos'
 
 
@@ -254,7 +254,7 @@ admin.site.register(Group)
 admin.site.register(AdminShip)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Message, MessageAdmin)
-admin.site.register(Photo)
+admin.site.register(ProfilePhoto)
 admin.site.register(MessageView)
 admin.site.register(Entity)
 admin.site.register(EntityType)
