@@ -1,4 +1,5 @@
 from .methods import TelegramMethods
+from .methods import UsersMethods
 
 
 class DataBaseManager:
@@ -11,3 +12,4 @@ class DataBaseManager:
         self.site_models = site_models
 
         self.telegram = TelegramMethods()
+        self.users = UsersMethods()
