@@ -40,6 +40,17 @@ class ChatQuerySet(SoftDeletableQS):
             logger.exception(e)
         return None
 
+    def get_chat_by_username(self, *, username: str) -> "Chat":
+        try:
+            return self.get(username=username)
+        except DatabaseError as e:
+            logger.exception(e)
+        except Chat.MultipleObjectsReturned as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
     def filter_by_id(self, *, chat_id: int) -> "ChatQuerySet":
         return self.filter(chat_id=chat_id)
 
@@ -128,6 +139,9 @@ class BaseChatManager(models.Manager):
 
     def get_chat_by_id(self, *, chat_id: int) -> Optional['Chat']:
         return self.get_queryset().get_chat_by_id(chat_id=chat_id)
+
+    def get_chat_by_username(self, *, username: str) -> Optional['Chat']:
+        return self.get_queryset().get_chat_by_username(username=username)
 
     @staticmethod
     def create_restrictions(
