@@ -7,6 +7,7 @@ import arrow
 from ..base import BaseModel
 from users import models as site_models
 from core.globals import logger
+from telegram import models as tg_models
 
 
 class AddChannelRequestStatusTypes(models.TextChoices):
@@ -42,6 +43,31 @@ class AddChannelRequestQuerySet(models.QuerySet):
 
         return None
 
+    def create_request(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser',
+            db_admin: 'tg_models.TelegramAccount',
+            channel_username: str,
+            db_telegram_channel: 'tg_models.TelegramChannel',
+    ) -> Optional['AddChannelRequest']:
+
+        try:
+            return self.create(
+                admin=db_admin,
+                status=AddChannelRequestStatusTypes.CHANNEL_MEMBER,
+                channel_username=channel_username,
+                done=False,
+                telegram_channel=db_telegram_channel,
+                site_user=db_site_user,
+            )
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return None
+
 
 class AddChannelRequestManager(models.Manager):
     def get_queryset(self) -> AddChannelRequestQuerySet:
@@ -59,6 +85,24 @@ class AddChannelRequestManager(models.Manager):
         return self.get_queryset().undone().get_by_username_and_user(
             channel_username=channel_username,
             db_site_user=db_site_user
+        )
+
+    def create_request(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser',
+            db_admin: 'tg_models.TelegramAccount',
+            channel_username: str,
+            db_telegram_channel: 'tg_models.TelegramChannel',
+    ) -> Optional['AddChannelRequest']:
+        if db_site_user is None or db_admin is None or channel_username is None or db_telegram_channel is None:
+            return None
+
+        return self.get_queryset().create_request(
+            db_site_user=db_site_user,
+            db_admin=db_admin,
+            channel_username=channel_username,
+            db_telegram_channel=db_telegram_channel
         )
 
 
@@ -101,7 +145,7 @@ class AddChannelRequest(BaseModel):
     )
 
     # telegram account chosen to be the admin of the channel
-    telegram_account = models.ForeignKey(
+    admin = models.ForeignKey(
         'telegram.TelegramAccount',
         on_delete=models.CASCADE,
         related_name='telegram_channel_add_requests',

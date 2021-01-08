@@ -41,7 +41,7 @@ class TelegramChannelForm(forms.ModelForm):
 class AddChannelRequestForm(forms.ModelForm):
     class Meta:
         model = AddChannelRequest
-        fields = ('channel_username', 'telegram_account',)
+        fields = ('channel_username', 'admin',)
         widgets = {
             'channel_username': forms.TextInput(
                 attrs={
@@ -51,7 +51,7 @@ class AddChannelRequestForm(forms.ModelForm):
                     'name': 'username',
                 },
             ),
-            'telegram_account': forms.Select(
+            'admin': forms.Select(
                 attrs={
                     'required': True,
                     'class': 'form-control text-white',
