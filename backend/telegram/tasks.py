@@ -1,12 +1,20 @@
 from celery import shared_task
 
-from telegram.client import client_utils
+from telegram import globals as tg_globals
 from telegram.globals import tg_function
+from .client.telegram_client_manager import TelegramClientManager
+from .client.telegram_consumer_manager import TelegramConsumerManager
+
+clients = []
 
 
 @shared_task(queue='tg_queue', timeout=60)
 def init_consumer():
-    client_utils.init_consumer()
+    global clients
+    for i in range(tg_globals.number_of_telegram_workers):
+        TelegramConsumerManager(clients, i + 1).start()
+
+    TelegramClientManager(clients=clients).run()
 
 
 @shared_task(queue='default', timeout=60)
