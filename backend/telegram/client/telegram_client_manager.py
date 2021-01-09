@@ -1,9 +1,20 @@
+import multiprocessing as mp
+import threading
 from typing import List, Union
 
+import arrow
+
 import pyrogram
+from core.globals import logger
 from db.database_manager import DataBaseManager
-from pyrogram import raw
+from pyrogram import raw, idle
 from pyrogram import types
+#############################################
+from pyrogram.handlers import DisconnectHandler, MessageHandler, RawUpdateHandler
+#############################################
+from telegram.client.client_manager import *
+
+clients_lock = threading.RLock()
 
 _update = Union[
     raw.types.UpdateBotCallbackQuery, raw.types.UpdateBotInlineQuery, raw.types.UpdateBotInlineSend,
@@ -53,7 +64,7 @@ class TelegramClientManager:
             client: 'pyrogram.Client',
             message: 'types.Message'
     ):
-        pass
+        logger.info(f"in on_message : {threading.current_thread()}")
 
     def on_raw_update(
             self,
@@ -62,7 +73,29 @@ class TelegramClientManager:
             users: List['types.User'],
             chats: List['types.Chat']
     ):
-        pass
+        logger.info(f"in on_raw_update : {threading.current_thread()}")
 
     def run(self) -> None:
-        pass
+        logger.info(mp.current_process().name)
+        logger.info(threading.current_thread())
+
+        for client in map(get_client, client_names, [False] * len(client_names)):
+            client.start()
+            with clients_lock:
+                self.clients.append(client)
+
+            me = str(client.get_me())
+            logger.info(me)
+
+            client.add_handler(DisconnectHandler(self.on_disconnect))
+            client.add_handler(MessageHandler(self.on_message))
+            client.add_handler(RawUpdateHandler(self.on_raw_update))
+
+        idle()
+        with clients_lock:
+            for client in self.clients:
+                client.stop()
+
+    @staticmethod
+    def on_disconnect(client: 'pyrogram.Client'):
+        logger.info(f"client {client.session_name} disconnected @ {arrow.utcnow()}")
