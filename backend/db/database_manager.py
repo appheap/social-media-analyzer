@@ -1,7 +1,3 @@
-from .methods import TelegramMethods
-from .methods import UsersMethods
-
-
 class DataBaseManager:
 
     def __int__(self):
@@ -10,6 +6,9 @@ class DataBaseManager:
 
         self.tg_models = tg_models
         self.site_models = site_models
+
+        from .methods import TelegramMethods
+        from .methods import UsersMethods
 
         self.telegram = TelegramMethods()
         self.users = UsersMethods()
