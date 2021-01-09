@@ -6,6 +6,9 @@ from kombu.connection import Connection
 from db.database_manager import DataBaseManager
 from telegram import globals as tg_globals
 import pyrogram
+from core.globals import logger
+from utils.utils import prettify
+from kombu.transport import pyamqp
 
 
 class Worker(ConsumerProducerMixin):
@@ -33,5 +36,11 @@ class Worker(ConsumerProducerMixin):
             )
         ]
 
-    def on_task(self, body, message):
-        pass
+    def on_task(self, body: dict, message: pyamqp.Message):
+        logger.info(type(body))
+        logger.info(type(message))
+        func = body['func']
+        args = body['args']
+        kwargs = body['kwargs']
+
+        logger.info(f'on consumer {self.index} Got task: {prettify(body)}')
