@@ -36,6 +36,16 @@ class Scaffold:
     ) -> Optional['tg_models.Chat']:
         pass
 
+    def get_updated_dialog(
+            self,
+            *,
+            raw_chat: "types.Chat",
+            db_account: "tg_models.TelegramAccount",
+            is_member: bool,
+            left_date_ts: int = None
+    ) -> Optional["tg_models.Dialog"]:
+        pass
+
     def get_membership_by_user_id(
             self,
             *,
