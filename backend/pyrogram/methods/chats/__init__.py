@@ -56,6 +56,7 @@ from .mark_chat_unread import MarkChatUnread
 
 # added
 from .get_admin_log import GetAdminLog
+from .get_all_dialogs import GetAllDialogs
 
 
 class Chats(
@@ -99,6 +100,7 @@ class Chats(
 
     # added
     GetAdminLog,
+    GetAllDialogs,
 
 ):
     pass

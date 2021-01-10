@@ -101,6 +101,6 @@ class GetDialogs(Scaffold):
             if not isinstance(dialog, raw.types.Dialog):
                 continue
 
-            parsed_dialogs.append(types.Dialog._parse(self, dialog, messages, users, chats))
+            parsed_dialogs.append(await types.Dialog._parse(self, dialog, messages, users, chats))
 
         return types.List(parsed_dialogs)

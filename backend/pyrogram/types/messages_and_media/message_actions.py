@@ -93,7 +93,8 @@ class MessageAction(Object):
             return MessageActionSecureValuesSent._parse(client, action, users, chats)
 
         elif isinstance(action, raw.types.MessageActionContactSignUp):
-            return MessageActionContactSignUp._parse(client, action, users, chats, message.from_id.user_id)
+            peer = message.from_id if message.from_id else message.peer_id
+            return MessageActionContactSignUp._parse(client, action, users, chats, peer.user_id)
 
         elif isinstance(action, raw.types.MessageActionGeoProximityReached):
             return await MessageActionGeoProximityReached._parse(client, action, users, chats)

@@ -223,11 +223,11 @@ class Chat(Object):
         return Chat._parse_channel_chat(client, chats[message.peer_id.channel_id])
 
     @staticmethod
-    def _parse_dialog(client, peer, users: dict, chats: dict):
+    async def _parse_dialog(client, peer, users: dict, chats: dict):
         if isinstance(peer, raw.types.PeerUser):
             return Chat._parse_user_chat(client, users[peer.user_id])
         elif isinstance(peer, raw.types.PeerChat):
-            return Chat._parse_group_chat(client, chats[peer.chat_id])
+            return await Chat._parse_group_chat(client, chats[peer.chat_id])
         else:
             return Chat._parse_channel_chat(client, chats[peer.channel_id])
 
