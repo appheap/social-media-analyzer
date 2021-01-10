@@ -25,7 +25,7 @@ class GetUpdatedMessageView(Scaffold):
         with transaction.atomic():
             db_discussion_chat = None
             if raw_message_view.replies is not None and raw_message_view.replies.channel_id is not None:
-                db_discussion_chat = self.telegram.get_chat_by_id(chat_id=raw_message_view.replies.channel_id)
+                db_discussion_chat = self.get_chat_by_id(chat_id=raw_message_view.replies.channel_id)
 
             db_message_view = self.tg_models.MessageView.objects.update_or_create_view_from_raw(
                 raw_message_view=raw_message_view,
@@ -41,14 +41,14 @@ class GetUpdatedMessageView(Scaffold):
                     raw_recent_replies = raw_message_view.replies.recent_repliers
                     for raw_replier in raw_recent_replies:
                         if isinstance(raw_replier, types.Chat):
-                            self.telegram.get_updated_chat(
+                            self.get_updated_chat(
                                 raw_chat=raw_replier,
                                 db_telegram_account=logger_account,
 
                                 db_message_view=db_message_view,
                             )
                         elif isinstance(raw_replier, types.User):
-                            self.telegram.get_updated_user(
+                            self.get_updated_user(
                                 raw_user=raw_replier,
 
                                 db_message_view=db_message_view,

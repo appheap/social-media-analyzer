@@ -29,11 +29,11 @@ class GetUpdatedMessage(Scaffold):
             )
 
             if create_entities and db_message is not None:
-                self.telegram.get_updated_message_entities(
+                self.get_updated_message_entities(
                     db_message=db_message,
                     raw_message=raw_message,
                 )
-                self.telegram.get_updated_message_entity_types(
+                self.get_updated_message_entity_types(
                     db_message=db_message,
                     raw_message=raw_message,
                 )

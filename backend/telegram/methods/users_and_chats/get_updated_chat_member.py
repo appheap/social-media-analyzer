@@ -20,23 +20,23 @@ class GetUpdatedChatMember(Scaffold):
             demoted_by: 'types.User' = None,
 
     ) -> Optional['tg_models.ChatMember']:
-        db_membership = self.telegram.get_membership_by_user_id(
+        db_membership = self.get_membership_by_user_id(
             user_id=raw_chat_member.user.id,
             db_chat=db_chat,
         )
         if db_membership is None:
             return None
 
-        db_promoted_by = self.telegram.get_updated_user(
+        db_promoted_by = self.get_updated_user(
             raw_user=raw_chat_member.promoted_by,
         )
-        db_demoted_by = self.telegram.get_updated_user(
+        db_demoted_by = self.get_updated_user(
             raw_user=demoted_by,
         )
-        db_kicked_by = self.telegram.get_updated_user(
+        db_kicked_by = self.get_updated_user(
             raw_user=raw_chat_member.kicked_by,
         )
-        db_invited_by = self.telegram.get_updated_user(
+        db_invited_by = self.get_updated_user(
             raw_user=raw_chat_member.invited_by,
         )
 

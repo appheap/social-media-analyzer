@@ -20,13 +20,13 @@ class CreateAdminLog(Scaffold):
         if raw_admin_log is None or db_chat is None or logged_by is None:
             return None
 
-        if not self.telegram.admin_log_exists(
+        if not self.admin_log_exists(
                 event_id=raw_admin_log.event_id,
                 chat_id=db_chat.chat_id,
         ):
             with transaction.atomic():
-                db_user = self.telegram.get_updated_user(
-                    raw_admin_log.user
+                db_user = self.get_updated_user(
+                    raw_user=raw_admin_log.user
                 )
                 if not db_user:
                     return None
