@@ -1,6 +1,6 @@
 class DataBaseManager:
 
-    def __int__(self):
+    def __init__(self):
         from telegram import models as tg_models
         from users import models as site_models
 
@@ -9,6 +9,13 @@ class DataBaseManager:
 
         from .methods import TelegramMethods
         from .methods import UsersMethods
+        self._telegram = TelegramMethods()
+        self._users = UsersMethods()
 
-        self.telegram = TelegramMethods()
-        self.users = UsersMethods()
+    @property
+    def telegram(self):
+        return self._telegram
+
+    @property
+    def users(self):
+        return self._users
