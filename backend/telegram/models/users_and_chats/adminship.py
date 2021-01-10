@@ -70,15 +70,15 @@ class AdminShipManger(models.Manager):
 
         parsed_object = self._parse(raw_chat=raw_chat)
         if len(parsed_object):
-            role_type = self.tg_models.Role.member
+            role_type = tg_models.Role.member
             if raw_chat.is_creator:
-                role_type = self.tg_models.Role.creator
+                role_type = tg_models.Role.creator
 
             if raw_chat.is_admin:
-                role_type = self.tg_models.Role.administrator
+                role_type = tg_models.Role.administrator
 
             if raw_chat.has_left:
-                role_type = self.tg_models.Role.left
+                role_type = tg_models.Role.left
 
             with transaction.atomic():
                 db_adminship = self.get_queryset().update_or_create_adminship(
