@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from django.db import models, DatabaseError
 
@@ -38,10 +38,32 @@ class TelegramAccountQuerySet(SoftDeletableQS):
 
         return None
 
+    def get_telegram_accounts_by_ids(
+            self,
+            *,
+            ids: List['int']
+    ) -> List['TelegramAccount']:
+        return self.filter(
+            user_id__in=ids
+        )
+
 
 class TelegramAccountManager(models.Manager):
     def get_queryset(self) -> TelegramAccountQuerySet:
         return TelegramAccountQuerySet(self.model, using=self._db)
+
+    def get_telegram_accounts_by_ids(
+            self,
+            *,
+            ids: List['int']
+    ) -> Optional[List['TelegramAccount']]:
+
+        if ids is None or not len(ids):
+            return None
+
+        return self.get_queryset().get_telegram_accounts_by_ids(
+            ids=ids
+        )
 
     def update_or_create_from_raw(
             self,
