@@ -48,7 +48,7 @@ class TelegramAccountManager(models.Manager):
             *,
             db_site_user: 'site_models.SiteUser',
             db_user: 'tg_models.User',
-            client: pyrogram.Client,
+            client: 'pyrogram.Client',
 
     ) -> Optional['TelegramAccount']:
 
@@ -72,22 +72,22 @@ class TelegramAccountManager(models.Manager):
         return None
 
     @staticmethod
-    def _parse(*, db_user: 'tg_models.User'):
+    def _parse(*, db_user: 'tg_models.User') -> dict:
         if db_user is None:
             return {}
 
         return {
-            'user_id', db_user.user_id,
-            'username', db_user.username,
-            'first_name', db_user.first_name,
-            'last_name', db_user.last_name,
-            'is_bot', db_user.is_bot,
-            'is_restricted', db_user.is_restricted,
-            'is_scam', db_user.is_scam,
-            'is_verified', db_user.is_verified,
-            'phone_number', db_user.phone_number,
-            'dc_id', db_user.dc_id,
-            'language_code', db_user.language_code,
+            'user_id': db_user.user_id,
+            'username': db_user.username,
+            'first_name': db_user.first_name,
+            'last_name': db_user.last_name,
+            'is_bot': db_user.is_bot,
+            'is_restricted': db_user.is_restricted,
+            'is_scam': db_user.is_scam,
+            'is_verified': db_user.is_verified,
+            'phone_number': db_user.phone_number,
+            'dc_id': db_user.dc_id,
+            'language_code': db_user.language_code,
         }
 
 
