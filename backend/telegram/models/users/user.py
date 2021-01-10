@@ -154,7 +154,7 @@ class UserManager(models.Manager):
             return None
 
         return {
-            'id': user.id,
+            'user_id': user.id,
             'is_empty': user.is_empty,
             'is_mutual_contact': user.is_mutual_contact,
             'is_deleted': user.is_deleted,
