@@ -34,6 +34,10 @@ class ChatQuerySet(SoftDeletableQS):
     def get_chat_by_id(self, *, chat_id: int) -> "Chat":
         try:
             return self.get(chat_id=chat_id)
+        except Chat.DoesNotExist as e:
+            pass
+        except Chat.MultipleObjectsReturned as e:
+            logger.exception(e)
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
