@@ -7,10 +7,12 @@ from kombu.connection import Connection
 from db.database_manager import DataBaseManager
 from telegram import globals as tg_globals
 import pyrogram
+from pyrogram import types
 from core.globals import logger
 from utils.utils import prettify
 from kombu.transport import pyamqp
 from .base_response import BaseResponse
+from telegram import tasks
 
 clients_lock = threading.RLock()
 
@@ -41,8 +43,6 @@ class Worker(ConsumerProducerMixin):
         ]
 
     def on_task(self, body: dict, message: pyamqp.Message):
-        logger.info(type(body))
-        logger.info(type(message))
         func = body['func']
         args = body['args']
         kwargs = body['kwargs']
@@ -103,3 +103,12 @@ class Worker(ConsumerProducerMixin):
                     return BaseResponse().fail()
 
         return wrapper
+
+    def task_get_me(self, *args, **kwargs):
+        data = {}
+        for client in self.clients:
+            client: pyrogram.Client = client
+            data.update({
+                str(client.session_name): str(client.get_me())
+            })
+        return BaseResponse().done(data=data)
