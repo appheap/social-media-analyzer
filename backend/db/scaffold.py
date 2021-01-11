@@ -36,6 +36,12 @@ class Scaffold:
     ) -> Optional['tg_models.Chat']:
         pass
 
+    def get_telegram_channel_by_id(
+            self,
+            channel_id: int,
+    ) -> Optional['tg_models.TelegramChannel']:
+        pass
+
     def get_updated_dialog(
             self,
             *,

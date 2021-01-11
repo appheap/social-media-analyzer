@@ -4,11 +4,11 @@ from django.core.validators import MinLengthValidator
 from django.db import models, DatabaseError
 from django.urls import reverse
 
-from db.models import SoftDeletableQS
+from core.globals import logger
 from db.models import SoftDeletableBaseModel
+from db.models import SoftDeletableQS
 from pyrogram import types
 from telegram import models as tg_models
-from core.globals import logger
 from users import models as site_models
 from ..base import BaseModel
 
@@ -45,6 +45,9 @@ class TelegramChannelManager(models.Manager):
     def get_queryset(self) -> TelegramChannelQuerySet:
         return TelegramChannelQuerySet(self.model, using=self._db)
 
+    def get_by_channel_id(self, *, channel_id: int) -> Optional['TelegramChannel']:
+        return self.get_queryset().get_by_channel_id(channel_id=channel_id)
+
     def update_or_create_from_raw(
             self,
             *,
@@ -52,17 +55,27 @@ class TelegramChannelManager(models.Manager):
             db_site_user: 'site_models.SiteUser',
             db_account: 'tg_models.TelegramAccount',
             db_chat: 'tg_models.Chat',
+
+            create: bool = True,
     ) -> Optional['TelegramChannel']:
 
-        if raw_chat is None or db_site_user is None or db_account is None or db_chat is None:
+        if raw_chat is None or db_account is None or db_chat is None:
             return None
+
+        if create and db_site_user is None:
+            raise ValueError('`db_site_user` cannot be None')
 
         parsed_object = self._parse(raw_chat=raw_chat)
         if len(parsed_object):
+            if create:
+                parsed_object.update(
+                    {
+                        'site_user': db_site_user,
+                    }
+                )
             db_channel = self.get_queryset().update_or_create_channel(
                 **{
                     **parsed_object,
-                    'site_user': db_site_user,
                     'chat': db_chat,
                     'telegram_account': db_account
                 }
@@ -80,6 +93,7 @@ class TelegramChannelManager(models.Manager):
         return {
             'channel_id': raw_chat.id,
             'is_account_creator': raw_chat.channel.is_creator,
+            'is_account_admin': raw_chat.is_admin,
             'username': raw_chat.channel.username.lower() if getattr(raw_chat.channel, 'username', None) else None,
             'is_public': raw_chat.channel.username is not None
         }
