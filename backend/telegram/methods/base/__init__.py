@@ -7,7 +7,7 @@ from .get_telegram_accounts_by_ids import GetTelegramAccountsByIds
 class Base(
     GetUpdatedTelegramAccount,
     GetUpdatedTelegramChannel,
-    GetUpdatedTelegramChannel,
+    GetTelegramChannelById,
     GetTelegramAccountsByIds,
 
 ):
