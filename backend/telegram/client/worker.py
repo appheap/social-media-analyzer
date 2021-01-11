@@ -143,3 +143,49 @@ class Worker(ConsumerProducerMixin):
             countdown=0,
         )
         return BaseResponse().done(message='client init successful')
+
+    def task_iterate_dialogs(self, *args, **kwargs):
+        tg_account_ids = kwargs.get('tg_account_ids', None)
+        if tg_account_ids is None:
+            return BaseResponse().fail('missing `tg_account_ids` kwarg')
+
+        db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_ids(
+            ids=tg_account_ids
+        )
+        if db_telegram_accounts is None or not len(db_telegram_accounts):
+            return BaseResponse().fail('no telegram account is available now')
+
+        for db_telegram_account in db_telegram_accounts:
+            client = self.clients_dict.get(db_telegram_account.session_name, None)
+            if client is None:
+                continue
+
+            raw_dialogs = client.get_all_dialogs()
+            if raw_dialogs is None or not len(raw_dialogs):
+                continue
+
+            db_dialogs = self.db.telegram.get_updated_dialogs(
+                raw_dialogs=raw_dialogs,
+                db_telegram_account=db_telegram_account,
+            )
+
+            if db_dialogs is None:
+                continue
+
+            for raw_dialogs in raw_dialogs:
+                raw_chat: types.Chat = raw_dialogs.chat
+                if raw_chat is None:
+                    continue
+
+                if raw_chat.type == 'channel':
+                    db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
+                        raw_chat=raw_chat,
+                        db_site_user=None,
+                        db_account=db_telegram_account,
+
+                    )
+                    self.db.telegram.update_chat_analyzers_status(
+                        db_telegram_channel=db_telegram_channel,
+                        enabled=raw_chat.is_admin,
+                    )
+        return BaseResponse().done()
