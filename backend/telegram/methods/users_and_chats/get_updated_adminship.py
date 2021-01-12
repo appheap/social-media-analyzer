@@ -30,7 +30,7 @@ class GetUpdatedAdminShip(Scaffold):
                 field_name='admin_rights',
                 raw_chat_admin_rights=raw_chat.admin_rights
             )
-            db_adminship.update_or_create_chat_permissions_from_raw(
+            db_adminship.update_or_create_chat_permissions_from_raw_obj(
                 model=db_adminship,
                 field_name='banned_rights',
                 raw_chat_permissions=raw_chat.chat_permissions
