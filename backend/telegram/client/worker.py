@@ -29,13 +29,8 @@ class Worker(ConsumerProducerMixin):
     ):
         self.connection = connection
         self.clients = clients
-        self.clients_dict = {}
         self.index = index
         self.db = DataBaseManager()
-
-        if clients and len(clients):
-            for client in clients:
-                self.clients_dict[client.session_name] = client
 
     def get_consumers(self, consumer, channel) -> List[Consumer]:
         return [
@@ -46,6 +41,14 @@ class Worker(ConsumerProducerMixin):
                 prefetch_count=1,
             )
         ]
+
+    def get_client(self, session_name: str) -> Optional['pyrogram.Client']:
+        for client in self.clients:
+            logger.info(client.session_name)
+            if client.session_name == session_name:
+                return client
+
+        return None
 
     def on_task(self, body: dict, message: pyamqp.Message):
         func = body['func']
@@ -156,7 +159,7 @@ class Worker(ConsumerProducerMixin):
             return BaseResponse().fail('no telegram account is available now')
 
         for db_telegram_account in db_telegram_accounts:
-            client = self.clients_dict.get(db_telegram_account.session_name, None)
+            client = self.get_client(db_telegram_account.session_name)
             if client is None:
                 continue
 
