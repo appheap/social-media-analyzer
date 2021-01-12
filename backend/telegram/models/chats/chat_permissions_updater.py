@@ -7,7 +7,7 @@ from .chat_permissions import ChatPermissions
 class ChatPermissionsUpdater:
 
     @staticmethod
-    def update_or_create_chat_permissions_from_raw(
+    def update_or_create_chat_permissions_from_raw_obj(
             *,
             model: models.Model,
             field_name: str,
@@ -25,7 +25,7 @@ class ChatPermissionsUpdater:
                 field.update_fields_from_raw(raw_chat_permissions=raw_chat_permissions)
             else:
                 field.delete()
-                model.save(model)
+                model.save()
         else:
             if raw_chat_permissions:
                 setattr(
@@ -35,4 +35,4 @@ class ChatPermissionsUpdater:
                         raw_chat_permissions=raw_chat_permissions
                     )
                 )
-                model.save(model)
+                model.save()

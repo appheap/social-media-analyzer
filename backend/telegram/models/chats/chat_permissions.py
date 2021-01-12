@@ -1,17 +1,20 @@
+import uuid
 from typing import Optional
 
 from django.db import DatabaseError
 from django.db import models
 
-from pyrogram import types
 from core.globals import logger
+from pyrogram import types
 from ..base import BaseModel
 
 
 class ChatPermissionsQuerySet(models.QuerySet):
-    def update_or_create_chat_permissions(self, **kwargs) -> Optional["ChatPermissions"]:
+    def create_chat_permissions(self, **kwargs) -> Optional["ChatPermissions"]:
         try:
-            return self.update_or_create(**kwargs)[0]
+            return self.create(
+                **kwargs
+            )
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -46,7 +49,7 @@ class ChatPermissionsManager(models.Manager):
             return None
         parsed_object = self._parse(raw_chat_permissions)
         if parsed_object:
-            return self.get_queryset().update_or_create_chat_permissions(
+            return self.get_queryset().create_chat_permissions(
                 **parsed_object
             )
         else:
@@ -87,6 +90,8 @@ class ChatPermissionsManager(models.Manager):
 
 
 class ChatPermissions(BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+
     # True, if the user is allowed to send text messages, contacts, locations and venues.
     can_send_messages = models.BooleanField(null=True, blank=True, )
     # True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes, implies can_send_messages.
@@ -125,6 +130,4 @@ class ChatPermissions(BaseModel):
         verbose_name_plural = 'Chat permissions'
 
     def update_fields_from_raw(self, *, raw_chat_permissions: types.ChatPermissions):
-        self.objects.update_chat_permissions_from_raw(id=self.id, raw_chat_permissions=raw_chat_permissions)
-
-
+        ChatPermissions.objects.update_chat_permissions_from_raw(id=self.id, raw_chat_permissions=raw_chat_permissions)

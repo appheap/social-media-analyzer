@@ -125,7 +125,7 @@ class ChatMemberManager(models.Manager):
                         raw_user=invited_by,
                     )
 
-                    db_chat_member.update_or_create_chat_permissions_from_raw(
+                    db_chat_member.update_or_create_chat_permissions_from_raw_obj(
                         model=db_chat_member,
                         field_name='banned_rights',
                         raw_chat_permissions=raw_chat_member.banned_rights

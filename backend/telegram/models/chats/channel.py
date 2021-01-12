@@ -55,8 +55,8 @@ class ChannelManager(models.Manager):
                 if updated:
                     db_channel = channel_qs[0]
                     if db_channel:
-                        db_channel.update_or_create_chat_permissions_from_raw(
-                            model=self,
+                        db_channel.update_or_create_chat_permissions_from_raw_obj(
+                            model=db_channel,
                             field_name='default_banned_rights',
                             raw_chat_permissions=raw_chat.channel.default_banned_rights
                         )

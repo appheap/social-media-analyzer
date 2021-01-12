@@ -68,7 +68,7 @@ class GroupManager(models.Manager):
         if updated:
             db_group = group_qs[0]
             if db_group:
-                db_group.update_or_create_chat_permissions_from_raw(
+                db_group.update_or_create_chat_permissions_from_raw_obj(
                     model=db_group,
                     field_name='default_banned_rights',
                     raw_chat_permissions=raw_chat.group.default_banned_rights
@@ -98,7 +98,7 @@ class GroupManager(models.Manager):
             }
         )
         if db_group:
-            db_group.update_or_create_chat_permissions_from_raw(
+            db_group.update_or_create_chat_permissions_from_raw_obj(
                 model=db_group,
                 field_name='default_banned_rights',
                 raw_chat_permissions=group.default_banned_rights

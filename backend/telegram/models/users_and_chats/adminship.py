@@ -127,7 +127,7 @@ class AdminShipManger(models.Manager):
     @staticmethod
     def _update_related_fields(*, db_adminship: 'AdminShip', raw_chat: types.Chat):
         if raw_chat.channel:
-            db_adminship.update_or_create_chat_permissions_from_raw(
+            db_adminship.update_or_create_chat_permissions_from_raw_obj(
                 model=db_adminship,
                 field_name='banned_rights',
                 raw_chat_permissions=raw_chat.channel.banned_rights
