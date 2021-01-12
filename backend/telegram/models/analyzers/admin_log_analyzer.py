@@ -8,9 +8,10 @@ from telegram import models as tg_models
 
 
 class AdminLogAnalyzerMetaDataQuerySet(models.QuerySet):
-    def update_or_create_analyzer(self, **kwargs) -> Optional['AdminLogAnalyzerMetaData']:
+    def update_or_create_analyzer(self, *, defaults: dict, **kwargs) -> Optional['AdminLogAnalyzerMetaData']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -53,8 +54,8 @@ class AdminLogAnalyzerMetaDataManager(models.Manager):
             return None
 
         return self.get_queryset().update_or_create(
-            **{
-                'id': chat_id,
+            id=chat_id,
+            defaults={
                 'telegram_channel': db_telegram_channel,
                 'enabled': enabled,
             }
@@ -95,4 +96,4 @@ class AdminLogAnalyzerMetaData(BaseModel):
         return f"{self.id} : {self.enabled}"
 
     def update_fields(self, **kwargs) -> bool:
-        return self.objects.update_analyzer(id=id, **kwargs)
+        return AdminLogAnalyzerMetaData.objects.update_analyzer(id=self.id, **kwargs)

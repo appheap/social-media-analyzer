@@ -32,7 +32,7 @@ class ChatMembersAnalyzerMetaDataUpdater:
                 )
             else:
                 field.delete()
-                model.save(model)
+                model.save()
         else:
             if create and db_telegram_channel:
                 setattr(
@@ -44,4 +44,4 @@ class ChatMembersAnalyzerMetaDataUpdater:
                         enabled=enabled
                     )
                 )
-                model.save(model)
+                model.save()

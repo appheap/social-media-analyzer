@@ -31,7 +31,7 @@ class ChatSharedMediaAnalyzerMetaDataUpdater:
                 )
             else:
                 field.delete()
-                model.save(model)
+                model.save()
         else:
             if create and enabled is not None:
                 setattr(
@@ -42,4 +42,4 @@ class ChatSharedMediaAnalyzerMetaDataUpdater:
                         enabled=enabled
                     )
                 )
-                model.save(model)
+                model.save()

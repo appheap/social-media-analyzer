@@ -8,9 +8,10 @@ from core.globals import logger
 
 
 class ChatMemberCountAnalyzerMetaDataQuerySet(models.QuerySet):
-    def update_or_create_analyzer(self, **kwargs) -> Optional['ChatMemberCountAnalyzerMetaData']:
+    def update_or_create_analyzer(self, *, defaults: dict, **kwargs) -> Optional['ChatMemberCountAnalyzerMetaData']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -52,8 +53,8 @@ class ChatMemberCountAnalyzerMetaDataManager(models.Manager):
             return None
 
         return self.get_queryset().update_or_create(
-            **{
-                'id': chat_id,
+            id=chat_id,
+            defaults={
                 'enabled': enabled,
             }
         )
@@ -83,4 +84,4 @@ class ChatMemberCountAnalyzerMetaData(BaseModel):
         return f"{self.id} : {self.enabled}"
 
     def update_fields(self, **kwargs) -> bool:
-        return self.objects.update_analyzer(id=id, **kwargs)
+        return ChatMemberCountAnalyzerMetaData.objects.update_analyzer(id=self.id, **kwargs)

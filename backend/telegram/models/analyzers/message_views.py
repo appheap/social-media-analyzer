@@ -10,11 +10,12 @@ from core.globals import logger
 
 
 class MessageViewQuerySet(models.QuerySet):
-    def update_or_create_view(self, **kwargs) -> Optional["MessageView"]:
+    def update_or_create_view(self, *, defaults: dict, **kwargs) -> Optional["MessageView"]:
         try:
             self.update_or_create(
+                defaults=defaults,
                 **kwargs
-            )
+            )[0]
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -44,9 +45,9 @@ class MessageViewManager(models.Manager):
         parsed_view = self._parse(raw_message_view=raw_message_view)
         if parsed_view:
             db_view = self.get_queryset().update_or_create_view(
-                **{
+                id=f'{db_message.id}:{date_ts}',
+                defaults={
                     **parsed_view,
-                    'id': f"{db_message.id}:{date_ts}",
                     'date_ts': date_ts,
                     'chat': db_chat,
                     'message': db_message,

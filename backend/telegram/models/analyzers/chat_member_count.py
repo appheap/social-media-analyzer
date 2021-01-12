@@ -9,9 +9,10 @@ from telegram import models as tg_models
 
 
 class ChatMemberCountQuerySet(models.QuerySet):
-    def update_or_create_chat_member_count(self, **kwargs) -> Optional['ChatMemberCount']:
+    def update_or_create_chat_member_count(self, *, defaults: dict, **kwargs) -> Optional['ChatMemberCount']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -38,8 +39,8 @@ class ChatMemberCountManager(models.Manager):
             return None
 
         return self.get_queryset().update_or_create_chat_member_count(
-            **{
-                'id': f'{db_chat.chat_id}:{date_ts}',
+            id=f'{db_chat.chat_id}:{date_ts}',
+            defaults={
                 'date_ts': date_ts,
                 'chat': db_chat,
                 'logged_by': logger_account,

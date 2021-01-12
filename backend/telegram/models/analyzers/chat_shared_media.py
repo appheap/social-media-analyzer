@@ -1,11 +1,12 @@
 from typing import Optional, List
 
-from django.db import models, DatabaseError
 import arrow
+from django.db import models, DatabaseError
+
+from core.globals import logger
 from pyrogram import types
 from telegram import models as tg_models
 from ..base import BaseModel
-from core.globals import logger
 
 _filter_names = (
     'photo',
@@ -22,9 +23,10 @@ _filter_names = (
 
 
 class ChatSharedMediaQuerySet(models.QuerySet):
-    def update_or_create_shared_media(self, **kwargs) -> Optional["ChatSharedMedia"]:
+    def update_or_create_shared_media(self, *, defaults: dict, **kwargs) -> Optional["ChatSharedMedia"]:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -59,9 +61,9 @@ class ChatSharedMediaManager(models.Manager):
                 raise ValueError(f'Invalid filter name : {raw_search_counter.filter_name}')
 
         return self.get_queryset().update_or_create_shared_media(
-            **{
+            id=f'{db_chat.chat_id}:{date_ts}',
+            defaults={
                 **kwargs,
-                'id': f'{db_chat.chat_id}:{date_ts}',
                 'chat': db_chat,
                 'logged_by': logger_account,
             }

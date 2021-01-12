@@ -32,7 +32,7 @@ class AdminLogAnalyzerMetaDataUpdater:
                 )
             else:
                 field.delete()
-                model.save(model)
+                model.save()
         else:
             if create and db_telegram_channel:
                 setattr(
@@ -44,4 +44,4 @@ class AdminLogAnalyzerMetaDataUpdater:
                         enabled=enabled
                     )
                 )
-                model.save(model)
+                model.save()

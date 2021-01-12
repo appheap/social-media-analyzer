@@ -7,9 +7,10 @@ from ..base import BaseModel
 
 
 class ChatMessageViewsAnalyzerMetaDataQuerySet(models.QuerySet):
-    def update_or_create_analyzer(self, **kwargs) -> Optional['ChatMessageViewsAnalyzerMetaData']:
+    def update_or_create_analyzer(self, *, defaults: dict, **kwargs) -> Optional['ChatMessageViewsAnalyzerMetaData']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -51,13 +52,13 @@ class ChatMessageViewsAnalyzerMetaDataManager(models.Manager):
             return None
 
         return self.get_queryset().update_or_create(
-            **{
-                'id': chat_id,
+            id=chat_id,
+            defaults={
                 'enabled': enabled,
             }
         )
 
-    def update_analyzer(self, id: int, **kwargs) -> bool:
+    def update_analyzer(self, *, id: int, **kwargs) -> bool:
         return self.get_queryset().filter_by_id(id=id).update_analyzer(**kwargs)
 
 
@@ -82,4 +83,4 @@ class ChatMessageViewsAnalyzerMetaData(BaseModel):
         return f"{self.id} : {self.enabled}"
 
     def update_fields(self, **kwargs) -> bool:
-        return self.objects.update_analyzer(id=id, **kwargs)
+        return ChatMessageViewsAnalyzerMetaData.objects.update_analyzer(id=self.id, **kwargs)

@@ -9,9 +9,10 @@ from telegram import models as tg_models
 
 
 class ChatMembersAnalyzerMetaDataQuerySet(models.QuerySet):
-    def update_or_create_analyzer(self, **kwargs) -> Optional['ChatMembersAnalyzerMetaData']:
+    def update_or_create_analyzer(self, *, defaults: dict, **kwargs) -> Optional['ChatMembersAnalyzerMetaData']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -54,14 +55,14 @@ class ChatMembersAnalyzerMetaDataManager(models.Manager):
             return None
 
         return self.get_queryset().update_or_create(
-            **{
-                'id': chat_id,
+            id=chat_id,
+            defaults={
                 'telegram_channel': db_telegram_channel,
                 'enabled': enabled,
             }
         )
 
-    def update_analyzer(self, id: int, **kwargs) -> bool:
+    def update_analyzer(self, *, id: int, **kwargs) -> bool:
         return self.get_queryset().filter_by_id(id=id).update_analyzer(**kwargs)
 
 
@@ -95,4 +96,4 @@ class ChatMembersAnalyzerMetaData(BaseModel):
         return f"{self.id} : {self.enabled}"
 
     def update_fields(self, **kwargs) -> bool:
-        return self.objects.update_analyzer(id=id, **kwargs)
+        return ChatMembersAnalyzerMetaData.objects.update_analyzer(id=self.id, **kwargs)
