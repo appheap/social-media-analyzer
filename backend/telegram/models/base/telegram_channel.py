@@ -14,9 +14,10 @@ from ..base import BaseModel
 
 
 class TelegramChannelQuerySet(SoftDeletableQS):
-    def update_or_create_channel(self, **kwargs) -> Optional['TelegramChannel']:
+    def update_or_create_channel(self, *, defaults: dict, **kwargs) -> Optional['TelegramChannel']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -74,7 +75,8 @@ class TelegramChannelManager(models.Manager):
                     }
                 )
             db_channel = self.get_queryset().update_or_create_channel(
-                **{
+                channel_id=raw_chat.id,
+                defaults={
                     **parsed_object,
                     'chat': db_chat,
                     'telegram_account': db_account
@@ -91,7 +93,6 @@ class TelegramChannelManager(models.Manager):
             return {}
 
         return {
-            'channel_id': raw_chat.id,
             'is_account_creator': raw_chat.channel.is_creator,
             'is_account_admin': raw_chat.is_admin,
             'username': raw_chat.channel.username.lower() if getattr(raw_chat.channel, 'username', None) else None,

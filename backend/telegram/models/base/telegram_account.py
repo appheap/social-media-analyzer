@@ -14,9 +14,10 @@ from telegram import models as tg_models
 
 
 class TelegramAccountQuerySet(SoftDeletableQS):
-    def update_or_create_account(self, **kwargs) -> Optional['TelegramAccount']:
+    def update_or_create_account(self, *, defaults: dict, **kwargs) -> Optional['TelegramAccount']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -80,7 +81,8 @@ class TelegramAccountManager(models.Manager):
         parsed_object = self._parse(db_user=db_user)
         if len(parsed_object):
             db_account = self.get_queryset().update_or_create_account(
-                **{
+                user_id=db_user.user_id,
+                defaults={
                     **parsed_object,
                     'site_user': db_site_user,
                     'telegram_user': db_user,
@@ -99,7 +101,6 @@ class TelegramAccountManager(models.Manager):
             return {}
 
         return {
-            'user_id': db_user.user_id,
             'username': db_user.username,
             'first_name': db_user.first_name,
             'last_name': db_user.last_name,
