@@ -9,11 +9,11 @@ from typing import List, Optional
 
 
 class RestrictionQuerySet(models.QuerySet):
-    def update_or_create_restriction(self, **kwargs) -> Optional['Restriction']:
+    def create_restriction(self, **kwargs) -> Optional['Restriction']:
         try:
-            return self.update_or_create(
+            return self.create(
                 **kwargs
-            )[0]
+            )
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -60,7 +60,7 @@ class RestrictionManager(models.Manager):
             return None
 
         self.get_queryset().clear_restrictions(db_user=user, db_chat=chat, db_message=message)
-        return self.get_queryset().update_or_create_restriction(
+        return self.get_queryset().create_restriction(
             **parsed_object
         )
 
@@ -77,8 +77,10 @@ class RestrictionManager(models.Manager):
         self.get_queryset().clear_restrictions(db_user=db_user, db_chat=db_chat, db_message=db_message)
 
         try:
-            self.get_queryset() \
-                .bulk_create(filter(lambda obj: obj is not None, map(RestrictionManager._parse, raw_restrictions)))
+            for parsed_object in filter(lambda obj: obj is not None, map(RestrictionManager._parse, raw_restrictions)):
+                self.get_queryset().create_restriction(
+                    **parsed_object
+                )
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -89,10 +91,8 @@ class RestrictionManager(models.Manager):
         parsed_object = RestrictionManager._parse_restriction(raw_restriction=raw_restriction)
         if not parsed_object:
             return None
-        obj = Restriction(
-            **parsed_object
-        )
-        return obj
+
+        return parsed_object
 
     @staticmethod
     def _parse_restriction(
