@@ -58,9 +58,10 @@ class MessageQuerySet(SoftDeletableQS):
     def filter_by_id(self, *, id: str) -> "MessageQuerySet":
         return self.filter(id=id)
 
-    def update_or_create_message(self, **kwargs) -> Optional["Message"]:
+    def update_or_create_message(self, *, defaults: dict, **kwargs) -> Optional["Message"]:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -106,7 +107,8 @@ class MessageManager(models.Manager):
         if parsed_msg and len(parsed_msg):
             with transaction.atomic():
                 db_message = self.get_queryset().update_or_create_message(
-                    **{
+                    id=f"{chat_id}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}",
+                    defaults={
                         **parsed_msg,
                         'logged_by': logger_account,
                     }
@@ -136,7 +138,6 @@ class MessageManager(models.Manager):
         )
 
         if parsed_msg and len(parsed_msg):
-            del parsed_msg['id']
             if logger_account:
                 parsed_msg['logged_by'] = logger_account
 
@@ -425,7 +426,7 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
             chat_id: int,
             logger_account: "tg_models.TelegramAccount" = None
     ) -> bool:
-        return self.objects.update_from_raw(
+        return Message.objects.update_from_raw(
             chat_id=chat_id,
             id=self.id,
             raw_message=raw_message,

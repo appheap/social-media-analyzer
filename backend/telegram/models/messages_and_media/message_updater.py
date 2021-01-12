@@ -28,7 +28,7 @@ class MessageUpdater:
                 )
             else:
                 setattr(model, field_name, None)
-                model.save(model)
+                model.save()
         else:
             if raw_message:
                 setattr(
@@ -40,4 +40,4 @@ class MessageUpdater:
                         logger_account=logger_account
                     )
                 )
-                model.save(model)
+                model.save()

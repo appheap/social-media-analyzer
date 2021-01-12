@@ -25,9 +25,10 @@ class EntityTypeQuerySet(models.QuerySet):
 
         return None
 
-    def update_or_create_entity(self, **kwargs) -> Optional["EntityType"]:
+    def update_or_create_entity(self, *, defaults: dict, **kwargs) -> Optional["EntityType"]:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -57,8 +58,8 @@ class EntityTypeManager(models.Manager):
         )
         if parsed_entity:
             db_entity = self.get_queryset().update_or_create_entity(
-                **{
-                    'id': f"{db_message.id}:{raw_entity.type}",
+                id=f'{db_message.id}:{raw_entity.type}',
+                defaults={
                     'message': db_message,
                     **parsed_entity,
                 },

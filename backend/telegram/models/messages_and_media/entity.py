@@ -28,9 +28,10 @@ class EntityQuerySet(models.QuerySet):
 
         return None
 
-    def update_or_create_entity(self, **kwargs) -> Optional["Entity"]:
+    def update_or_create_entity(self, *, defaults: dict, **kwargs) -> Optional["Entity"]:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -62,8 +63,8 @@ class EntityManager(models.Manager):
         if parsed_entity:
             with transaction.atomic():
                 db_entity = self.get_queryset().update_or_create_entity(
-                    **{
-                        'id': f"{db_message.id}:{raw_entity.offset}",
+                    id=f'{db_message.id}:{raw_entity.offset}',
+                    defaults={
                         'message': db_message,
                         **parsed_entity,
                     },
