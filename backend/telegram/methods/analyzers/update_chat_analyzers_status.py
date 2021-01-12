@@ -13,6 +13,9 @@ class UpdateChatAnalyzersStatus(Scaffold):
             enabled: bool = False,
             only_admin_based_analyzers: bool = False,
     ):
+        if db_telegram_channel is None:
+            return
+
         db_chat = db_telegram_channel.chat
 
         with transaction.atomic():
