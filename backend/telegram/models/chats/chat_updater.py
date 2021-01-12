@@ -22,7 +22,7 @@ class ChatUpdater:
                 field.update_fields_from_raw(raw_chat=raw_chat)
             else:
                 setattr(model, field_name, None)
-                model.save(model)
+                model.save()
         else:
             setattr(
                 model,
@@ -31,4 +31,4 @@ class ChatUpdater:
                     raw_chat=raw_chat
                 )
             )
-            model.save(model)
+            model.save()

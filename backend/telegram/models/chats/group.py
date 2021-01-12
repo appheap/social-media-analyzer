@@ -11,9 +11,12 @@ from ..base import BaseModel
 
 
 class GroupQuerySet(models.QuerySet):
-    def update_or_create_group(self, **kwargs) -> Optional["Group"]:
+    def update_or_create_group(self, *, defaults: dict, **kwargs) -> Optional["Group"]:
         try:
-            return self.update_or_create(**kwargs)[0]
+            return self.update_or_create(
+                defaults=defaults,
+                **kwargs
+            )[0]
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -91,7 +94,8 @@ class GroupManager(models.Manager):
         if not parsed_full_group and not parsed_group:
             return None
         db_group = self.get_queryset().update_or_create_group(
-            **{
+            id=group.id,
+            defaults={
                 **parsed_full_group,
                 **parsed_group,
                 'creator': creator
@@ -111,7 +115,6 @@ class GroupManager(models.Manager):
         if group is None:
             return {}
         return {
-            'id': group.id,
             'title': group.title,
             'is_empty': group.is_empty,
             'is_deactivated': group.is_deactivated,
@@ -166,10 +169,13 @@ class Group(BaseModel, ChatPermissionsUpdater):
     ########################################################
     # `chat` : chat this channel belongs to
 
+    def __str__(self):
+        return self.title if self.title else str(self.id)
+
     def update_fields_from_raw_chat(self, *, raw_chat: types.Chat) -> bool:
         if not raw_chat:
             return False
-        return self.objects.update_from_raw_chat(
+        return Group.objects.update_from_raw(
             id=self.id,
             raw_chat=raw_chat
         )

@@ -9,9 +9,10 @@ from ...base import BaseModel
 
 
 class AdminLogEventQuerySet(models.QuerySet):
-    def update_or_create_event(self, **kwargs) -> Tuple[Optional['AdminLogEvent'], bool]:
+    def update_or_create_event(self, *, defaults: dict, **kwargs) -> Tuple[Optional['AdminLogEvent'], bool]:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )
         except DatabaseError as e:
@@ -81,8 +82,8 @@ class AdminLogEventManager(models.Manager):
         if len(parsed_object):
             with transaction.atomic():
                 db_event, created = self.get_queryset().update_or_create_event(
-                    **{
-                        'id': f'{db_chat.chat_id}:{raw_admin_log_event.event_id}',
+                    id=f'{db_chat.chat_id}:{raw_admin_log_event.event_id}',
+                    defaults={
                         'user': db_user,
                         'chat': db_chat,
                         'logged_by': logged_by,

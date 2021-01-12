@@ -25,7 +25,7 @@ class ChatAdminRightsUpdater:
                 field.update_fields_from_raw(raw_chat_admin_rights=raw_chat_admin_rights)
             else:
                 field.delete()
-                model.save(model)
+                model.save()
         else:
             if raw_chat_admin_rights:
                 setattr(
@@ -35,4 +35,4 @@ class ChatAdminRightsUpdater:
                         raw_chat_admin_rights=raw_chat_admin_rights
                     )
                 )
-                model.save(model)
+                model.save()

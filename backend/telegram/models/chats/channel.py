@@ -11,9 +11,9 @@ from ..base import BaseModel
 
 
 class ChannelQuerySet(models.QuerySet):
-    def update_or_create_channel(self, **kwargs) -> Optional["Channel"]:
+    def update_or_create_channel(self, *, defaults: dict, **kwargs) -> Optional["Channel"]:
         try:
-            return self.update_or_create(**kwargs)
+            return self.update_or_create(defaults=defaults, **kwargs)[0]
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -62,12 +62,12 @@ class ChannelManager(models.Manager):
                         )
                         if len(parsed_full_channel):
                             db_channel.update_or_create_chat_from_raw(
-                                model=self,
+                                model=db_channel,
                                 field_name='migrated_from',
                                 raw_chat=raw_chat.full_channel.migrated_from
                             )
                             db_channel.update_or_create_chat_from_raw(
-                                model=self,
+                                model=db_channel,
                                 field_name='linked_chat',
                                 raw_chat=raw_chat.full_channel.linked_chat
                             )
@@ -87,29 +87,32 @@ class ChannelManager(models.Manager):
         if parsed_full_channel or parsed_channel:
             with transaction.atomic():
                 db_channel = self.get_queryset().update_or_create_channel(
-                    **{
+                    id=channel.id,
+                    defaults={
                         **parsed_full_channel,
                         **parsed_channel,
                         'creator': creator,  # fixme: what about creator?
-                    }
+                    },
                 )
                 if db_channel:
-                    db_channel.update_or_create_chat_permissions_from_raw(
-                        model=self,
+                    db_channel.update_or_create_chat_permissions_from_raw_obj(
+                        model=db_channel,
                         field_name='default_banned_rights',
                         raw_chat_permissions=channel.default_banned_rights
                     )
                     if full_channel:
                         db_channel.update_or_create_chat_from_raw(
-                            model=self,
+                            model=db_channel,
                             field_name='migrated_from',
                             raw_chat=full_channel.migrated_from
                         )
                         db_channel.update_or_create_chat_from_raw(
-                            model=self,
+                            model=db_channel,
                             field_name='linked_chat',
                             raw_chat=full_channel.linked_chat
                         )
+
+                return db_channel
         else:
             return None
 
@@ -118,6 +121,7 @@ class ChannelManager(models.Manager):
         if channel is None:
             return {}
         return {
+            'title': channel.title,
             'has_private_join_link': channel.has_private_join_link,
             'has_geo': channel.has_geo,
             'is_restricted': channel.is_restricted,
@@ -209,8 +213,10 @@ class Channel(BaseModel, ChatPermissionsUpdater, ChatUpdater):
 
     ############################################
     # `chat` : chat this channel belongs to
+    def __str__(self):
+        return self.title if self.title else str(self.id)
 
     def update_fields_from_raw_chat(self, *, raw_chat: types.Chat) -> bool:
         if not raw_chat:
             return False
-        return self.objects.update_from_raw_chat(id=self.id, raw_chat=raw_chat)
+        return Channel.objects.update_from_raw_chat(id=self.id, raw_chat=raw_chat)

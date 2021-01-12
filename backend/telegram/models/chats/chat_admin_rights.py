@@ -129,7 +129,8 @@ class ChatAdminRights(BaseModel):
     #     return False
 
     def update_fields_from_raw(self, *, raw_chat_admin_rights: types.ChatAdminRights):
-        self.objects.update_chat_admin_rights_from_raw(id=self.id, raw_chat_admin_rights=raw_chat_admin_rights)
+        ChatAdminRights.objects.update_chat_admin_rights_from_raw(id=self.id,
+                                                                  raw_chat_admin_rights=raw_chat_admin_rights)
 
     def __str__(self):
         return str(

@@ -21,9 +21,10 @@ class DialogQuerySet(SoftDeletableQS):
             logger.exception(e)
         return None
 
-    def update_or_create_dialog(self, **kwargs) -> Optional["Dialog"]:
+    def update_or_create_dialog(self, *, defaults: dict, **kwargs) -> Optional["Dialog"]:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -75,20 +76,20 @@ class DialogManager(models.Manager):
 
         if not db_chat or not db_account:
             return None
-        kwargs = {
-            'id': f'{db_account.user_id}:{db_chat.chat_id}',
+        defaults = {
             'chat': db_chat,
             'account': db_account,
             'is_member': is_member,
         }
         if left_date_ts:
-            kwargs.update(
+            defaults.update(
                 {
                     'left_date_ts': left_date_ts
                 }
             )
         return self.get_queryset().update_or_create_dialog(
-            **kwargs
+            id=f'{db_account.user_id}:{db_chat.chat_id}',
+            defaults=defaults,
         )
 
 
