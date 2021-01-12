@@ -23,9 +23,10 @@ class Role(models.TextChoices):  # fixme: maybe a better name?
 
 
 class AdminShipQuerySet(models.QuerySet):
-    def update_or_create_adminship(self, **kwargs) -> Optional['AdminShip']:
+    def update_or_create_adminship(self, *, defaults: dict, **kwargs) -> Optional['AdminShip']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -82,10 +83,10 @@ class AdminShipManger(models.Manager):
 
             with transaction.atomic():
                 db_adminship = self.get_queryset().update_or_create_adminship(
-                    **{
+                    account=db_account,
+                    chat=db_chat,
+                    defaults={
                         **parsed_object,
-                        'account': db_account,
-                        'chat': db_chat,
                         'role': role_type,
                     }
                 )
