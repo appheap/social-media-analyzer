@@ -159,4 +159,4 @@ class AddChannelRequest(BaseModel):
 
     def __str__(self):
         return str(
-            f"{arrow.get(self.created_ts)} : {self.site_user} : @{self.channel_username} : {self.telegram_account}")
+            f"{arrow.get(self.created_ts)} : {self.site_user} : @{self.channel_username} : {self.admin}")
