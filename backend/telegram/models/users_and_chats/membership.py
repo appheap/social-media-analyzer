@@ -9,9 +9,10 @@ from pyrogram import types
 
 
 class MembershipQuerySet(models.QuerySet):
-    def update_or_create_membership(self, **kwargs) -> Optional['Membership']:
+    def update_or_create_membership(self, *, defaults: dict, **kwargs) -> Optional['Membership']:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -85,9 +86,9 @@ class MembershipManager(models.Manager):
             return None
 
         return self.get_queryset().update_or_create_membership(
-            **{
-                'user': db_user,
-                'chat': db_chat,
+            user=db_user,
+            chat=db_chat,
+            defaults={
                 'current_status': new_status,
                 'status_change_date_ts': event_date_ts
             }
@@ -235,7 +236,7 @@ class Membership(BaseModel):
             new_status: 'tg_models.ChatMember',
             event_date_ts: int
     ) -> bool:
-        return self.objects.update_membership_status(
+        return Membership.objects.update_membership_status(
             db_membership=self,
             new_status=new_status,
             event_date_ts=event_date_ts
