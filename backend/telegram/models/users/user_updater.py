@@ -24,7 +24,7 @@ class UserUpdater:
                 field.update_fields_from_raw(raw_user=raw_user)
             else:
                 setattr(model, field_name, None)
-                model.save(model)
+                model.save()
         else:
             if raw_user:
                 setattr(
@@ -34,4 +34,4 @@ class UserUpdater:
                         raw_user=raw_user
                     )
                 )
-                model.save(model)
+                model.save()

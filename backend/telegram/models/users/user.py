@@ -27,9 +27,10 @@ class UserQuerySet(models.QuerySet):
     def user_exists(self, *, user_id: int) -> bool:
         return self.filter_by_user_id(user_id=user_id).exists()
 
-    def update_or_create_user(self, **kwargs) -> Optional["User"]:
+    def update_or_create_user(self, *, defaults: dict, **kwargs) -> Optional["User"]:
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -111,7 +112,8 @@ class UserManager(models.Manager):
             return None
         with transaction.atomic():
             user = self.get_queryset().update_or_create_user(
-                **{
+                user_id=raw_user.id,
+                defaults={
                     **parsed_object,
 
                     'message_view': db_message_view,
@@ -154,7 +156,6 @@ class UserManager(models.Manager):
             return None
 
         return {
-            'user_id': user.id,
             'is_empty': user.is_empty,
             'is_mutual_contact': user.is_mutual_contact,
             'is_deleted': user.is_deleted,
@@ -248,4 +249,4 @@ class User(BaseModel):
         self.save()
 
     def update_fields_from_raw(self, *, raw_user: Union[types.User, types.UserFull]) -> bool:
-        return self.users.update_from_raw(user_id=self.user_id, raw_user=raw_user)
+        return User.users.update_from_raw(user_id=self.user_id, raw_user=raw_user)
