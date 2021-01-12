@@ -190,5 +190,6 @@ class Worker(ConsumerProducerMixin):
                     self.db.telegram.update_chat_analyzers_status(
                         db_telegram_channel=db_telegram_channel,
                         enabled=raw_chat.is_admin,
+                        only_admin_based_analyzers=True,
                     )
         return BaseResponse().done()
