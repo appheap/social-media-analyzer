@@ -1,8 +1,8 @@
-from typing import Union, List
+from typing import List, Optional
 
-from ..object import Object
-from pyrogram import utils, raw, types
 import pyrogram
+from pyrogram import utils, raw, types
+from ..object import Object
 
 
 class ChannelFull(Object):
@@ -40,7 +40,7 @@ class ChannelFull(Object):
             stickerset: "types.StickerSet" = None,
             min_available_message_id: int = None,
             folder_id: int = None,
-            linked_chat: Union["types.Channel", "types.Group"] = None,
+            linked_chat: Optional["types.Chat"] = None,
             location: "types.ChannelLocation" = None,
             slowmode_seconds: int = None,
             slowmode_next_send_date=None,
@@ -92,17 +92,7 @@ class ChannelFull(Object):
         peer_id = utils.get_channel_id(channel_full.id)
         raw_linked_chat = chats.get(getattr(channel_full, 'linked_chat_id', None), None)
         if raw_linked_chat:
-            if isinstance(raw_linked_chat, raw.types.Channel) \
-                    or isinstance(raw_linked_chat, raw.types.ChannelForbidden):
-                linked_chat = types.Channel._parse(client, raw_linked_chat)
-
-            elif isinstance(raw_linked_chat, raw.types.Chat) \
-                    or isinstance(raw_linked_chat, raw.types.ChatForbidden) \
-                    or isinstance(raw_linked_chat, raw.types.ChatEmpty):
-                linked_chat = await types.Group._parse(client, raw_linked_chat)
-
-            else:
-                linked_chat = None
+            linked_chat = await types.Chat._parse_chat(client, raw_linked_chat)
         else:
             linked_chat = None
 
