@@ -1,6 +1,8 @@
 import threading
 from typing import List, Optional, Callable
 
+import arrow
+from django.db.models import QuerySet
 from kombu import Consumer
 from kombu.mixins import ConsumerProducerMixin
 from kombu.connection import Connection
@@ -49,6 +51,13 @@ class Worker(ConsumerProducerMixin):
                 return client
 
         return None
+
+    def get_client_session_names(self) -> List['str']:
+        _lst = []
+        for client in self.clients:
+            _lst.append(client.session_name)
+
+        return _lst
 
     def on_task(self, body: dict, message: pyamqp.Message):
         func = body['func']
@@ -192,4 +201,56 @@ class Worker(ConsumerProducerMixin):
                         enabled=raw_chat.is_admin,
                         only_admin_based_analyzers=True,
                     )
+        return BaseResponse().done()
+
+    def task_analyze_admin_logs(self, *args, **kwargs):
+
+        db_chats: QuerySet = self.db.telegram.get_chats_filter_by_analyzer(
+            admin_log_analyzer=True,
+        )
+
+        if db_chats.exists():
+            for db_chat in db_chats:
+                now = arrow.utcnow().timestamp
+                client_session_names = self.get_client_session_names()
+                db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_session_names(
+                    db_chat=db_chat,
+                    session_names=client_session_names
+                )
+                if db_telegram_accounts is None or not len(db_telegram_accounts):
+                    # return BaseResponse().done(message='No Telegram Account is available now.')
+                    continue
+
+                client = self.get_client(session_name=db_telegram_accounts[0].session_name)
+                response = self.analyze_chat_admin_logs(
+                    db_chat=db_chat,
+                    db_tg_admin_account=db_telegram_accounts[0],
+                    client=client,
+                )
+                self.db.telegram.update_analyzer_metadata(
+                    analyzer=db_chat.admin_log_analyzer,
+                    timestamp=now
+                )
+        else:
+            return BaseResponse().done(message='No analyzer is enabled.')
+
+        return BaseResponse().done()
+
+    def analyze_chat_admin_logs(
+            self,
+            *,
+            db_chat: 'tg_models.Chat',
+            db_tg_admin_account: 'tg_models.TelegramAccount',
+            client: 'pyrogram.Client',
+    ):
+        raw_admin_logs = client.get_admin_log(
+            db_chat.chat_id,
+        )
+        for raw_admin_log in raw_admin_logs:
+            self.db.telegram.create_admin_log(
+                raw_admin_log=raw_admin_log,
+                db_chat=db_chat,
+                logged_by=db_tg_admin_account,
+            )
+
         return BaseResponse().done()
