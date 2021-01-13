@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from django.db import models, DatabaseError, transaction
 from django.utils.functional import cached_property
@@ -54,10 +54,41 @@ class AdminShipQuerySet(models.QuerySet):
     def filter_by_id(self, *, id: int) -> 'AdminShipQuerySet':
         return self.filter(id=id)
 
+    def filter_by_chat(self, *, db_chat: 'tg_models.Chat') -> 'AdminShipQuerySet':
+        return self.filter(chat=db_chat)
+
+    def filter_by_admins_and_creators(self) -> 'AdminShipQuerySet':
+        return self.filter(role_type__in=(Role.administrator, Role.creator))
+
+    def filter_by_session_names(self, *, session_names: List['str']) -> 'AdminShipQuerySet':
+        return self.filter(account__session_name__in=session_names)
+
 
 class AdminShipManger(models.Manager):
     def get_queryset(self) -> AdminShipQuerySet:
         return AdminShipQuerySet(self.model, using=self._db)
+
+    def get_telegram_accounts_by_account_session_names(
+            self,
+            *,
+            db_chat: 'tg_models.Chat',
+            session_names: List['str']
+    ) -> List['tg_models.TelegramAccount']:
+        if db_chat is None or session_names is None or not len(session_names):
+            return None
+
+        db_adminships = self.get_queryset() \
+            .filter_by_chat(db_chat=db_chat) \
+            .filter_by_admins_and_creators() \
+            .filter_by_session_names(session_names=session_names)
+        if db_adminships:
+            db_accounts = []
+            for db_adminship in db_adminships:
+                db_accounts.append(db_adminship.account)
+
+            return db_accounts
+
+        return None
 
     def update_or_create_from_raw(
             self,
