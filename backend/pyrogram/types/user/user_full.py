@@ -42,6 +42,10 @@ class UserFull(Object):
         self.folder_id = folder_id
         self.user = user
 
+    @property
+    def id(self):
+        return self.user.id
+
     @staticmethod
     async def _parse(client, user_full: "raw.types.UserFull"):
         return UserFull(
