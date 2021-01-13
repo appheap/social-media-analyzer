@@ -82,7 +82,7 @@ class MembershipManager(models.Manager):
             event_date_ts: int,
     ) -> Optional['Membership']:
 
-        if db_user is not None or db_chat is not None or new_status:
+        if db_user is None or db_chat is None or new_status is None:
             return None
 
         return self.get_queryset().update_or_create_membership(

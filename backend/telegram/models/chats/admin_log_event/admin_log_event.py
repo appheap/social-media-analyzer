@@ -198,11 +198,7 @@ class AdminLogEventManager(models.Manager):
                                 new_status=db_chat_member,
                                 event_date_ts=raw_admin_log_event.date
                             )
-                            db_chat_member.update_fields(
-                                **{
-                                    'membership': db_membership,
-                                }
-                            )
+                            db_chat_member.update_membership(db_membership=db_membership)
                         db_event.action_participant_join = tg_models.AdminLogEventActionParticipantJoin.objects.update_or_create()
 
                     elif isinstance(action, types.ChannelAdminLogEventActionParticipantLeave):
@@ -240,11 +236,7 @@ class AdminLogEventManager(models.Manager):
                                 new_status=db_chat_member,
                                 event_date_ts=raw_admin_log_event.date
                             )
-                            db_chat_member.update_fields(
-                                **{
-                                    'membership': db_membership,
-                                }
-                            )
+                            db_chat_member.update_membership(db_membership=db_membership)
 
                         db_event.action_participant_leave = tg_models.AdminLogEventActionParticipantLeave.objects.update_or_create()
 
@@ -404,15 +396,17 @@ class AdminLogEventManager(models.Manager):
         if invited_by is None and demoted_by is None and promoted_by is None and kicked_by is None:
             raise ValueError(f'wrong value: at least one must be true')
 
+        if promoted:
+            logger.info(f"before: {db_membership}")
         if db_membership:
             db_chat_member = tg_models.ChatMember.objects.update_or_create_from_raw(
                 raw_chat_member=raw_chat_member,
                 db_membership=db_membership,
                 event_date_ts=raw_admin_log_event.date,
-                invited_by=invited_by,
-                demoted_by=demoted_by,
-                kicked_by=kicked_by,
-                promoted_by=promoted_by,
+                db_invited_by=invited_by,
+                db_demoted_by=demoted_by,
+                db_kicked_by=kicked_by,
+                db_promoted_by=promoted_by,
                 is_previous=is_previous
             )
             db_membership.update_membership_status(
@@ -424,23 +418,24 @@ class AdminLogEventManager(models.Manager):
                 raw_chat_member=raw_chat_member,
                 db_membership=None,
                 event_date_ts=raw_admin_log_event.date,
-                invited_by=invited_by,
-                demoted_by=demoted_by,
-                kicked_by=kicked_by,
-                promoted_by=promoted_by,
+                db_invited_by=invited_by,
+                db_demoted_by=demoted_by,
+                db_kicked_by=kicked_by,
+                db_promoted_by=promoted_by,
                 is_previous=is_previous,
             )
+            logger.info(f"after_usr: {db_chat_member.user}")
+            logger.info(f"after_chat: {db_chat}")
+            logger.info(f"after_date: {raw_admin_log_event.date}")
             db_membership = tg_models.Membership.objects.update_or_create_membership(
                 db_user=db_chat_member.user,
                 db_chat=db_chat,
                 new_status=db_chat_member,
                 event_date_ts=raw_admin_log_event.date
             )
-            db_chat_member.update_fields(
-                **{
-                    'membership': db_membership,
-                }
-            )
+            if promoted:
+                logger.info(f"after: {db_membership}")
+            db_chat_member.update_membership(db_membership=db_membership)
         return db_chat_member
 
     @staticmethod
