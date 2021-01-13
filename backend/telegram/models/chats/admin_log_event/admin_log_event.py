@@ -333,10 +333,10 @@ class AdminLogEventManager(models.Manager):
 
                     elif isinstance(action, types.ChannelAdminLogEventActionDefaultBannedRights):
                         db_action_default_banned_rights = tg_models.AdminLogEventActionDefaultBannedRights.objects.update_or_create_action(
-                            prev_banned_rights=tg_models.ChatPermissions.objects.update_or_create_chat_permissions_from_raw(
+                            prev_banned_rights=tg_models.ChatPermissions.objects.create_chat_permissions_from_raw(
                                 raw_chat_permissions=action.prev_banned_rights
                             ),
-                            new_banned_rights=tg_models.ChatPermissions.objects.update_or_create_chat_permissions_from_raw(
+                            new_banned_rights=tg_models.ChatPermissions.objects.create_chat_permissions_from_raw(
                                 raw_chat_permissions=action.new_banned_rights
                             )
                         )

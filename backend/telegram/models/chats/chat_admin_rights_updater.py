@@ -31,7 +31,7 @@ class ChatAdminRightsUpdater:
                 setattr(
                     model,
                     field_name,
-                    ChatAdminRights.objects.update_chat_admin_rights_from_raw(
+                    ChatAdminRights.objects.create_from_raw(
                         raw_chat_admin_rights=raw_chat_admin_rights
                     )
                 )

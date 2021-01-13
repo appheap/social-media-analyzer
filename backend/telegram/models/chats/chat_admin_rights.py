@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from django.db import models, DatabaseError
@@ -7,11 +8,11 @@ from core.globals import logger
 
 
 class ChatAdminRightsQuerySet(models.QuerySet):
-    def update_or_create_admin_rights(self, **kwargs) -> Optional['ChatAdminRights']:
+    def create_admin_rights(self, **kwargs) -> Optional['ChatAdminRights']:
         try:
-            return self.update_or_create(
+            return self.create(
                 **kwargs
-            )[0]
+            )
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -41,18 +42,18 @@ class ChatAdminRightsManager(models.Manager):
     def get_queryset(self) -> ChatAdminRightsQuerySet:
         return ChatAdminRightsQuerySet(self.model, using=self._db)
 
-    def update_or_create_from_raw(
+    def create_from_raw(
             self,
             *,
-            raw_admin_rights: types.ChatAdminRights,
+            raw_chat_admin_rights: types.ChatAdminRights,
     ) -> Optional['ChatAdminRights']:
 
-        if raw_admin_rights is None:
+        if raw_chat_admin_rights is None:
             return None
 
-        parsed_object = self._parse(raw_admin_rights=raw_admin_rights)
+        parsed_object = self._parse(raw_chat_admin_rights=raw_chat_admin_rights)
         if len(parsed_object):
-            db_chat_admin_rights = self.get_queryset().update_or_create_admin_rights(
+            db_chat_admin_rights = self.get_queryset().create_admin_rights(
                 **parsed_object
             )
             return db_chat_admin_rights
@@ -69,31 +70,33 @@ class ChatAdminRightsManager(models.Manager):
         if id is None or raw_chat_admin_rights is None:
             return False
 
-        parsed_object = self._parse(raw_admin_rights=raw_chat_admin_rights)
+        parsed_object = self._parse(raw_chat_admin_rights=raw_chat_admin_rights)
         if len(parsed_object):
-            return self.get_queryset().filter_by_id(id=id).update_or_create_admin_rights(**parsed_object)
+            return self.get_queryset().filter_by_id(id=id).create_admin_rights(**parsed_object)
 
         return False
 
     @staticmethod
-    def _parse(*, raw_admin_rights: types.ChatAdminRights) -> dict:
-        if raw_admin_rights is None:
+    def _parse(*, raw_chat_admin_rights: types.ChatAdminRights) -> dict:
+        if raw_chat_admin_rights is None:
             return {}
 
         return {
-            'can_change_info': raw_admin_rights.can_change_info,
-            'can_post_messages': raw_admin_rights.can_post_messages,
-            'can_edit_messages': raw_admin_rights.can_edit_messages,
-            'can_delete_messages': raw_admin_rights.can_delete_messages,
-            'can_ban_users': raw_admin_rights.can_ban_users,
-            'can_invite_users': raw_admin_rights.can_invite_users,
-            'can_pin_messages': raw_admin_rights.can_pin_messages,
-            'can_add_admins': raw_admin_rights.can_add_admins,
-            'is_anonymous': raw_admin_rights.is_anonymous,
+            'can_change_info': raw_chat_admin_rights.can_change_info,
+            'can_post_messages': raw_chat_admin_rights.can_post_messages,
+            'can_edit_messages': raw_chat_admin_rights.can_edit_messages,
+            'can_delete_messages': raw_chat_admin_rights.can_delete_messages,
+            'can_ban_users': raw_chat_admin_rights.can_ban_users,
+            'can_invite_users': raw_chat_admin_rights.can_invite_users,
+            'can_pin_messages': raw_chat_admin_rights.can_pin_messages,
+            'can_add_admins': raw_chat_admin_rights.can_add_admins,
+            'is_anonymous': raw_chat_admin_rights.is_anonymous,
         }
 
 
 class ChatAdminRights(BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+
     can_change_info = models.BooleanField(null=True, blank=True)
     can_post_messages = models.BooleanField(null=True, blank=True)
     can_edit_messages = models.BooleanField(null=True, blank=True)
@@ -106,7 +109,7 @@ class ChatAdminRights(BaseModel):
 
     #################################################
     # `participant` : Participant this rights belongs to
-    # `adminships` : adminship object this permissions belongs to
+    # `adminship` : adminship object this permissions belongs to
 
     objects = ChatAdminRightsManager()
 
@@ -133,6 +136,5 @@ class ChatAdminRights(BaseModel):
                                                                   raw_chat_admin_rights=raw_chat_admin_rights)
 
     def __str__(self):
-        return str(
-            f"{self.adminships.account if self.adminships else ''} @ {self.adminships.chat if self.adminships else ''}") if self.adminships else str(
-            self.pk)
+        # return str(f"{self.adminship.account} @ {self.adminship.chat}") if self.adminship else str(self.id)
+        return str(self.id)

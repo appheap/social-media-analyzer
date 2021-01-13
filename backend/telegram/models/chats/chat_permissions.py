@@ -40,7 +40,7 @@ class ChatPermissionsManager(models.Manager):
     def get_queryset(self) -> ChatPermissionsQuerySet:
         return ChatPermissionsQuerySet(self.model, using=self._db)
 
-    def update_or_create_chat_permissions_from_raw(
+    def create_chat_permissions_from_raw(
             self,
             *,
             raw_chat_permissions: types.ChatPermissions
@@ -121,7 +121,7 @@ class ChatPermissions(BaseModel):
 
     ###########################################
     # `chat` : chat this permissions belongs to
-    # `adminships` : adminship object this permissions belongs to
+    # `adminship` : adminship object this permissions belongs to
     # `action_banned_rights_prev` : Action this Rights is the previous banned rights of it
     # `action_banned_rights_new` : Action this Rights is the new banned rights of it
     # `participant` : Participant this rights belongs to

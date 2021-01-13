@@ -31,7 +31,7 @@ class ChatPermissionsUpdater:
                 setattr(
                     model,
                     field_name,
-                    ChatPermissions.objects.update_or_create_chat_permissions_from_raw(
+                    ChatPermissions.objects.create_chat_permissions_from_raw(
                         raw_chat_permissions=raw_chat_permissions
                     )
                 )
