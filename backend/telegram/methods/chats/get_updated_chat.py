@@ -26,9 +26,15 @@ class GetUpdatedChat(Scaffold):
         else:
             db_creator = _user if raw_chat.user.is_self else None
 
-        return self.tg_models.Chat.chats.update_or_create_from_raw(
+        db_chat = self.tg_models.Chat.chats.update_or_create_from_raw(
             raw_chat=raw_chat,
             creator=db_creator,
 
             db_message_view=db_message_view,
         )
+        self.get_updated_adminship(
+            db_chat=db_chat,
+            raw_chat=raw_chat,
+            db_account=db_telegram_account,
+        )
+        return db_chat

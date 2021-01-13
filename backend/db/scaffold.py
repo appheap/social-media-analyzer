@@ -60,6 +60,16 @@ class Scaffold:
     ) -> Optional['tg_models.Membership']:
         pass
 
+    def get_updated_adminship(
+            self,
+            *,
+            db_account: 'tg_models.TelegramAccount',
+            db_chat: 'tg_models.Chat',
+
+            raw_chat: types.Chat,
+    ) -> Optional['tg_models.AdminShip']:
+        pass
+
     def admin_log_exists(
             self,
             *,
