@@ -31,7 +31,7 @@ class CreateAdminLog(Scaffold):
                 return None
 
             return self.tg_models.AdminLogEvent.objects.update_or_create_from_raw(
-                raw_admin_log=raw_admin_log,
+                raw_admin_log_event=raw_admin_log,
                 db_user=db_user,
                 db_chat=db_chat,
                 logged_by=logged_by,
