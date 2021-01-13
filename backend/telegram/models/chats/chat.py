@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.db import DatabaseError
 from django.db import models
+from django.db.models import QuerySet
 
 from core.globals import logger
 from db.models import SoftDeletableBaseModel, SoftDeletableQS
@@ -149,6 +150,36 @@ class BaseChatManager(models.Manager):
 
     def get_chat_by_username(self, *, username: str) -> Optional['Chat']:
         return self.get_queryset().get_chat_by_username(username=username)
+
+    def get_chats_filter_by_analyzer(
+            self,
+            *,
+            admin_log_analyzer: bool = None,
+            members_analyzer: bool = None,
+            shared_media_analyzer: bool = None,
+            member_count_analyzer: bool = None,
+            message_view_analyzer: bool = None,
+    ) -> 'QuerySet[tg_models.Chat]':
+
+        if admin_log_analyzer is None and members_analyzer is None and shared_media_analyzer is None \
+                and member_count_analyzer is None and message_view_analyzer is None:
+            return None
+
+        _filter_obj = {}
+        if admin_log_analyzer is not None:
+            _filter_obj['admin_log_analyzer__enabled'] = admin_log_analyzer
+        if members_analyzer is not None:
+            _filter_obj['members_analyzer__enabled'] = members_analyzer
+        if message_view_analyzer is not None:
+            _filter_obj['message_view_analyzer__enabled'] = message_view_analyzer
+        if member_count_analyzer is not None:
+            _filter_obj['member_count_analyzer__enabled'] = member_count_analyzer
+        if shared_media_analyzer is not None:
+            _filter_obj['shared_media_analyzer__enabled'] = shared_media_analyzer
+
+        return self.get_queryset().complex_filter(
+            _filter_obj
+        )
 
     @staticmethod
     def create_restrictions(
