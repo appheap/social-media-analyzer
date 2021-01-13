@@ -1,6 +1,7 @@
 from typing import Optional
 
 from django.db import models, DatabaseError, transaction
+from django.utils.functional import cached_property
 
 from ..base import BaseModel
 from telegram import models as tg_models
@@ -87,7 +88,7 @@ class AdminShipManger(models.Manager):
                     chat=db_chat,
                     defaults={
                         **parsed_object,
-                        'role': role_type,
+                        'role_type': role_type,
                     }
                 )
                 if db_adminship:
@@ -224,14 +225,14 @@ class AdminShip(BaseModel, ChatPermissionsUpdater, ChatAdminRightsUpdater):
     admin_rights = models.OneToOneField(
         'telegram.ChatAdminRights',
         on_delete=models.CASCADE,
-        related_name='adminships',
+        related_name='adminship',
         null=True,
         blank=True,
     )
     banned_rights = models.OneToOneField(
         'telegram.ChatPermissions',
         on_delete=models.CASCADE,
-        related_name='adminships',
+        related_name='adminship',
         null=True,
         blank=True,
     )
@@ -255,4 +256,10 @@ class AdminShip(BaseModel, ChatPermissionsUpdater, ChatAdminRightsUpdater):
         ]
         ordering = ['chat', 'account']
 
+    def __str__(self):
+        return self.name
+
+    @cached_property
+    def name(self):
+        return f'{self.account} @ {self.chat} : {self.role_type}'
     ######################################
