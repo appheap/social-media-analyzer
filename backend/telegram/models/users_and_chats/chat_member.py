@@ -1,13 +1,14 @@
 from typing import Optional
 
 from django.db import models, DatabaseError, transaction
-from ..base import BaseModel
+
 from core.globals import logger
 from pyrogram import types
 from telegram import models as tg_models
-from ..users import UserUpdater
-from ..chats import ChatPermissionsUpdater
+from ..base import BaseModel
 from ..chats import ChatAdminRightsUpdater
+from ..chats import ChatPermissionsUpdater
+from ..users import UserUpdater
 
 
 class ChatMemberTypes(models.TextChoices):
@@ -21,10 +22,11 @@ class ChatMemberTypes(models.TextChoices):
     undefined = 'undefined'
 
     @staticmethod
-    def get_type(participant: "types.ChatMember"):
+    def get_type(raw_chat_member: "types.ChatMember"):
         for choice in ChatMemberTypes.choices:
-            if choice[0] == participant.status:
-                _type = getattr(ChatMemberTypes, str(choice[1]).lower())
+            if choice[0] == raw_chat_member.status:
+                _type = getattr(ChatMemberTypes, str(choice[0]).lower())
+                break
         else:
             _type = ChatMemberTypes.undefined
         return _type
@@ -33,11 +35,14 @@ class ChatMemberTypes(models.TextChoices):
 class ChatMemberQuerySet(models.QuerySet):
     def update_or_create_chat_member(
             self,
+            *,
+            defaults: dict,
             **kwargs
     ) -> Optional['ChatMember']:
 
         try:
             return self.update_or_create(
+                defaults=defaults,
                 **kwargs
             )[0]
         except DatabaseError as e:
@@ -48,8 +53,10 @@ class ChatMemberQuerySet(models.QuerySet):
 
     def update_chat_member(self, **kwargs) -> bool:
         try:
-            return self.update(
-                **kwargs
+            return bool(
+                self.update(
+                    **kwargs
+                )
             )
         except DatabaseError as e:
             logger.exception(e)
@@ -75,11 +82,10 @@ class ChatMemberManager(models.Manager):
             left_date_ts: int = None,
             is_previous: bool = None,
 
-            promoted_by: 'tg_models.User' = None,
-            demoted_by: 'tg_models.User' = None,
-            kicked_by: 'tg_models.User' = None,
-            invited_by: 'tg_models.User' = None,
-
+            db_promoted_by: 'tg_models.User' = None,
+            db_demoted_by: 'tg_models.User' = None,
+            db_kicked_by: 'tg_models.User' = None,
+            db_invited_by: 'tg_models.User' = None
     ) -> Optional['ChatMember']:
 
         if raw_chat_member is None or event_date_ts is None:
@@ -87,6 +93,9 @@ class ChatMemberManager(models.Manager):
 
         parsed_object = self._parse(raw_chat_member=raw_chat_member)
         if len(parsed_object):
+            db_user = tg_models.User.users.update_or_create_from_raw(
+                raw_user=raw_chat_member.user,
+            )
             if left_date_ts is not None and event_date_ts is not None:
                 parsed_object['type'] = ChatMemberTypes.left
 
@@ -96,33 +105,35 @@ class ChatMemberManager(models.Manager):
                     'event_date_ts': event_date_ts,
                     'left_date_ts': left_date_ts,
                     'is_previous': is_previous,
+                    'user': db_user,
                 }
                 if db_membership:
                     _dict['membership'] = db_membership
 
                 db_chat_member = self.get_queryset().update_or_create_chat_member(
-                    **_dict
+                    id=f'{db_user.user_id}:{event_date_ts}',
+                    defaults=_dict
                 )
                 if db_chat_member:
-                    db_chat_member.update_or_create_user_from_raw(
+                    db_chat_member.update_or_create_user_from_db_user(
                         model=db_chat_member,
                         field_name='promoted_by',
-                        raw_user=promoted_by,
+                        db_user=db_promoted_by,
                     )
-                    db_chat_member.update_or_create_user_from_raw(
+                    db_chat_member.update_or_create_user_from_db_user(
                         model=db_chat_member,
                         field_name='demoted_by',
-                        raw_user=demoted_by,
+                        db_user=db_demoted_by,
                     )
-                    db_chat_member.update_or_create_user_from_raw(
+                    db_chat_member.update_or_create_user_from_db_user(
                         model=db_chat_member,
                         field_name='kicked_by',
-                        raw_user=kicked_by,
+                        db_user=db_kicked_by,
                     )
-                    db_chat_member.update_or_create_user_from_raw(
+                    db_chat_member.update_or_create_user_from_db_user(
                         model=db_chat_member,
                         field_name='invited_by',
-                        raw_user=invited_by,
+                        db_user=db_invited_by,
                     )
 
                     db_chat_member.update_or_create_chat_permissions_from_raw_obj(
@@ -164,6 +175,8 @@ class ChatMember(BaseModel, UserUpdater, ChatPermissionsUpdater, ChatAdminRights
     """
         Channel/supergroup participant
     """
+    id = models.CharField(max_length=256, primary_key=True)  # `user__user_id:event_date_ts`
+
     user = models.ForeignKey(
         'telegram.User',
         on_delete=models.CASCADE,
@@ -266,4 +279,9 @@ class ChatMember(BaseModel, UserUpdater, ChatPermissionsUpdater, ChatAdminRights
         return f"participant {self.id} of type :{self.type}"
 
     def update_fields(self, **kwargs) -> bool:
-        return self.objects.update_chat_member(id=self.id, **kwargs)
+        return ChatMember.objects.update_chat_member(id=self.id, **kwargs)
+
+    def update_membership(self, *, db_membership: 'tg_models.Membership') -> bool:
+        return ChatMember.objects.update_chat_member(id=self.id, **{
+            'membership': db_membership,
+        })

@@ -227,9 +227,9 @@ class ChannelParticipantInline(admin.TabularInline):
     fk_name = 'membership'
     verbose_name_plural = 'participant history'
     fields = (
-        'user', 'type', 'join_date', 'promoted_by',
+        'user', 'type', 'join_date_ts', 'promoted_by',
         'invited_by', 'demoted_by', 'kicked_by',
-        'admin_rights', 'banned_rights', 'can_edit',
+        'admin_rights', 'banned_rights', 'can_promote_admins',
     )
 
 
