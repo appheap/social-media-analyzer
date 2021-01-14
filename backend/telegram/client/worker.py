@@ -1,21 +1,18 @@
 import threading
-from typing import List, Optional, Callable
+from typing import List, Callable
 
-import arrow
-from django.db.models import QuerySet
 from kombu import Consumer
-from kombu.mixins import ConsumerProducerMixin
 from kombu.connection import Connection
+from kombu.mixins import ConsumerProducerMixin
+from kombu.transport import pyamqp
+
+import pyrogram
+from core.globals import logger
 from db.database_manager import DataBaseManager
 from telegram import globals as tg_globals
-import pyrogram
-from pyrogram import types
-from core.globals import logger
 from utils.utils import prettify
-from kombu.transport import pyamqp
 from .base_response import BaseResponse
-from telegram import tasks
-from pyrogram import errors as tg_errors
+from .tasks.telegram_tasks import TelegramTasks
 
 clients_lock = threading.RLock()
 
@@ -34,6 +31,7 @@ class Worker(ConsumerProducerMixin):
         self.clients = clients
         self.index = index
         self.db = DataBaseManager()
+        self.telegram_tasks = TelegramTasks(self.clients)
 
     def get_consumers(self, consumer, channel) -> List[Consumer]:
         return [
@@ -45,21 +43,6 @@ class Worker(ConsumerProducerMixin):
             )
         ]
 
-    def get_client(self, session_name: str) -> Optional['pyrogram.Client']:
-        for client in self.clients:
-            logger.info(client.session_name)
-            if client.session_name == session_name:
-                return client
-
-        return None
-
-    def get_client_session_names(self) -> List['str']:
-        _lst = []
-        for client in self.clients:
-            _lst.append(client.session_name)
-
-        return _lst
-
     def on_task(self, body: dict, message: pyamqp.Message):
         func = body['func']
         args = body['args']
@@ -68,7 +51,7 @@ class Worker(ConsumerProducerMixin):
         logger.info(f'on consumer {self.index} Got task: {prettify(body)}')
 
         if func == 'task_init_clients':
-            response = self.task_init_clients(*args, **kwargs)
+            response = self.telegram_tasks.init_clients_task(*args, **kwargs)
 
         elif func == 'task_get_me':
             response = self.task_get_me(*args, **kwargs)
@@ -77,7 +60,7 @@ class Worker(ConsumerProducerMixin):
             response = self.task_add_tg_channel(*args, **kwargs)
 
         elif func == 'task_iterate_dialogs':
-            response = self.task_iterate_dialogs(*args, **kwargs)
+            response = self.telegram_tasks.iterate_dialogs_task(*args, **kwargs)
 
         elif func == 'task_analyze_chat_shared_medias':
             response = self.task_analyze_chat_shared_medias(*args, **kwargs)
@@ -92,7 +75,7 @@ class Worker(ConsumerProducerMixin):
             response = self.task_iterate_chat_history(*args, **kwargs)
 
         elif func == 'task_analyze_admin_logs':
-            response = self.task_analyze_admin_logs(*args, **kwargs)
+            response = self.telegram_tasks.analyze_admin_logs_task(*args, **kwargs)
 
         elif func == 'task_analyze_all_chat_members':
             response = self.task_analyze_all_chat_members(*args, **kwargs)
@@ -121,178 +104,3 @@ class Worker(ConsumerProducerMixin):
                     return BaseResponse().fail()
 
         return wrapper
-
-    def task_get_me(self, *args, **kwargs):
-        data = {}
-        for client in self.clients:
-            client: pyrogram.Client = client
-            data.update({
-                str(client.session_name): str(client.get_me())
-            })
-        return BaseResponse().done(data=data)
-
-    def task_init_clients(self, *args, **kwargs):
-        tg_accounts_to_be_iterated = []
-        for client in self.clients:
-            client: pyrogram.Client = client
-
-            me: types.User = client.get_me()
-            db_site_user = self.db.users.get_user_by_id(
-                user_id=1
-            )
-            db_tg_admin_account = self.db.telegram.get_updated_telegram_account(
-                db_site_user=db_site_user,
-                raw_user=me,
-                client=client,
-            )
-            # update chats table for each account
-            if db_tg_admin_account:
-                tg_accounts_to_be_iterated.append(db_tg_admin_account.user_id)
-
-        tasks.iterate_dialogs.apply_async(
-            kwargs={
-                'tg_account_ids': tg_accounts_to_be_iterated,
-            },
-            countdown=0,
-        )
-        return BaseResponse().done(message='client init successful')
-
-    def task_iterate_dialogs(self, *args, **kwargs):
-        tg_account_ids = kwargs.get('tg_account_ids', None)
-        if tg_account_ids is None:
-            return BaseResponse().fail('missing `tg_account_ids` kwarg')
-
-        db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_ids(
-            ids=tg_account_ids
-        )
-        if db_telegram_accounts is None or not len(db_telegram_accounts):
-            return BaseResponse().fail('no telegram account is available now')
-
-        for db_telegram_account in db_telegram_accounts:
-            client = self.get_client(db_telegram_account.session_name)
-            if client is None:
-                continue
-
-            raw_dialogs: List['types.Dialog'] = client.get_all_dialogs()
-            if raw_dialogs is None or not len(raw_dialogs):
-                continue
-
-            _valid_raw_dialogs = []
-            for raw_dialog in raw_dialogs:
-                if raw_dialog.chat.group and raw_dialog.chat.group.migrated_to:
-                    db_chat_migrated_from = self.db.telegram.get_updated_chat(
-                        raw_chat=raw_dialog.chat,
-                        db_telegram_account=db_telegram_account,
-                    )
-                    try:
-                        raw_chat = client.get_chat(raw_dialog.chat.group.migrated_to.id)
-                    except tg_errors.ChannelInvalid as e:
-                        logger.info(raw_dialog.chat)
-                        logger.error(e)
-                    except tg_errors.ChannelPrivate as e:
-                        logger.info(raw_dialog.chat)
-                        logger.error(e)
-                    except tg_errors.ChannelPublicGroupNa as e:
-                        logger.info(raw_dialog.chat)
-                        logger.error(e)
-                    else:
-                        if raw_chat:
-                            raw_dialog.chat = raw_chat
-                            db_chat = self.db.telegram.get_updated_chat(
-                                raw_chat=raw_chat,
-                                db_telegram_account=db_telegram_account,
-                            )
-                            _valid_raw_dialogs.append(raw_dialog)
-                else:
-                    db_chat = self.db.telegram.get_updated_chat(
-                        raw_chat=raw_dialog.chat,
-                        db_telegram_account=db_telegram_account,
-                    )
-                    _valid_raw_dialogs.append(raw_dialog)
-
-            db_dialogs = self.db.telegram.get_updated_dialogs(
-                raw_dialogs=_valid_raw_dialogs,
-                db_telegram_account=db_telegram_account,
-                update_chat=False,
-            )
-
-            if db_dialogs is None:
-                continue
-
-            for raw_dialog in _valid_raw_dialogs:
-                raw_chat: types.Chat = raw_dialog.chat
-                if raw_chat is None:
-                    continue
-
-                if raw_chat.type == 'channel':
-                    db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
-                        raw_chat=raw_chat,
-                        db_account=db_telegram_account,
-                    )
-                    if db_telegram_channel:
-                        self.db.telegram.update_chat_analyzers_status(
-                            db_chat=db_telegram_channel.chat,
-                            enabled=raw_chat.is_admin,
-                            only_admin_based_analyzers=True,
-                        )
-        return BaseResponse().done()
-
-    def task_analyze_admin_logs(self, *args, **kwargs):
-
-        db_chats: QuerySet = self.db.telegram.get_chats_filter_by_analyzer(
-            admin_log_analyzer=True,
-        )
-
-        if db_chats.exists():
-            for db_chat in db_chats:
-                now = arrow.utcnow().timestamp
-                client_session_names = self.get_client_session_names()
-                db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_session_names(
-                    db_chat=db_chat,
-                    session_names=client_session_names
-                )
-                if db_telegram_accounts is None or not len(db_telegram_accounts):
-                    # return BaseResponse().done(message='No Telegram Account is available now.')
-                    continue
-
-                client = self.get_client(session_name=db_telegram_accounts[0].session_name)
-                response = self.analyze_chat_admin_logs(
-                    db_chat=db_chat,
-                    db_tg_admin_account=db_telegram_accounts[0],
-                    client=client,
-                )
-                self.db.telegram.update_analyzer_metadata(
-                    analyzer=db_chat.admin_log_analyzer,
-                    timestamp=now
-                )
-        else:
-            return BaseResponse().done(message='No analyzer is enabled.')
-
-        return BaseResponse().done()
-
-    def analyze_chat_admin_logs(
-            self,
-            *,
-            db_chat: 'tg_models.Chat',
-            db_tg_admin_account: 'tg_models.TelegramAccount',
-            client: 'pyrogram.Client',
-    ):
-        try:
-            raw_admin_logs = client.get_admin_log(
-                db_chat.chat_id,
-            )
-        except tg_errors.ChatAdminRequired or tg_errors.ChatWriteForbidden:
-            self.db.telegram.update_chat_analyzers_status(
-                db_chat=db_chat,
-                enabled=False,
-                only_admin_based_analyzers=True,
-            )
-        else:
-            for raw_admin_log in raw_admin_logs:
-                self.db.telegram.create_admin_log(
-                    raw_admin_log=raw_admin_log,
-                    db_chat=db_chat,
-                    logged_by=db_tg_admin_account,
-                )
-
-        return BaseResponse().done()
