@@ -341,6 +341,12 @@ class Message(Object, Update):
             return None
 
     @property
+    def views(self):
+        if self.type == 'message':
+            return self.content.views
+        return None
+
+    @property
     def media_type(self):
         if self.type == 'message':
             return self.content.media_type

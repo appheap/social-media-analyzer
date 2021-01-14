@@ -101,9 +101,9 @@ class Channel(Object):
             version=getattr(channel, 'version', None),
             restrictions=types.List(
                 [types.Restriction._parse(r) for r in getattr(channel, 'restriction_reason', [])]) or None,
-            admin_rights=types.ChatAdminRights._parse(getattr(channel, 'admin_rights')),
-            banned_rights=types.ChatPermissions._parse(getattr(channel, 'banned_rights')),
-            default_banned_rights=types.ChatPermissions._parse(getattr(channel, 'default_banned_rights')),
+            admin_rights=types.ChatAdminRights._parse(getattr(channel, 'admin_rights', None)),
+            banned_rights=types.ChatPermissions._parse(getattr(channel, 'banned_rights', None)),
+            default_banned_rights=types.ChatPermissions._parse(getattr(channel, 'default_banned_rights', None)),
             members_count=getattr(channel, 'participants_count', None),
 
         )
