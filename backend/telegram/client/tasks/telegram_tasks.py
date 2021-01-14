@@ -2,6 +2,7 @@ from .analyze_admin_logs_task import AnalyzeAdminLogsTask
 from .init_clients_task import InitClientsTask
 from .iterate_dialogs_task import IterateDialogsTask
 from .get_me_task import GetMeTask
+from .analyze_chat_shared_medias_task import AnalyzeChatSharedMediasTask
 
 
 class TelegramTasks(
@@ -9,6 +10,7 @@ class TelegramTasks(
     InitClientsTask,
     IterateDialogsTask,
     GetMeTask,
+    AnalyzeChatSharedMediasTask,
 
 ):
     pass
