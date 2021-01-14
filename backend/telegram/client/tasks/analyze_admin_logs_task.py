@@ -5,6 +5,7 @@ import pyrogram
 from pyrogram import errors as tg_errors
 from ..base_response import BaseResponse
 from tasks.task_scaffold import TaskScaffold
+from core.globals import logger
 
 
 class AnalyzeAdminLogsTask(TaskScaffold):
@@ -59,6 +60,8 @@ class AnalyzeAdminLogsTask(TaskScaffold):
                 enabled=False,
                 only_admin_based_analyzers=True,
             )
+        except Exception as e:
+            logger.exception(e)
         else:
             for raw_admin_log in raw_admin_logs:
                 self.db.telegram.create_admin_log(

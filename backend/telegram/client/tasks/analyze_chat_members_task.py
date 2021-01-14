@@ -6,6 +6,8 @@ from ..base_response import BaseResponse
 import arrow
 import pyrogram
 from pyrogram import types
+from pyrogram import errors as tg_errors
+from core.globals import logger
 
 
 class AnalyzeChatMembersTask(TaskScaffold):
@@ -29,12 +31,23 @@ class AnalyzeChatMembersTask(TaskScaffold):
                 db_telegram_account = db_telegram_accounts[0]
 
                 client = self.get_client(session_name=db_telegram_account.session_name)
-                response = self._analyze_chat_members(client, db_chat.chat_id, db_telegram_account, now)
-                if response.success:
-                    self.db.telegram.update_analyzer_metadata(
-                        analyzer=db_chat.members_analyzer,
-                        timestamp=now,
+                try:
+                    response = self._analyze_chat_members(client, db_chat.chat_id, db_telegram_account, now)
+                except tg_errors.ChatAdminRequired or tg_errors.ChatWriteForbidden as e:
+                    logger.error(e)
+                    self.db.telegram.update_chat_analyzers_status(
+                        db_chat=db_chat,
+                        enabled=False,
+                        only_admin_based_analyzers=True,
                     )
+                except Exception as e:
+                    logger.exception(e)
+                else:
+                    if response.success:
+                        self.db.telegram.update_analyzer_metadata(
+                            analyzer=db_chat.members_analyzer,
+                            timestamp=now,
+                        )
 
         else:
             return BaseResponse().done(message='No analyzer is enabled.')
