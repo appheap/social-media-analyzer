@@ -54,7 +54,7 @@ class Worker(ConsumerProducerMixin):
             response = self.telegram_tasks.init_clients_task(*args, **kwargs)
 
         elif func == 'task_get_me':
-            response = self.task_get_me(*args, **kwargs)
+            response = self.telegram_tasks.get_me_task(*args, **kwargs)
 
         elif func == 'task_add_tg_channel':
             response = self.task_add_tg_channel(*args, **kwargs)
