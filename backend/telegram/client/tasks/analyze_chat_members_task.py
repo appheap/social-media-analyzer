@@ -6,7 +6,6 @@ from ..base_response import BaseResponse
 import arrow
 import pyrogram
 from pyrogram import types
-from telegram import models as tg_models
 
 
 class AnalyzeChatMembersTask(TaskScaffold):

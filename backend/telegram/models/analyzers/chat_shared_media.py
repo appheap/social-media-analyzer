@@ -66,6 +66,7 @@ class ChatSharedMediaManager(models.Manager):
                 **kwargs,
                 'chat': db_chat,
                 'logged_by': logger_account,
+                'date_ts': date_ts,
             }
         )
 
