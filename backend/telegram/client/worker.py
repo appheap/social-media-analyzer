@@ -78,7 +78,7 @@ class Worker(ConsumerProducerMixin):
             response = self.telegram_tasks.analyze_admin_logs_task(*args, **kwargs)
 
         elif func == 'task_analyze_all_chat_members':
-            response = self.task_analyze_all_chat_members(*args, **kwargs)
+            response = self.telegram_tasks.analyze_chat_members_task(*args, **kwargs)
 
         elif func == 'task_analyze_chat_members':
             response = self.task_analyze_chat_members(*args, **kwargs)

@@ -32,10 +32,11 @@ class AnalyzeAdminLogsTask(TaskScaffold):
                     db_tg_admin_account=db_telegram_accounts[0],
                     client=client,
                 )
-                self.db.telegram.update_analyzer_metadata(
-                    analyzer=db_chat.admin_log_analyzer,
-                    timestamp=now
-                )
+                if response.success:
+                    self.db.telegram.update_analyzer_metadata(
+                        analyzer=db_chat.admin_log_analyzer,
+                        timestamp=now
+                    )
         else:
             return BaseResponse().done(message='No analyzer is enabled.')
 
