@@ -34,7 +34,7 @@ class ChannelFull(Object):
             notify_settings: "types.PeerNotifySettings" = None,
             invite_link: str = None,
             bot_infos: List["types.BotInfo"] = None,
-            migrated_from: "types.Group" = None,
+            migrated_from: "types.Chat" = None,
             migrated_from_max_id: int = None,
             pinned_message: "types.Message" = None,
             stickerset: "types.StickerSet" = None,
@@ -100,12 +100,7 @@ class ChannelFull(Object):
         if getattr(channel_full, 'migrated_from_chat_id'):
             chat = chats.get(getattr(channel_full, 'migrated_from_chat_id', None), None)
             if chat:
-                if isinstance(chat, raw.types.Chat):
-                    migrated_from = await types.Group._parse(client, chat)
-                elif isinstance(chat, raw.types.Channel):
-                    migrated_from = types.Channel._parse(client, chat)
-                else:
-                    migrated_from = None
+                migrated_from = await types.Chat._parse_chat(client, chat)
 
         return ChannelFull(
             client=client,
