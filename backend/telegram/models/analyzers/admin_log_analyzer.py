@@ -46,17 +46,15 @@ class AdminLogAnalyzerMetaDataManager(models.Manager):
     def update_or_create_analyzer(
             self,
             *,
-            db_telegram_channel: 'tg_models.TelegramChannel',
             chat_id: int,
             enabled: bool,
     ) -> Optional['AdminLogAnalyzerMetaData']:
-        if db_telegram_channel is None or chat_id is None:
+        if chat_id is None:
             return None
 
         return self.get_queryset().update_or_create(
             id=chat_id,
             defaults={
-                'telegram_channel': db_telegram_channel,
                 'enabled': enabled,
             }
         )
@@ -77,12 +75,12 @@ class AdminLogAnalyzerMetaData(BaseModel):
     ######################################
 
     # current active telegram channel
-    telegram_channel = models.OneToOneField(  # fixme: what's the usage?
-        'telegram.TelegramChannel',
-        on_delete=models.CASCADE,
-        related_name='admin_log_analyzer_metadata',
-        null=True, blank=True,
-    )
+    # telegram_channel = models.OneToOneField(  # fixme: what's the usage?
+    #     'telegram.TelegramChannel',
+    #     on_delete=models.CASCADE,
+    #     related_name='admin_log_analyzer_metadata',
+    #     null=True, blank=True,
+    # )
 
     objects = AdminLogAnalyzerMetaDataManager()
 

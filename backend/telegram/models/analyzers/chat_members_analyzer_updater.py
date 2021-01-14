@@ -9,13 +9,13 @@ class ChatMembersAnalyzerMetaDataUpdater:
     def update_or_create_chat_members_analyzer(
             model: models.Model,
             field_name: str,
-            db_telegram_channel,
             chat_id: int,
             enabled: bool,
             create: bool = True,
+            delete: bool = True,
             **kwargs,
     ):
-        if not db_telegram_channel or chat_id is None:
+        if chat_id is None:
             return
 
         field = getattr(model, field_name, None)
@@ -23,23 +23,22 @@ class ChatMembersAnalyzerMetaDataUpdater:
             return
 
         if field:
-            if db_telegram_channel:
+            if delete:
+                field.delete()
+                model.save()
+            else:
                 field.update_fields(
                     **{
                         'enabled': enabled,
                         **kwargs
                     }
                 )
-            else:
-                field.delete()
-                model.save()
         else:
-            if create and db_telegram_channel:
+            if create and not delete:
                 setattr(
                     model,
                     field_name,
                     ChatMembersAnalyzerMetaData.objects.update_or_create_analyzer(
-                        db_telegram_channel=db_telegram_channel,
                         chat_id=chat_id,
                         enabled=enabled
                     )

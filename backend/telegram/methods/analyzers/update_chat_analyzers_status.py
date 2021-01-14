@@ -9,20 +9,17 @@ class UpdateChatAnalyzersStatus(Scaffold):
     def update_chat_analyzers_status(
             self,
             *,
-            db_telegram_channel: 'tg_models.TelegramChannel',
+            db_chat: 'tg_models.Chat',
             enabled: bool = False,
             only_admin_based_analyzers: bool = False,
     ):
-        if db_telegram_channel is None:
+        if db_chat is None:
             return
-
-        db_chat = db_telegram_channel.chat
 
         with transaction.atomic():
             db_chat.update_or_create_admin_log_analyzer(
                 model=db_chat,
                 field_name='admin_log_analyzer',
-                db_telegram_channel=db_telegram_channel,
                 chat_id=db_chat.chat_id,
                 enabled=enabled,
                 create=False,
@@ -31,7 +28,6 @@ class UpdateChatAnalyzersStatus(Scaffold):
             db_chat.update_or_create_chat_members_analyzer(
                 model=db_chat,
                 field_name='members_analyzer',
-                db_telegram_channel=db_telegram_channel,
                 chat_id=db_chat.chat_id,
                 enabled=enabled,
                 create=False,

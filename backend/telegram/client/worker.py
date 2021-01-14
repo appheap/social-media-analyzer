@@ -197,7 +197,7 @@ class Worker(ConsumerProducerMixin):
 
                     )
                     self.db.telegram.update_chat_analyzers_status(
-                        db_telegram_channel=db_telegram_channel,
+                        db_chat=db_telegram_channel.chat,
                         enabled=raw_chat.is_admin,
                         only_admin_based_analyzers=True,
                     )
@@ -243,14 +243,23 @@ class Worker(ConsumerProducerMixin):
             db_tg_admin_account: 'tg_models.TelegramAccount',
             client: 'pyrogram.Client',
     ):
-        raw_admin_logs = client.get_admin_log(
-            db_chat.chat_id,
-        )
-        for raw_admin_log in raw_admin_logs:
-            self.db.telegram.create_admin_log(
-                raw_admin_log=raw_admin_log,
-                db_chat=db_chat,
-                logged_by=db_tg_admin_account,
+        from pyrogram import errors
+        try:
+            raw_admin_logs = client.get_admin_log(
+                db_chat.chat_id,
             )
+        except errors.ChatAdminRequired or errors.ChatWriteForbidden:
+            self.db.telegram.update_chat_analyzers_status(
+                db_chat=db_chat,
+                enabled=False,
+                only_admin_based_analyzers=True,
+            )
+        else:
+            for raw_admin_log in raw_admin_logs:
+                self.db.telegram.create_admin_log(
+                    raw_admin_log=raw_admin_log,
+                    db_chat=db_chat,
+                    logged_by=db_tg_admin_account,
+                )
 
         return BaseResponse().done()

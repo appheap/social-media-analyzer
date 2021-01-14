@@ -19,7 +19,6 @@ class CreateAdminBasedChatAnalyzers(Scaffold):
                 db_chat.update_or_create_admin_log_analyzer(
                     model=db_chat,
                     field_name='admin_log_analyzer',
-                    db_telegram_channel=db_telegram_channel,
                     chat_id=db_chat.chat_id,
                     enabled=enabled,
                 )
@@ -27,7 +26,6 @@ class CreateAdminBasedChatAnalyzers(Scaffold):
                 db_chat.update_or_create_chat_members_analyzer(
                     model=db_chat,
                     field_name='members_analyzer',
-                    db_telegram_channel=db_telegram_channel,
                     chat_id=db_chat.chat_id,
                     enabled=enabled,
                 )
