@@ -48,7 +48,8 @@ class Scaffold:
             raw_chat: "types.Chat",
             db_account: "tg_models.TelegramAccount",
             is_member: bool,
-            left_date_ts: int = None
+            left_date_ts: int = None,
+            update_chat: bool = True,
     ) -> Optional["tg_models.Dialog"]:
         pass
 

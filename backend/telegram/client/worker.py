@@ -15,6 +15,7 @@ from utils.utils import prettify
 from kombu.transport import pyamqp
 from .base_response import BaseResponse
 from telegram import tasks
+from pyrogram import errors as tg_errors
 
 clients_lock = threading.RLock()
 
@@ -172,20 +173,54 @@ class Worker(ConsumerProducerMixin):
             if client is None:
                 continue
 
-            raw_dialogs = client.get_all_dialogs()
+            raw_dialogs: List['types.Dialog'] = client.get_all_dialogs()
             if raw_dialogs is None or not len(raw_dialogs):
                 continue
 
+            _valid_raw_dialogs = []
+            for raw_dialog in raw_dialogs:
+                if raw_dialog.chat.group and raw_dialog.chat.group.migrated_to:
+                    db_chat_migrated_from = self.db.telegram.get_updated_chat(
+                        raw_chat=raw_dialog.chat,
+                        db_telegram_account=db_telegram_account,
+                    )
+                    try:
+                        raw_chat = client.get_chat(raw_dialog.chat.group.migrated_to.id)
+                    except tg_errors.ChannelInvalid as e:
+                        logger.info(raw_dialog.chat)
+                        logger.error(e)
+                    except tg_errors.ChannelPrivate as e:
+                        logger.info(raw_dialog.chat)
+                        logger.error(e)
+                    except tg_errors.ChannelPublicGroupNa as e:
+                        logger.info(raw_dialog.chat)
+                        logger.error(e)
+                    else:
+                        if raw_chat:
+                            raw_dialog.chat = raw_chat
+                            db_chat = self.db.telegram.get_updated_chat(
+                                raw_chat=raw_chat,
+                                db_telegram_account=db_telegram_account,
+                            )
+                            _valid_raw_dialogs.append(raw_dialog)
+                else:
+                    db_chat = self.db.telegram.get_updated_chat(
+                        raw_chat=raw_dialog.chat,
+                        db_telegram_account=db_telegram_account,
+                    )
+                    _valid_raw_dialogs.append(raw_dialog)
+
             db_dialogs = self.db.telegram.get_updated_dialogs(
-                raw_dialogs=raw_dialogs,
+                raw_dialogs=_valid_raw_dialogs,
                 db_telegram_account=db_telegram_account,
+                update_chat=False,
             )
 
             if db_dialogs is None:
                 continue
 
-            for raw_dialogs in raw_dialogs:
-                raw_chat: types.Chat = raw_dialogs.chat
+            for raw_dialog in _valid_raw_dialogs:
+                raw_chat: types.Chat = raw_dialog.chat
                 if raw_chat is None:
                     continue
 
@@ -196,11 +231,12 @@ class Worker(ConsumerProducerMixin):
                         db_account=db_telegram_account,
 
                     )
-                    self.db.telegram.update_chat_analyzers_status(
-                        db_chat=db_telegram_channel.chat,
-                        enabled=raw_chat.is_admin,
-                        only_admin_based_analyzers=True,
-                    )
+                    if db_telegram_channel:
+                        self.db.telegram.update_chat_analyzers_status(
+                            db_chat=db_telegram_channel.chat,
+                            enabled=raw_chat.is_admin,
+                            only_admin_based_analyzers=True,
+                        )
         return BaseResponse().done()
 
     def task_analyze_admin_logs(self, *args, **kwargs):
@@ -243,12 +279,11 @@ class Worker(ConsumerProducerMixin):
             db_tg_admin_account: 'tg_models.TelegramAccount',
             client: 'pyrogram.Client',
     ):
-        from pyrogram import errors
         try:
             raw_admin_logs = client.get_admin_log(
                 db_chat.chat_id,
             )
-        except errors.ChatAdminRequired or errors.ChatWriteForbidden:
+        except tg_errors.ChatAdminRequired or tg_errors.ChatWriteForbidden:
             self.db.telegram.update_chat_analyzers_status(
                 db_chat=db_chat,
                 enabled=False,
