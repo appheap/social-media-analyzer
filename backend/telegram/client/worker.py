@@ -66,7 +66,7 @@ class Worker(ConsumerProducerMixin):
             response = self.telegram_tasks.analyze_chat_shared_medias_task(*args, **kwargs)
 
         elif func == 'task_analyze_chat_member_count':
-            response = self.task_analyze_chat_member_count(*args, **kwargs)
+            response = self.telegram_tasks.analyze_chat_member_count_task(*args, **kwargs)
 
         elif func == 'task_analyze_message_views':
             response = self.task_analyze_message_views(*args, **kwargs)
