@@ -227,9 +227,7 @@ class Worker(ConsumerProducerMixin):
                 if raw_chat.type == 'channel':
                     db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
                         raw_chat=raw_chat,
-                        db_site_user=None,
                         db_account=db_telegram_account,
-
                     )
                     if db_telegram_channel:
                         self.db.telegram.update_chat_analyzers_status(
