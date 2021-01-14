@@ -205,8 +205,7 @@ class AdminShipManger(models.Manager):
         if raw_chat.full_group:
             _dict.update(
                 {
-                    'can_set_username': raw_chat.full_channel.can_set_username,
-
+                    'can_set_username': raw_chat.full_group.can_set_username,
                 }
             )
 

@@ -41,6 +41,7 @@ class ChatMemberCountManager(models.Manager):
         return self.get_queryset().update_or_create_chat_member_count(
             id=f'{db_chat.chat_id}:{date_ts}',
             defaults={
+                'count': count,
                 'date_ts': date_ts,
                 'chat': db_chat,
                 'logged_by': logger_account,
