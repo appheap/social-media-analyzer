@@ -58,6 +58,17 @@ class MessageQuerySet(SoftDeletableQS):
     def filter_by_id(self, *, id: str) -> "MessageQuerySet":
         return self.filter(id=id)
 
+    def get_by_id(self, *, id: str) -> Optional["Message"]:
+        try:
+            return self.get(id=id)
+        except Message.DoesNotExist:
+            pass
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
     def update_or_create_message(self, *, defaults: dict, **kwargs) -> Optional["Message"]:
         try:
             return self.update_or_create(
@@ -89,6 +100,23 @@ class MessageManager(models.Manager):
     def get_queryset(self) -> "MessageQuerySet":
         return MessageQuerySet(self.model, using=self._db)
 
+    def get_message_from_raw(
+            self,
+            *,
+            chat_id: int,
+            raw_message: 'types.Message'
+    ) -> Optional['types.Message']:
+        if chat_id is None or raw_message is None:
+            return None
+
+        return self.get_queryset().get_by_id(
+            id=self._get_id_from_raw_message(chat_id, raw_message)
+        )
+
+    @staticmethod
+    def _get_id_from_raw_message(chat_id: int, raw_message: 'types.Message'):
+        return f"{chat_id}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}"
+
     def update_or_create_from_raw(
             self,
             *,
@@ -107,7 +135,7 @@ class MessageManager(models.Manager):
         if parsed_msg and len(parsed_msg):
             with transaction.atomic():
                 db_message = self.get_queryset().update_or_create_message(
-                    id=f"{chat_id}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}",
+                    id=self._get_id_from_raw_message(chat_id, raw_message),
                     defaults={
                         **parsed_msg,
                         'logged_by': logger_account,

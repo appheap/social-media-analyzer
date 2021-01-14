@@ -72,15 +72,17 @@ class AdminShipManger(models.Manager):
             self,
             *,
             db_chat: 'tg_models.Chat',
-            session_names: List['str']
+            session_names: List['str'],
+            with_admin_permissions: bool = False,
     ) -> List['tg_models.TelegramAccount']:
         if db_chat is None or session_names is None or not len(session_names):
             return None
 
-        db_adminships = self.get_queryset() \
-            .filter_by_chat(db_chat=db_chat) \
-            .filter_by_admins_and_creators() \
-            .filter_by_session_names(session_names=session_names)
+        queryset = self.get_queryset().filter_by_chat(db_chat=db_chat)
+        if with_admin_permissions:
+            queryset = queryset.filter_by_admins_and_creators()
+        db_adminships = queryset.filter_by_session_names(session_names=session_names)
+
         if db_adminships:
             db_accounts = []
             for db_adminship in db_adminships:
