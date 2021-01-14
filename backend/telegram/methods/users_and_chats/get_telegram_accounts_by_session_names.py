@@ -9,9 +9,11 @@ class GetTelegramAccountsBySessionNames(Scaffold):
             self,
             *,
             db_chat: 'tg_models.Chat',
-            session_names: List['str']
+            session_names: List['str'],
+            with_admin_permissions: bool = False,
     ) -> Optional[List['tg_models.TelegramAccount']]:
         return self.tg_models.AdminShip.objects.get_telegram_accounts_by_account_session_names(
             db_chat=db_chat,
             session_names=session_names,
+            with_admin_permissions=with_admin_permissions
         )
