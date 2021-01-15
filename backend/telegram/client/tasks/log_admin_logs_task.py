@@ -8,9 +8,9 @@ from tasks.task_scaffold import TaskScaffold
 from core.globals import logger
 
 
-class AnalyzeAdminLogsTask(TaskScaffold):
+class LogAdminLogsTask(TaskScaffold):
 
-    def analyze_admin_logs_task(self, *args, **kwargs) -> BaseResponse:
+    def log_admin_logs_task(self, *args, **kwargs) -> BaseResponse:
         db_chats: QuerySet = self.db.telegram.get_chats_filter_by_analyzer(
             admin_log_analyzer=True,
         )

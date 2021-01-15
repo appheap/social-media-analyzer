@@ -9,8 +9,8 @@ from core.globals import logger
 import time
 
 
-class AnalyzeChatMemberCountTask(TaskScaffold):
-    def analyze_chat_member_count_task(self, *args, **kwargs) -> BaseResponse:
+class LogChatMemberCountTask(TaskScaffold):
+    def log_chat_member_count_task(self, *args, **kwargs) -> BaseResponse:
         db_chats: QuerySet = self.db.telegram.get_chats_filter_by_analyzer(
             member_count_analyzer=True,
         )

@@ -5,9 +5,9 @@ from ..base_response import BaseResponse
 import arrow
 
 
-class AnalyzeChatSharedMediasTask(TaskScaffold):
+class LogChatSharedMediasTask(TaskScaffold):
 
-    def analyze_chat_shared_medias_task(self, *args, **kwargs) -> BaseResponse:
+    def log_chat_shared_medias_task(self, *args, **kwargs) -> BaseResponse:
         db_chats: QuerySet = self.db.telegram.get_chats_filter_by_analyzer(
             shared_media_analyzer=True,
         )

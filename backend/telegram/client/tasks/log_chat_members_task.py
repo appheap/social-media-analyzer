@@ -10,9 +10,9 @@ from pyrogram import errors as tg_errors
 from core.globals import logger
 
 
-class AnalyzeChatMembersTask(TaskScaffold):
+class LogChatMembersTask(TaskScaffold):
 
-    def analyze_chat_members_task(self, *args, **kwargs) -> BaseResponse:
+    def log_chat_members_task(self, *args, **kwargs) -> BaseResponse:
         db_chats: QuerySet = self.db.telegram.get_chats_filter_by_analyzer(
             members_analyzer=True,
         )

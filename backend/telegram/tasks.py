@@ -56,7 +56,7 @@ def request_add_tg_channel(*args, **kwargs):
 @shared_task(queue='default', timeout=60)
 def shared_media_analyzer(*args, **kwargs):
     tg_function({
-        'func': 'task_analyze_chat_shared_medias',
+        'func': 'log_chat_shared_medias_task',
         'args': args,
         'kwargs': kwargs
     })
@@ -65,7 +65,7 @@ def shared_media_analyzer(*args, **kwargs):
 @shared_task(queue='default', timeout=60)
 def member_count_analyzer(*args, **kwargs):
     tg_function({
-        'func': 'task_analyze_chat_member_count',
+        'func': 'log_chat_member_count_task',
         'args': args,
         'kwargs': kwargs
     })
@@ -83,7 +83,7 @@ def message_view_analyzer(*args, **kwargs):
 @shared_task(queue='default', timeout=60)
 def iterate_chats_history(*args, **kwargs):
     tg_function({
-        'func': 'task_iterate_chat_history',
+        'func': 'iterate_chat_history_task',
         'args': args,
         'kwargs': kwargs
     })
@@ -92,7 +92,7 @@ def iterate_chats_history(*args, **kwargs):
 @shared_task(queue='default', timeout=60)
 def admin_logs_analyzer(*args, **kwargs):
     tg_function({
-        'func': 'task_analyze_admin_logs',
+        'func': 'log_admin_logs_task',
         'args': args,
         'kwargs': kwargs
     })
@@ -101,7 +101,7 @@ def admin_logs_analyzer(*args, **kwargs):
 @shared_task(queue='default', timeout=60)
 def chat_member_analyzer(*args, **kwargs):
     tg_function({
-        'func': 'task_analyze_all_chat_members',
+        'func': 'log_chat_members_task',
         'args': args,
         'kwargs': kwargs
     })
