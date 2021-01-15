@@ -22,7 +22,8 @@ class AnalyzeChatMembersTask(TaskScaffold):
                 client_session_names = self.get_client_session_names()
                 db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_session_names(
                     db_chat=db_chat,
-                    session_names=client_session_names
+                    session_names=client_session_names,
+                    with_admin_permissions=True,
                 )
                 if db_telegram_accounts is None or not len(db_telegram_accounts):
                     # return BaseResponse().done(message='No Telegram Account is available now.')
@@ -76,14 +77,15 @@ class AnalyzeChatMembersTask(TaskScaffold):
                 filter=_filter if _filter else Filters.ALL,
                 last_member_count=raw_chat.members_count,
         ):
-            db_chat_member = self.db.telegram.get_updated_chat_member(
+            db_chat_member, created_membership = self.db.telegram.get_updated_chat_member(
                 raw_chat_member=raw_chat_member,
                 db_chat=db_chat,
                 event_date_ts=now,
             )
-            self.db.telegram.get_updated_membership(
-                db_chat=db_chat,
-                new_status=db_chat_member,
-                event_date_ts=now,
-            )
+            if not created_membership:
+                db_membership = self.db.telegram.get_updated_membership(
+                    db_chat=db_chat,
+                    new_status=db_chat_member,
+                    event_date_ts=now,
+                )
         return BaseResponse().done()

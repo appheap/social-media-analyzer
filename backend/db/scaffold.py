@@ -61,6 +61,15 @@ class Scaffold:
     ) -> Optional['tg_models.Membership']:
         pass
 
+    def get_updated_membership(
+            self,
+            *,
+            db_chat: 'tg_models.Chat',
+            new_status: 'tg_models.ChatMember',
+            event_date_ts: int,
+    ) -> Optional['tg_models.Membership']:
+        pass
+
     def get_updated_adminship(
             self,
             *,
