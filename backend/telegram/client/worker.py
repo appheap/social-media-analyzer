@@ -72,7 +72,7 @@ class Worker(ConsumerProducerMixin):
             response = self.task_analyze_message_views(*args, **kwargs)
 
         elif func == 'task_iterate_chat_history':
-            response = self.task_iterate_chat_history(*args, **kwargs)
+            response = self.telegram_tasks.iterate_chat_history_task(*args, **kwargs)
 
         elif func == 'task_analyze_admin_logs':
             response = self.telegram_tasks.analyze_admin_logs_task(*args, **kwargs)
