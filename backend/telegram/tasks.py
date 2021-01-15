@@ -74,7 +74,7 @@ def member_count_analyzer(*args, **kwargs):
 @shared_task(queue='default', timeout=60)
 def message_view_analyzer(*args, **kwargs):
     tg_function({
-        'func': 'task_analyze_message_views',
+        'func': 'log_message_views_task',
         'args': args,
         'kwargs': kwargs
     })

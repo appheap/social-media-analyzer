@@ -68,8 +68,8 @@ class Worker(ConsumerProducerMixin):
         elif func == 'log_chat_member_count_task':
             response = self.telegram_tasks.log_chat_member_count_task(*args, **kwargs)
 
-        elif func == 'task_analyze_message_views':
-            response = self.task_analyze_message_views(*args, **kwargs)
+        elif func == 'log_message_views_task':
+            response = self.telegram_tasks.log_message_views_task(*args, **kwargs)
 
         elif func == 'iterate_chat_history_task':
             response = self.telegram_tasks.iterate_chat_history_task(*args, **kwargs)

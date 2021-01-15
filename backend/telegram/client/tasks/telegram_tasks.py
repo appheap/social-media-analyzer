@@ -2,6 +2,7 @@ from .log_admin_logs_task import LogAdminLogsTask
 from .init_clients_task import InitClientsTask
 from .iterate_dialogs_task import IterateDialogsTask
 from .iterate_chat_history_task import IterateChatHistoryTask
+from .log_message_views_task import LogMessageViewsTask
 from .get_me_task import GetMeTask
 from .log_chat_shared_medias_task import LogChatSharedMediasTask
 from .log_chat_members_task import LogChatMembersTask
@@ -13,6 +14,7 @@ class TelegramTasks(
     InitClientsTask,
     IterateDialogsTask,
     IterateChatHistoryTask,
+    LogMessageViewsTask,
     GetMeTask,
     LogChatSharedMediasTask,
     LogChatMembersTask,
