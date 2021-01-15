@@ -120,24 +120,24 @@ class MessageManager(models.Manager):
     def update_or_create_from_raw(
             self,
             *,
-            chat_id: int,
+            db_chat: 'tg_models.Chat',
             raw_message: types.Message,
             logger_account: "tg_models.TelegramAccount"
     ) -> Optional["Message"]:
 
-        if chat_id is None or not raw_message or not logger_account:
+        if db_chat is None or raw_message is None or logger_account is None:
             return None
         parsed_msg = self._parse_normal(
-            chat_id=chat_id,
             raw_message=raw_message
         )
 
         if parsed_msg and len(parsed_msg):
             with transaction.atomic():
                 db_message = self.get_queryset().update_or_create_message(
-                    id=self._get_id_from_raw_message(chat_id, raw_message),
+                    id=self._get_id_from_raw_message(db_chat.chat_id, raw_message),
                     defaults={
                         **parsed_msg,
+                        'chat': db_chat,
                         'logged_by': logger_account,
                     }
                 )
@@ -161,7 +161,6 @@ class MessageManager(models.Manager):
             return False
 
         parsed_msg = self._parse_normal(
-            chat_id=chat_id,
             raw_message=raw_message
         )
 
@@ -187,7 +186,7 @@ class MessageManager(models.Manager):
             db_message.update_or_create_chat_from_raw(
                 model=db_message,
                 field_name='sender_chat',
-                raw_chat=raw_message.content.from_chat
+                raw_chat=raw_message.content.sender_chat
             )
             db_message.update_or_create_user_from_raw(
                 model=db_message,
@@ -239,7 +238,7 @@ class MessageManager(models.Manager):
                 )
 
     @staticmethod
-    def _parse_normal(*, chat_id, raw_message: types.Message) -> dict:
+    def _parse_normal(*, raw_message: types.Message) -> dict:
         if not raw_message:
             return {}
 
@@ -248,7 +247,6 @@ class MessageManager(models.Manager):
             return {}
 
         r = {
-            'id': f"{chat_id}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}",
             'message_id': raw_message.message_id,
             'date_ts': raw_message.date,
             'type': MessageTypes.message,
@@ -282,7 +280,7 @@ class MessageManager(models.Manager):
                     'reply_to_top_message_id_orig': content.reply_header.reply_to_top_id,
                 }
             )
-        return
+        return r
 
     @staticmethod
     def create_restrictions(raw_message: types.Message, db_message: "Message"):

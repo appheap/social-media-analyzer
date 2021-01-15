@@ -12,18 +12,17 @@ class GetUpdatedMessage(Scaffold):
     def get_updated_message(
             self,
             *,
-            chat_id: int,
+            db_chat: 'tg_models.Chat',
             raw_message: types.Message,
             logger_account: "tg_models.TelegramAccount",
-
-            create_entities: bool = True,
+            create_entities: bool = True
     ) -> Optional['tg_models.Message']:
-        if chat_id is None or raw_message is None or logger_account is None:
+        if db_chat is None or raw_message is None or logger_account is None:
             return None
 
         with transaction.atomic():
             db_message = self.tg_models.Message.objects.update_or_create_from_raw(
-                chat_id=chat_id,
+                db_chat=db_chat,
                 raw_message=raw_message,
                 logger_account=logger_account,
             )

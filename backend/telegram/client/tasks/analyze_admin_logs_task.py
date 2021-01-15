@@ -21,7 +21,8 @@ class AnalyzeAdminLogsTask(TaskScaffold):
                 client_session_names = self.get_client_session_names()
                 db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_session_names(
                     db_chat=db_chat,
-                    session_names=client_session_names
+                    session_names=client_session_names,
+                    with_admin_permissions=True,
                 )
                 if db_telegram_accounts is None or not len(db_telegram_accounts):
                     # return BaseResponse().done(message='No Telegram Account is available now.')
@@ -49,7 +50,7 @@ class AnalyzeAdminLogsTask(TaskScaffold):
             db_chat: 'tg_models.Chat',
             db_tg_admin_account: 'tg_models.TelegramAccount',
             client: 'pyrogram.Client',
-    ):
+    ) -> BaseResponse:
         try:
             raw_admin_logs = client.get_admin_log(
                 db_chat.chat_id,

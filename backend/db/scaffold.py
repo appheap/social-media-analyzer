@@ -88,6 +88,38 @@ class Scaffold:
     ) -> bool:
         pass
 
+    def get_message_from_raw(
+            self,
+            *,
+            chat_id: int,
+            raw_message: types.Message,
+    ) -> Optional['tg_models.Message']:
+        pass
+
+    def get_updated_message(
+            self,
+            *,
+            db_chat: 'tg_models.Chat',
+            raw_message: types.Message,
+            logger_account: "tg_models.TelegramAccount",
+
+            create_entities: bool = True,
+    ) -> Optional['tg_models.Message']:
+        pass
+
+    def get_updated_message_view(
+            self,
+            *,
+            raw_message_view: types.MessageViews,
+            db_chat: "tg_models.Chat",
+            db_message: "tg_models.Message",
+            logger_account: "tg_models.TelegramAccount",
+            date_ts: int,
+
+            create_recent_repliers: bool = True,
+    ) -> Optional['tg_models.MessageView']:
+        pass
+
     def get_updated_message_entities(
             self,
             *,
