@@ -3,6 +3,7 @@ from typing import Optional
 from django.db import DatabaseError
 from django.db import models
 from django.db.models import QuerySet
+from django.utils.functional import cached_property
 
 from core.globals import logger
 from db.models import SoftDeletableBaseModel, SoftDeletableQS
@@ -381,7 +382,7 @@ class Chat(
         else:
             return Chat.chats
 
-    @property
+    @cached_property
     def title(self):
         if self.type in ('channel', 'supergroup'):
             return self.channel.title
