@@ -58,6 +58,9 @@ class MessageQuerySet(SoftDeletableQS):
     def filter_by_id(self, *, id: str) -> "MessageQuerySet":
         return self.filter(id=id)
 
+    def filter_by_chat(self, *, db_chat: 'tg_models.Chat', ) -> "MessageQuerySet":
+        return self.filter(chat=db_chat)
+
     def get_by_id(self, *, id: str) -> Optional["Message"]:
         try:
             return self.get(id=id)
@@ -65,6 +68,19 @@ class MessageQuerySet(SoftDeletableQS):
             pass
         except DatabaseError as e:
             logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
+
+    def get_by_message_id(self, *, message_id: int) -> Optional["Message"]:
+        try:
+            return self.order_by().filter(message_id=message_id).order_by('-edit_date_ts')[0]
+        except Message.DoesNotExist:
+            pass
+        except DatabaseError as e:
+            logger.exception(e)
+        except IndexError as e:
+            pass
         except Exception as e:
             logger.exception(e)
         return None
@@ -111,6 +127,19 @@ class MessageManager(models.Manager):
 
         return self.get_queryset().get_by_id(
             id=self._get_id_from_raw_message(chat_id, raw_message)
+        )
+
+    def get_message_by_message_id(
+            self,
+            *,
+            db_chat: 'tg_models.Chat',
+            message_id: int,
+    ) -> Optional['Message']:
+        if db_chat is None or message_id is None:
+            return None
+
+        return self.get_queryset().filter_by_chat(db_chat=db_chat).get_by_message_id(
+            message_id=message_id
         )
 
     @staticmethod

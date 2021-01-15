@@ -52,7 +52,7 @@ class IterateChatHistoryTask(TaskScaffold):
                             )
 
                     self.db.telegram.update_analyzer_metadata(
-                        analyzer=db_chat.shared_media_analyzer,
+                        analyzer=db_chat.message_view_analyzer,
                         timestamp=now,
                     )
         else:
