@@ -95,7 +95,7 @@ class Worker(ConsumerProducerMixin):
         )
         message.ack()
 
-    def acquire_clients(self, func: Callable) -> BaseResponse:
+    def acquire_clients(self, func: Callable):
         def wrapper(*args, **kwargs):
             with clients_lock as lock:
                 if len(self.clients) != 0:
