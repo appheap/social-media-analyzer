@@ -41,6 +41,12 @@ class TelegramChannelQuerySet(SoftDeletableQS):
 
         return None
 
+    def filter_by_site_user(self, *, db_site_user: 'site_models.SiteUser') -> 'TelegramChannelQuerySet':
+        return self.filter(site_user=db_site_user)
+
+    def filter_by_channel_username(self, *, username: 'str') -> 'TelegramChannelQuerySet':
+        return self.filter(username=username)
+
 
 class TelegramChannelManager(models.Manager):
     def get_queryset(self) -> TelegramChannelQuerySet:
@@ -48,6 +54,20 @@ class TelegramChannelManager(models.Manager):
 
     def get_by_channel_id(self, *, channel_id: int) -> Optional['TelegramChannel']:
         return self.get_queryset().get_by_channel_id(channel_id=channel_id)
+
+    def telegram_channel_exists(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser',
+            channel_username: str,
+    ) -> Optional['bool']:
+        if db_site_user is None or channel_username is None:
+            return None
+
+        return self.get_queryset() \
+            .filter_by_site_user(db_site_user=db_site_user) \
+            .filter_by_channel_username(username=channel_username) \
+            .exists()
 
     def update_or_create_from_raw(
             self,
