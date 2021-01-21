@@ -7,7 +7,6 @@ verify_ssl = true
 
 [packages]
 arrow = "*"
-pyrogram = "*"
 tgcrypto = "*"
 colorlog = "*"
 termcolor = "*"
@@ -20,14 +19,17 @@ whitenoise = "*"
 celery = "~=5.0"
 redis = "*"
 watchdog = "*"
-pyyaml = "*"
+PyYAML = "*"
 argh = "*"
 asgiref = "*"
 trio = "*"
 emoji = "*"
 django-debug-toolbar = "*"
-pillow = "*"
+Pillow = "*"
 gunicorn = "*"
+importlib-metadata = "*"
+async_lru = "*"
+PySocks = "*"
 
 [requires]
 python_version = "3.6"
