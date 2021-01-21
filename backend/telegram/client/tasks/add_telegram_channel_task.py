@@ -69,7 +69,15 @@ class AddTelegramChannelTask(TaskScaffold):
                 except tg_errors.UsersTooMuch as e:
                     return response.fail('Channel capacity is full')
                 except tg_errors.UserAlreadyParticipant as e:
-                    pass
+                    response.done('Admin has already joined.')
+                    return self._join_channel(
+                        response=response,
+                        raw_chat=raw_chat,
+                        raw_chat_temp=raw_chat_temp,
+                        db_admin_telegram_account=db_admin_telegram_account,
+                        db_site_user=db_site_user,
+                        channel_username=channel_username,
+                    )
                 except tg_errors.RPCError as e:
                     logger.error(e)
                     return response.fail('TG_RPC_ERROR')
@@ -77,29 +85,50 @@ class AddTelegramChannelTask(TaskScaffold):
                     logger.exception(e)
                     return response.fail('UNKNOWN_ERROR')
                 else:
-                    if not raw_chat_temp:
-                        return response.fail('UNKNOWN_ERROR')
-
-                    db_chat = self.db.telegram.get_updated_chat(
+                    return self._join_channel(
+                        response=response,
                         raw_chat=raw_chat,
-                        db_telegram_account=db_admin_telegram_account,
-                    )
-                    db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
-                        raw_chat=raw_chat,
-                        db_account=db_admin_telegram_account,
+                        raw_chat_temp=raw_chat_temp,
+                        db_admin_telegram_account=db_admin_telegram_account,
                         db_site_user=db_site_user,
-                    )
-                    db_add_telegram_channel_request = self.db.telegram.create_add_channel_request(
-                        db_site_user=db_site_user,
-                        db_admin=db_admin_telegram_account,
                         channel_username=channel_username,
-                        db_telegram_channel=db_telegram_channel,
                     )
-
-                    if not db_chat or not db_telegram_channel or not db_add_telegram_channel_request:
-                        response.fail('database error')
-
-                    return response.done('Joined Channel')
 
             else:
                 return response.fail('Only public channels can be added')
+
+    def _join_channel(
+            self,
+            *,
+            response: BaseResponse,
+            raw_chat: 'types.Chat',
+            raw_chat_temp: 'types.Chat',
+            db_admin_telegram_account: 'tg_models.TelegramAccount',
+            db_site_user: 'site_models.SiteUser',
+            channel_username: 'str',
+    ) -> BaseResponse:
+        if not raw_chat_temp:
+            return response.fail('UNKNOWN_ERROR')
+
+        db_chat = self.db.telegram.get_updated_chat(
+            raw_chat=raw_chat,
+            db_telegram_account=db_admin_telegram_account,
+        )
+        db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
+            raw_chat=raw_chat,
+            db_account=db_admin_telegram_account,
+            db_site_user=db_site_user,
+        )
+        db_add_telegram_channel_request = self.db.telegram.create_add_channel_request(
+            db_site_user=db_site_user,
+            db_admin=db_admin_telegram_account,
+            channel_username=channel_username,
+            db_telegram_channel=db_telegram_channel,
+        )
+
+        if not db_chat or not db_telegram_channel or not db_add_telegram_channel_request:
+            return response.fail('database error')
+
+        if response.success:
+            return response
+        return response.done('Joined Channel')
