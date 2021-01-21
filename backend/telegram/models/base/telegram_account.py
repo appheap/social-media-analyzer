@@ -32,6 +32,8 @@ class TelegramAccountQuerySet(SoftDeletableQS):
             return self.get(user_id=user_id)
         except TelegramAccount.DoesNotExist as e:
             pass
+        except TelegramAccount.MultipleObjectsReturned as e:
+            pass
         except DatabaseError as e:
             logger.exception(e)
         except Exception as e:
@@ -64,6 +66,19 @@ class TelegramAccountManager(models.Manager):
 
         return self.get_queryset().get_telegram_accounts_by_ids(
             ids=ids
+        )
+
+    def get_telegram_account_by_id(
+            self,
+            *,
+            id: int
+    ) -> Optional['TelegramAccount']:
+
+        if id is None:
+            return None
+
+        return self.get_queryset().get_by_user_id(
+            user_id=id
         )
 
     def update_or_create_from_raw(
