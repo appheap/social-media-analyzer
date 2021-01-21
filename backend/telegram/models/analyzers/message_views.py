@@ -96,11 +96,12 @@ class MessageView(BaseModel, ChatUpdater):
     )
 
     message_id_orig = models.BigIntegerField()
-    # message this view belongs to
+    # message this view belongs to (left null so message can be fetched later.)
     message = models.ForeignKey(
         'telegram.Message',
         on_delete=models.CASCADE,
-        null=False,
+        null=True,
+        blank=True,
         related_name='message_views',
     )
 
