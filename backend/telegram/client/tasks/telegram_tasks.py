@@ -7,6 +7,7 @@ from .get_me_task import GetMeTask
 from .log_chat_shared_medias_task import LogChatSharedMediasTask
 from .log_chat_members_task import LogChatMembersTask
 from .log_chat_member_count_task import LogChatMemberCountTask
+from .add_telegram_channel_task import AddTelegramChannelTask
 
 
 class TelegramTasks(
@@ -19,6 +20,7 @@ class TelegramTasks(
     LogChatSharedMediasTask,
     LogChatMembersTask,
     LogChatMemberCountTask,
+    AddTelegramChannelTask,
 
 ):
     pass

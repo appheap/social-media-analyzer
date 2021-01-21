@@ -47,7 +47,7 @@ def get_me(*args, **kwargs):
 @shared_task(queue='default', timeout=60)
 def request_add_tg_channel(*args, **kwargs):
     return tg_function({
-        'func': 'task_add_tg_channel',
+        'func': 'add_telegram_channel_task',
         'args': args,
         'kwargs': kwargs,
     })
