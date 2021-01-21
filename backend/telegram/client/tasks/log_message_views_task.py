@@ -37,7 +37,6 @@ class LogMessageViewsTask(TaskScaffold):
                     if start < 1:
                         start = 1
 
-                    message_ids_to_fetch = []
                     for i in range(start, int(last_message_id / 100) + 1):
                         try:
                             raw_message_views = client.get_messages_views(
@@ -56,17 +55,13 @@ class LogMessageViewsTask(TaskScaffold):
                                     db_chat=db_chat,
                                     message_id=raw_message_view.message_id
                                 )
-                                if db_message:
-                                    db_message_view = self.db.telegram.get_updated_message_view(
-                                        raw_message_view=raw_message_view,
-                                        db_chat=db_chat,
-                                        db_message=db_message,
-                                        logger_account=db_telegram_account,
-                                        date_ts=now,
-                                    )
-                                else:
-                                    message_ids_to_fetch.append(raw_message_view.message_id)
-                    logger.info((db_chat, len(message_ids_to_fetch)))
+                                db_message_view = self.db.telegram.get_updated_message_view(
+                                    raw_message_view=raw_message_view,
+                                    db_chat=db_chat,
+                                    db_message=db_message,
+                                    logger_account=db_telegram_account,
+                                    date_ts=now,
+                                )
                     self.db.telegram.update_analyzer_metadata(
                         analyzer=db_chat.message_view_analyzer,
                         timestamp=now,
