@@ -79,12 +79,12 @@ class TelegramChannelAddView(LoginRequiredMixin, JsonResponseFormMixin, FormView
         try:
             tg_models.AddChannelRequest.objects.get(done=False,
                                                     channel_username=str(form.instance.channel_username).lower(),
-                                                    custom_user=self.request.user, )
+                                                    site_user=self.request.user, )
         except exceptions.ObjectDoesNotExist as e:
             response = json.loads(
                 tasks.request_add_tg_channel(
                     channel_username=form.instance.channel_username,
-                    db_tg_account_admin_id=form.instance.telegram_account.pk,
+                    db_tg_account_admin_id=form.instance.admin.pk,
                     db_userid=self.request.user.pk,
                 )
             )
