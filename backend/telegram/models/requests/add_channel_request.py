@@ -23,6 +23,17 @@ class AddChannelRequestQuerySet(models.QuerySet):
     def done(self) -> 'AddChannelRequestQuerySet':
         return self.filter(done=True)
 
+    def filter_by_username_and_user(
+            self,
+            *,
+            channel_username: str,
+            db_site_user: 'site_models.SiteUser'
+    ) -> 'AddChannelRequestQuerySet':
+        return self.filter(
+            site_user=db_site_user,
+            channel_username=channel_username,
+        )
+
     def get_by_username_and_user(
             self,
             *,
@@ -86,6 +97,20 @@ class AddChannelRequestManager(models.Manager):
             channel_username=channel_username,
             db_site_user=db_site_user
         )
+
+    def request_exists(
+            self,
+            *,
+            channel_username: str,
+            db_site_user: 'site_models.SiteUser'
+    ) -> Optional['bool']:
+        if channel_username is None or db_site_user is None:
+            return None
+
+        return self.get_queryset().undone().filter_by_username_and_user(
+            channel_username=channel_username,
+            db_site_user=db_site_user
+        ).exists()
 
     def create_request(
             self,
