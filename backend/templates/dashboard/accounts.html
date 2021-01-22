@@ -120,12 +120,12 @@
                                 <p class="mt-4">
                                     <a class="card-link" href="https://t.me/{{ tg_channel.chat.username }}"
                                        data-toggle="tooltip" data-placement="bottom"
-                                       title="Channel username">@{{ tg_channel.chat.username }}
+                                       title="Channel username">@{{ tg_channel.username }}
                                     </a>
                                     <br>
                                     <span class="text-wrap" data-toggle="tooltip" data-placement="bottom"
                                           title="Channel Description">
-                                        {{ tg_channel.chat.description | default:"" }}
+                                        {{ tg_channel.chat.about | default:"" }}
                                     </span>
 
                                 </p>

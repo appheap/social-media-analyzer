@@ -92,9 +92,9 @@
                                         </div>
 
                                         <div class="fieldWrapper mb-1">
-                                            {{ form.telegram_account.label_tag }}
+                                            {{ form.admin.label_tag }}
                                             <div class="form-group">
-                                                {{ form.telegram_account }}
+                                                {{ form.admin }}
                                                 <div id="telegram_account" class="error-container">
                                                 </div>
                                             </div>
@@ -244,7 +244,7 @@
                         showSuccessToast(
                             text = response.message,
                             afterhidden = function () {
-                                if (response.message === 'joined channel') {
+                                if (response.message === 'Joined Channel') {
                                     showInfoToast(text = 'Channel added to your accounts, Please set our account as admin in order to use it.',
                                         afterhidden = function () {
                                             window.location = "{% url 'dashboard:accounts' %}"
