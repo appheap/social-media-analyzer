@@ -1,16 +1,7 @@
 from django.urls import reverse_lazy
 from django.views import generic
-from .forms import CustomUserCreationForm, LoginForm
-from users.models import SiteUser
-from django.http import JsonResponse
 
-
-# Create your views here.
-
-class SignUpView(generic.CreateView):
-    form_class = CustomUserCreationForm
-    template_name = 'users/signup.html'
-    success_url = reverse_lazy('users:login')
+from ..forms import LoginForm
 
 
 class LoginView(generic.FormView):
@@ -29,15 +20,3 @@ class LoginView(generic.FormView):
         else:
             form.add_error(None, 'not valid')
             return super().form_invalid(form)
-
-
-# todo: remove this code
-def validate_username(request):
-    username = request.GET.get('username', None)
-    data = {
-        'is_taken': SiteUser.objects.filter(username__iexact=username).exists()
-    }
-    if data['is_taken']:
-        data['error_message'] = 'A user with this username already exists.'
-
-    return JsonResponse(data)
