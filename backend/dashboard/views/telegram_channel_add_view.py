@@ -1,62 +1,13 @@
 import json
 
-from django.core import exceptions
-from django.http import JsonResponse
-from django.views.generic import TemplateView
-from django.views.generic import ListView
-from django.views.generic import DetailView
-from django.views.generic import CreateView
-from django.views.generic import FormView
-from django.views.generic.edit import FormMixin
-
-from telegram import models as tg_models
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core import exceptions
+from django.views.generic import FormView
+
 from telegram import forms as tg_forms
-from core.globals import logger
-
+from telegram import models as tg_models
 from telegram import tasks
-
-
-# Create your views here.
-
-class JsonResponseFormMixin(FormMixin):
-    def __init__(self):
-        self.extra_data = {}
-
-    def form_valid(self, form):
-        if self.request.is_ajax():
-            return JsonResponse(self.extra_data)
-        return super(JsonResponseFormMixin, self).form_valid(form)
-
-    def form_invalid(self, form):
-        if self.request.is_ajax():
-            return JsonResponse(form.errors, status=400)
-        return super(JsonResponseFormMixin, self).form_valid(form)
-
-
-class MainDashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'dashboard/dashboard.html'
-    login_url = 'login'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # context['current_url'] = get_url(self.request)
-        return context
-
-
-class AccountsView(LoginRequiredMixin, ListView):
-    template_name = 'dashboard/accounts.html'
-    # queryset = tg_models.TelegramChannel.objects.all()
-    context_object_name = 'tg_channels'
-    login_url = 'login'
-
-    def get_queryset(self):
-        self.queryset = tg_models.TelegramChannel.objects.filter(site_user=self.request.user)
-        return super().get_queryset()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+from .json_response_mixin import JsonResponseFormMixin
 
 
 class TelegramChannelAddView(LoginRequiredMixin, JsonResponseFormMixin, FormView, ):
@@ -103,13 +54,4 @@ class TelegramChannelAddView(LoginRequiredMixin, JsonResponseFormMixin, FormView
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         context['telegram_accounts'] = tg_models.TelegramAccount.objects.all()
-        return context
-
-
-class SettingsView(LoginRequiredMixin, TemplateView):
-    template_name = 'dashboard/settings.html'
-    login_url = 'login'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         return context
