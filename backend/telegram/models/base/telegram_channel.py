@@ -69,6 +69,12 @@ class TelegramChannelManager(models.Manager):
             .filter_by_channel_username(username=channel_username) \
             .exists()
 
+    def get_user_telegram_channels(
+            self,
+            db_site_user: 'site_models.SiteUser',
+    ) -> 'TelegramChannelQuerySet':
+        return self.get_queryset().filter_by_site_user(db_site_user=db_site_user)
+
     def update_or_create_from_raw(
             self,
             *,
