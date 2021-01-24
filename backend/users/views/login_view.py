@@ -2,6 +2,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 
 from ..forms import LoginForm
+from django.contrib.auth import authenticate, login
 
 
 class LoginView(generic.FormView):
@@ -10,7 +11,6 @@ class LoginView(generic.FormView):
     template_name = 'users/login.html'
 
     def form_valid(self, form):
-        from django.contrib.auth import authenticate, login
         username = form.cleaned_data.get("username")
         password = form.cleaned_data.get("password")
         user = authenticate(self.request, username=username, password=password)
