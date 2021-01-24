@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 
+from core.global_db import db
+
 
 class AccountsView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/accounts.html'
@@ -8,8 +10,6 @@ class AccountsView(LoginRequiredMixin, ListView):
     login_url = 'login'
 
     def get_queryset(self):
-        from core.global_db import db
-
         self.queryset = db.telegram.get_user_telegram_channels(
             db_site_user=self.request.user
         )
