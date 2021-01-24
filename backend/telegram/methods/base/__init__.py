@@ -5,6 +5,7 @@ from .get_telegram_accounts_by_ids import GetTelegramAccountsByIds
 from .get_telegram_account_by_id import GetTelegramAccountById
 from .telegram_channel_exists import TelegramChannelExists
 from .get_user_telegram_channels import GetUserTelegramChannels
+from .get_all_available_telegram_accounts import GetAllAvailableTelegramAccounts
 
 
 class Base(
@@ -15,6 +16,7 @@ class Base(
     GetTelegramAccountsByIds,
     GetTelegramAccountById,
     GetUserTelegramChannels,
+    GetAllAvailableTelegramAccounts,
 
 ):
     pass
