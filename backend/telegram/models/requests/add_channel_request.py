@@ -98,7 +98,21 @@ class AddChannelRequestManager(models.Manager):
             db_site_user=db_site_user
         )
 
-    def request_exists(
+    def done_request_exists(
+            self,
+            *,
+            channel_username: str,
+            db_site_user: 'site_models.SiteUser'
+    ) -> Optional['bool']:
+        if channel_username is None or db_site_user is None:
+            return None
+
+        return self.get_queryset().done().filter_by_username_and_user(
+            channel_username=channel_username,
+            db_site_user=db_site_user
+        ).exists()
+
+    def undone_request_exists(
             self,
             *,
             channel_username: str,

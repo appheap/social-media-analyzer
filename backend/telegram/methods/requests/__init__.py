@@ -1,10 +1,10 @@
 from .create_add_channel_request import CreateAddChannelRequest
-from .add_channel_request_exists import AddChannelRequestExists
+from .undone_add_channel_request_exists import UndoneAddChannelRequestExists
 
 
 class Requests(
     CreateAddChannelRequest,
-    AddChannelRequestExists,
+    UndoneAddChannelRequestExists,
 
 ):
     pass
