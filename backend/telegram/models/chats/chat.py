@@ -366,6 +366,7 @@ class Chat(
     # `message_views` : message views belonging to this chat
     # `dialogs` : dialogs this chat belongs to
     # `migrated_to` : supergroup this group chat migrated to
+    # `profile_photos` : profile photos of this chat
 
     @property
     def manager(self) -> BaseChatManager:

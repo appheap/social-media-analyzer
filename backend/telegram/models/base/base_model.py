@@ -1,7 +1,11 @@
 from db import models as db_models
 
 base_url_telegram = 'telegram/'
-telegram_profile_photos_url = base_url_telegram + 'profile_photos/'
+base_url_users = 'users/'
+
+site_user_profile_photos_url = base_url_users + 'profile_photos/'
+telegram_user_profile_photos_url = base_url_telegram + 'user_profile_photos/'
+telegram_chat_profile_photos_url = base_url_telegram + 'chat_profile_photos/'
 
 
 class BaseModel(db_models.BaseModel):
@@ -10,10 +14,11 @@ class BaseModel(db_models.BaseModel):
 
     @staticmethod
     def file_dir_path(instance, filename):
-        print(type(instance))
-        from telegram import models as tg_models
-
-        if isinstance(instance, tg_models.User):
-            return telegram_profile_photos_url + 'user_{0}_{1}'.format(instance.user_id, filename)
+        if instance.user:
+            return telegram_user_profile_photos_url + 'user_{0}_{1}'.format(instance.user.user_id, filename)
+        elif instance.chat:
+            return telegram_chat_profile_photos_url + 'chat_{0}_{1}'.format(instance.chat.chat_id, filename)
+        elif instance.site_user:
+            return site_user_profile_photos_url + 'site_user_{0}_{1}'.format(instance.site_user.id, filename)
         else:
             raise ValueError(f'undefined instance {type(instance)}')

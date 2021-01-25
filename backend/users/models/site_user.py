@@ -67,6 +67,7 @@ class SiteUser(db_models.BaseModel, db_models.SoftDeletableBaseModel, AbstractUs
     # `telegram_accounts` : telegram accounts belonging to this user
     # `telegram_channels` : telegram channels belonging to this user
     # `telegram_channel_add_requests` : requests made by this user for adding telegram channels
+    # `profile_photos` : profile photos belonging to this user
 
     def __str__(self):
         return self.username
