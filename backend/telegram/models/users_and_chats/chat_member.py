@@ -62,9 +62,9 @@ class ChatMemberQuerySet(models.QuerySet):
             logger.exception(e)
         except Exception as e:
             logger.exception(e)
-        return None
+        return False
 
-    def filter_by_id(self, *, id: int) -> 'ChatMemberQuerySet':
+    def filter_by_id(self, *, id: str) -> 'ChatMemberQuerySet':
         return self.filter(id=id)
 
 
@@ -152,7 +152,7 @@ class ChatMemberManager(models.Manager):
 
         return None
 
-    def update_chat_member(self, id: int, **kwargs) -> bool:
+    def update_chat_member(self, id: str, **kwargs) -> bool:
         return self.get_queryset().filter_by_id(id=id).update_chat_member(
             **kwargs
         )
