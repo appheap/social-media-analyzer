@@ -6,6 +6,7 @@ from .get_updated_message_entities import GetUpdatedMessageEntities
 from .get_updated_message_entity_types import GetUpdatedMessageEntityTypes
 from .profile_photo_exists import ProfilePhotoExists
 from .get_updated_profile_photo import GetUpdatedProfilePhoto
+from .get_latest_profile_photo import GetLatestProfilePhoto
 
 
 class MessageAndMedia(
@@ -17,6 +18,7 @@ class MessageAndMedia(
     GetUpdatedMessageEntityTypes,
     ProfilePhotoExists,
     GetUpdatedProfilePhoto,
+    GetLatestProfilePhoto,
 
 ):
     pass

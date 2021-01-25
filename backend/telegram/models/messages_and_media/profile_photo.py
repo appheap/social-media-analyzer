@@ -15,6 +15,19 @@ class ProfilePhotoQuerySet(SoftDeletableQS):
     def filter_by_photo_id(self, *, photo_id: str) -> 'ProfilePhotoQuerySet':
         return self.filter(photo_id=photo_id)
 
+    def filter_by_type(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser',
+            db_user: 'tg_models.User',
+            db_chat: 'tg_models.Chat',
+    ) -> 'ProfilePhotoQuerySet':
+        return self.filter(
+            user=db_user,
+            chat=db_chat,
+            site_user=db_site_user,
+        )
+
     def update_or_create_photo(self, *, defaults: dict, **kwargs) -> Optional["ProfilePhoto"]:
         try:
             return self.update_or_create(
@@ -49,6 +62,25 @@ class ProfilePhotoManager(models.Manager):
             db_chat=db_chat,
             upload_date=upload_date,
         )).exists()
+
+    def get_latest_profile_photo(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser',
+            db_user: 'tg_models.User',
+            db_chat: 'tg_models.Chat',
+    ) -> Optional['ProfilePhoto']:
+        if db_site_user is None and db_user is None and db_chat is None:
+            return None
+
+        db_photos = self.get_queryset().filter_by_type(
+            db_site_user=db_site_user,
+            db_user=db_user,
+            db_chat=db_chat,
+        ).order_by('-upload_date')
+        if db_photos.exists():
+            return db_photos[0]
+        return None
 
     @staticmethod
     def _get_photo_id(
