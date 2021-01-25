@@ -46,6 +46,8 @@ class LogChatMemberCountTask(TaskScaffold):
                         self.db.telegram.get_updated_chat(
                             raw_chat=raw_chat,
                             db_telegram_account=db_telegram_account,
+
+                            downloader=client.download_media,
                         )
                         self.db.telegram.get_updated_chat_member_count(
                             db_chat=db_chat,

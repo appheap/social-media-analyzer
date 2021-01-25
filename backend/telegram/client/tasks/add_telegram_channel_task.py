@@ -1,5 +1,6 @@
 from tasks.task_scaffold import TaskScaffold
 from ..base_response import BaseResponse
+import pyrogram
 from pyrogram import types
 from pyrogram import errors as tg_errors
 from core.globals import logger
@@ -77,6 +78,7 @@ class AddTelegramChannelTask(TaskScaffold):
                         db_admin_telegram_account=db_admin_telegram_account,
                         db_site_user=db_site_user,
                         channel_username=channel_username,
+                        client=client
                     )
                 except tg_errors.RPCError as e:
                     logger.error(e)
@@ -92,6 +94,7 @@ class AddTelegramChannelTask(TaskScaffold):
                         db_admin_telegram_account=db_admin_telegram_account,
                         db_site_user=db_site_user,
                         channel_username=channel_username,
+                        client=client
                     )
 
             else:
@@ -106,6 +109,7 @@ class AddTelegramChannelTask(TaskScaffold):
             db_admin_telegram_account: 'tg_models.TelegramAccount',
             db_site_user: 'site_models.SiteUser',
             channel_username: 'str',
+            client: 'pyrogram.Client'
     ) -> BaseResponse:
         if not raw_chat_temp:
             return response.fail('UNKNOWN_ERROR')
@@ -113,6 +117,8 @@ class AddTelegramChannelTask(TaskScaffold):
         db_chat = self.db.telegram.get_updated_chat(
             raw_chat=raw_chat,
             db_telegram_account=db_admin_telegram_account,
+
+            downloader=client.download_media
         )
         db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
             raw_chat=raw_chat,

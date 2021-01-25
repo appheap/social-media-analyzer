@@ -70,6 +70,8 @@ class LogChatMembersTask(TaskScaffold):
         db_chat = self.db.telegram.get_updated_chat(
             raw_chat=raw_chat,
             db_telegram_account=db_telegram_account,
+
+            downloader=client.download_media
         )
 
         for raw_chat_member in client.iter_chat_members(

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 
 from db.scaffold import Scaffold
 from pyrogram import types
@@ -12,7 +12,8 @@ class GetUpdatedChat(Scaffold):
             raw_chat: types.Chat,
             db_telegram_account: 'tg_models.TelegramAccount',
 
-            db_message_view: 'tg_models.MessageView' = None
+            db_message_view: 'tg_models.MessageView' = None,
+            downloader: Callable = None,
     ) -> Optional["tg_models.Chat"]:
 
         if raw_chat is None or db_telegram_account is None:
@@ -37,4 +38,23 @@ class GetUpdatedChat(Scaffold):
             raw_chat=raw_chat,
             db_account=db_telegram_account,
         )
+
+        if raw_chat.chat_photo and downloader:
+            if not self.profile_photo_exists(
+                    db_chat=db_chat,
+                    upload_date=raw_chat.chat_photo.date
+            ):
+                file_path = downloader(
+                    file_name='/tmp/',
+                    message=raw_chat.chat_photo.file_id
+                )
+                self.get_updated_profile_photo(
+                    db_chat=db_chat,
+                    upload_date=raw_chat.chat_photo.date,
+                    file_path=file_path,
+                    width=raw_chat.chat_photo.width,
+                    height=raw_chat.chat_photo.height,
+                    file_size=raw_chat.chat_photo.file_size,
+                )
+
         return db_chat

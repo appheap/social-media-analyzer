@@ -34,6 +34,8 @@ class IterateDialogsTask(TaskScaffold):
                     db_chat_migrated_from = self.db.telegram.get_updated_chat(
                         raw_chat=raw_dialog.chat,
                         db_telegram_account=db_telegram_account,
+
+                        downloader=client.download_media
                     )
                     try:
                         raw_chat = client.get_chat(raw_dialog.chat.group.migrated_to.id)
@@ -52,12 +54,15 @@ class IterateDialogsTask(TaskScaffold):
                             db_chat = self.db.telegram.get_updated_chat(
                                 raw_chat=raw_chat,
                                 db_telegram_account=db_telegram_account,
+                                downloader=client.download_media
                             )
                             _valid_raw_dialogs.append(raw_dialog)
                 else:
                     db_chat = self.db.telegram.get_updated_chat(
                         raw_chat=raw_dialog.chat,
                         db_telegram_account=db_telegram_account,
+
+                        downloader=client.download_media
                     )
                     _valid_raw_dialogs.append(raw_dialog)
 
