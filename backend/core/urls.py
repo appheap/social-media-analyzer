@@ -18,6 +18,10 @@ from django.urls import include
 from django.urls import path
 import debug_toolbar
 
+from core import settings
+from django.contrib.staticfiles.urls import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
@@ -34,3 +38,6 @@ urls.handler403 = 'pages.views.bad_request'
 urls.handler403 = 'pages.views.permission_denied'
 urls.handler404 = 'pages.views.page_not_found'
 urls.handler500 = 'pages.views.server_error'
+
+urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
