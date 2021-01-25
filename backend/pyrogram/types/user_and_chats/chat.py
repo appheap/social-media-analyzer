@@ -124,6 +124,26 @@ class Chat(Object):
         return username
 
     @property
+    def photo(self):
+        if self.group:
+            return self.group.photo
+        elif self.channel:
+            return self.channel.username
+        elif self.user:
+            return self.user.photo
+        return None
+
+    @property
+    def chat_photo(self):
+        if self.full_group:
+            return self.full_group.chat_photo
+        elif self.full_channel:
+            return self.full_channel.chat_photo
+        elif self.full_user:
+            return self.full_user.profile_photo
+        return None
+
+    @property
     def members_count(self):
         if self.type in ('channel', 'supergroup',):
             return self.full_channel.members_count
