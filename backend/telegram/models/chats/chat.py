@@ -407,6 +407,17 @@ class Chat(
         else:
             return ''
 
+    @cached_property
+    def username(self):
+        if self.type in ('channel', 'supergroup'):
+            return self.channel.username
+        elif self.type == 'group':
+            return None
+        elif self.type in ('private', 'bot'):
+            return self.user.username
+        else:
+            return None
+
     def __str__(self):
         _type = '📢'
         if self.type == 'channel':

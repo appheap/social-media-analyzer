@@ -121,6 +121,7 @@ class ChannelManager(models.Manager):
         if channel is None:
             return {}
         return {
+            'username': channel.username,
             'title': channel.title,
             'has_private_join_link': channel.has_private_join_link,
             'has_geo': channel.has_geo,
