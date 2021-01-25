@@ -131,8 +131,9 @@
                                 </p>
                             </div>
                             <div class="card-footer">
-                                <a class="btn btn-outline-primary btn-block" href="#"
-                                        {% if not tg_channel.is_account_admin %}
+                                <a class="btn btn-outline-primary btn-block"
+                                   href="{% url 'dashboard:telegram_account_management' tg_channel.channel_id %}"
+                                        {% if not tg_channel.is_account_admin and not user.is_superuser %}
                                    style="pointer-events: none"
                                         {% endif %} >
                                     Manage
