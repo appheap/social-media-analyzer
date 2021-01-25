@@ -101,7 +101,7 @@
                 </div>
 
                 <div class="row flex-row   flex-wrap align-items-stretch   mt-2">
-                    {% for tg_channel in tg_channels %}
+                    {% for tg_channel,profile_photo in objects %}
                         <div class="card mr-2 my-2 col-2 p-0"
                                 {% if not tg_channel.is_account_admin %}
                              style="opacity: 0.7;"
@@ -113,8 +113,13 @@
                             <div class="card-header align-items-center d-flex justify-content-center">
                                 Telegram Channel
                             </div>
-                            <div class="card-body">
-                                <h6 class="text-center" data-toggle="tooltip" data-placement="bottom"
+                            <div class="card-body flex-column align-items-center d-flex">
+                                <img src="{{ profile_photo.photo.url }}"
+                                     height="100px"
+                                     width="100px"
+                                     class="col-auto align-self-center rounded-circle"
+                                >
+                                <h6 class="text-center mt-4" data-toggle="tooltip" data-placement="bottom"
                                     title="Channel Title">{{ tg_channel.chat.title }}</h6>
 
                                 <p class="mt-4">
@@ -149,7 +154,6 @@
 
         </div>
 
-        {#        {{ test }}#}
     </div>
 {% endblock content %}
 
