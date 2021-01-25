@@ -135,3 +135,27 @@ class Scaffold:
             raw_message: 'types.Message'
     ) -> List['tg_models.EntityType']:
         pass
+
+    def profile_photo_exists(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser' = None,
+            db_user: 'tg_models.User' = None,
+            db_chat: 'tg_models.Chat' = None,
+            upload_date: int,
+    ) -> Optional['bool']:
+        pass
+
+    def get_updated_profile_photo(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser' = None,
+            db_user: 'tg_models.User' = None,
+            db_chat: 'tg_models.Chat' = None,
+            upload_date: int,
+            file_path: str,
+            width: float,
+            height: float,
+            file_size: float,
+    ) -> Optional['tg_models.ProfilePhoto']:
+        pass
