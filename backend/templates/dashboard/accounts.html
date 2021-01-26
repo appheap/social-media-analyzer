@@ -114,11 +114,13 @@
                                 Telegram Channel
                             </div>
                             <div class="card-body flex-column align-items-center d-flex">
-                                <img src="{{ profile_photo.photo.url }}"
-                                     height="100px"
-                                     width="100px"
-                                     class="col-auto align-self-center rounded-circle"
-                                >
+                                <div class="preview-thumbnail">
+                                    <img src="{{ profile_photo.photo.url }}"
+                                         height="100px"
+                                         width="100px"
+                                         class="rounded-circle"
+                                    >
+                                </div>
                                 <h6 class="text-center mt-4" data-toggle="tooltip" data-placement="bottom"
                                     title="Channel Title">{{ tg_channel.chat.title }}</h6>
 
@@ -127,6 +129,7 @@
                                        data-toggle="tooltip" data-placement="bottom"
                                        title="Channel username">@{{ tg_channel.username }}
                                     </a>
+                                    <br>
                                     <br>
                                     <span class="text-wrap" data-toggle="tooltip" data-placement="bottom"
                                           title="Channel Description">
