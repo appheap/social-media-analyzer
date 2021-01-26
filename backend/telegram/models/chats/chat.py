@@ -419,6 +419,17 @@ class Chat(
         else:
             return None
 
+    @cached_property
+    def members_count(self):
+        if self.type in ('channel', 'supergroup'):
+            return self.channel.members_count
+        elif self.type == 'group':
+            return self.group.members_count
+        elif self.type in ('private', 'bot'):
+            return 2
+        else:
+            return None
+
     def __str__(self):
         _type = '📢'
         if self.type == 'channel':

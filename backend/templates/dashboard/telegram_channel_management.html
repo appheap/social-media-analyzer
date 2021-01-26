@@ -31,6 +31,66 @@
 
                 </div>
 
+                <div class="row flex-row   flex-wrap align-items-stretch   mt-2">
+                    <div class="card mr-2 my-2 col-3 p-0"
+                            {% if not channel.is_account_admin %}
+                         style="opacity: 0.7;"
+                         title="You haven't made our account as admin yet."
+                         data-toggle="tooltip"
+                         data-placement="top"
+                            {% endif %}
+                    >
+                        <div class="card-header align-items-center d-flex justify-content-center">
+                            Telegram Channel
+                        </div>
+                        <div class="card-body flex-column align-items-center d-flex">
+                            <div class="preview-thumbnail">
+                                <img src="{{ profile_photo.photo.url }}"
+                                     height="100px"
+                                     width="100px"
+                                     class="rounded-circle"
+                                >
+                            </div>
+                            <h6 class="text-center mt-4" data-toggle="tooltip" data-placement="bottom"
+                                title="Channel Title">{{ channel.chat.title }}</h6>
+
+                            <p class="mt-4">
+                                <a class="card-link" href="https://t.me/{{ channel.chat.username }}"
+                                   data-toggle="tooltip" data-placement="bottom"
+                                   title="Channel username">@{{ channel.username }}
+                                </a>
+                                <br>
+                                <br>
+                                <span class="text-wrap" data-toggle="tooltip" data-placement="bottom"
+                                      title="Channel Description">
+                                        {{ channel.chat.about | default:"" }}
+                                    </span>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <table class="table table-striped">
+                                <tr>
+                                    <td class="text-white-50">Members</td>
+                                    <td class="text-white-50">Posts</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p class="text-white">
+                                            {{ channel.chat.members_count }}
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="text-white">
+                                            {{ channel.chat.messages.count }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </div>
+
+                </div>
 
             </div>
 
