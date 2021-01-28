@@ -30,6 +30,7 @@ gunicorn = "*"
 importlib-metadata = "*"
 async_lru = "*"
 PySocks = "*"
+graphene-django = "*"
 
 [requires]
 python_version = "3.6"

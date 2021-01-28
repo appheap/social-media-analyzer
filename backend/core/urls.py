@@ -22,6 +22,8 @@ from core import settings
 from django.contrib.staticfiles.urls import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
+from graphene_django.views import GraphQLView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
@@ -30,6 +32,8 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('', include('pages.urls')),
     path('__debug__/', include(debug_toolbar.urls)),
+    path('graphql', GraphQLView.as_view(graphiql=True)),
+
 ]
 
 import django.conf.urls as urls

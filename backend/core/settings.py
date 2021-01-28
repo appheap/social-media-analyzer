@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'crispy_forms',
     'debug_toolbar',
+    'graphene_django',
 
     # local
     'users',
@@ -210,3 +211,6 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 #     '*': {'rate_limit': '2/m'}
 # }
 #####################################################
+GRAPHENE = {
+    'SCHEMA': 'core.schema.schema'  # Where your Graphene schema lives
+}
