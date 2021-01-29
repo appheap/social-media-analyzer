@@ -21,8 +21,9 @@ class AccountsView(LoginRequiredMixin, ListView):
             db_site_user=self.request.user
         )
         context['tg_channels'] = db_telegram_channels
-        db_profile_photos = [db.telegram.get_latest_profile_photo(db_chat=db_channel.chat) for db_channel in
-                             db_telegram_channels]
+        db_profile_photos = [
+            db.telegram.get_latest_profile_photo(db_chat=db_channel.chat) for db_channel in db_telegram_channels
+        ]
         context['profile_photos'] = db_profile_photos
         context['objects'] = list(zip(db_telegram_channels, db_profile_photos))
 
