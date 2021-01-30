@@ -203,7 +203,8 @@ class MessageManager(models.Manager):
                 _updated = db_message_qs.update_message(
                     **parsed_msg
                 )
-                self._update_message_related_models(db_message_qs[0], raw_message)
+                if db_message_qs.exists():
+                    self._update_message_related_models(db_message_qs[0], raw_message)
 
             return _updated
 
