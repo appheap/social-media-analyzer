@@ -144,7 +144,7 @@ class MessageManager(models.Manager):
 
     @staticmethod
     def _get_id_from_raw_message(chat_id: int, raw_message: 'types.Message'):
-        return f"{chat_id}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}"
+        return f"{chat_id}:{int(raw_message.is_scheduled)}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}"
 
     def update_or_create_from_raw(
             self,
@@ -287,6 +287,7 @@ class MessageManager(models.Manager):
             "is_post": content.is_post,
             "post_author": content.post_author,
             "from_scheduled": content.from_scheduled,
+            "is_scheduled": content.is_scheduled,
             "edit_hide": content.edit_hide,
             "media_group_id": content.media_group_id,
             "text": content.text,
@@ -322,7 +323,7 @@ class MessageManager(models.Manager):
 
 
 class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
-    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:message_id:edit_date_ts|0`
+    id = models.CharField(max_length=256, primary_key=True)  # `chat_id:is_scheduled{0|1}:message_id:edit_date_ts|0`
 
     message_id = models.BigIntegerField()
     date_ts = models.BigIntegerField(null=True, blank=True)
@@ -348,6 +349,7 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
     is_post = models.BooleanField(null=True, blank=True)
     post_author = models.CharField(max_length=256, null=True, blank=True)
     from_scheduled = models.BooleanField(null=True, blank=True)
+    is_scheduled = models.BooleanField(null=True, blank=True)  # whether this is a scheduled message or not
     edit_hide = models.BooleanField(null=True, blank=True)
     media_group_id = models.BigIntegerField(null=True, blank=True)
     sender_chat = models.ForeignKey(
@@ -471,6 +473,15 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
         on_delete=models.CASCADE,
         null=True, blank=True,
         related_name='logged_messages',
+    )
+
+    is_scheduled_message_sent = models.BooleanField(null=True, blank=True)
+    scheduled_message = models.OneToOneField(
+        'telegram.Message',
+        on_delete=models.CASCADE,
+        related_name='sent_message',
+        null=True,
+        blank=True
     )
 
     objects = MessageManager()
