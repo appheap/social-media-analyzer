@@ -33,6 +33,7 @@ from .get_history_count import GetHistoryCount
 from .get_media_group import GetMediaGroup
 from .get_messages import GetMessages
 from .get_messages_views import GetMessagesViews
+from .get_scheduled_history import GetScheduledHistory
 from .get_stickerset import GetStickerSet
 from .iter_history import IterHistory
 from .read_history import ReadHistory
@@ -72,6 +73,7 @@ class Messages(
     GetMediaGroup,
     GetMessages,
     GetMessagesViews,
+    GetScheduledHistory,
     GetStickerSet,
     SendAudio,
     SendChatAction,
