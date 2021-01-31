@@ -41,3 +41,26 @@ class MessageUpdater:
                     )
                 )
                 model.save()
+
+    @staticmethod
+    def update_or_create_message_from_db_message(
+            *,
+            model: models.Model,
+            field_name: str,
+            db_message: 'tg_models.Message',
+    ):
+        field = getattr(model, field_name, None)
+        if field and not isinstance(field, Message):
+            return
+
+        if field:
+            if db_message:
+                setattr(model, field_name, db_message)
+                model.save()
+            else:
+                setattr(model, field_name, None)
+                model.save()
+        else:
+            if db_message:
+                setattr(model, field_name, db_message)
+                model.save()
