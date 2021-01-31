@@ -22,6 +22,7 @@ class MessageNormal(Object):
             is_post: bool = None,
             post_author: str = None,
             from_scheduled: bool = None,
+            is_scheduled: bool = None,
             legacy: bool = None,
             edit_hide: bool = None,
             is_pinned: bool = None,
@@ -67,6 +68,7 @@ class MessageNormal(Object):
         self.is_post = is_post
         self.post_author = post_author
         self.from_scheduled = from_scheduled
+        self.is_scheduled = is_scheduled
         self.legacy = legacy
         self.edit_hide = edit_hide
         self.is_pinned = is_pinned
@@ -85,7 +87,13 @@ class MessageNormal(Object):
         self.restrictions = restrictions
 
     @staticmethod
-    async def _parse(client, message: raw.types.Message, users: dict, chats: dict):
+    async def _parse(
+            client,
+            message: raw.types.Message,
+            users: dict,
+            chats: dict,
+            is_scheduled: bool = False
+    ):
         if message is None:
             return None
 
@@ -218,6 +226,7 @@ class MessageNormal(Object):
             is_silent=getattr(message, 'silent', None),
             is_post=getattr(message, 'post', None),
             from_scheduled=getattr(message, 'from_scheduled', None),
+            is_scheduled=is_scheduled,
             legacy=getattr(message, 'legacy', None),
             edit_hide=getattr(message, 'edit_hide', None),
             is_pinned=getattr(message, 'pinned', None),

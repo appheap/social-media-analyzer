@@ -324,7 +324,7 @@ class Message(Object, Update):
             )
 
         if isinstance(message, raw.types.Message):
-            content = await types.MessageNormal._parse(client, message, users, chats)
+            content = await types.MessageNormal._parse(client, message, users, chats, is_scheduled=is_scheduled)
             return Message(
                 message_id=message.id,
                 date=message.date,
