@@ -347,6 +347,12 @@ class Message(Object, Update):
         return None
 
     @property
+    def is_scheduled(self):
+        if self.type == 'message':
+            return self.content.is_scheduled
+        return False
+
+    @property
     def media_type(self):
         if self.type == 'message':
             return self.content.media_type
