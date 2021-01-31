@@ -286,7 +286,8 @@ async def parse_message_views(
 async def parse_messages(
         client,
         messages: "raw.types.messages.Messages",
-        replies: int = 1
+        replies: int = 1,
+        is_scheduled: bool = False,
 ) -> List["types.Message"]:
     users = {i.id: i for i in messages.users}
     chats = {i.id: i for i in messages.chats}
@@ -297,7 +298,16 @@ async def parse_messages(
     parsed_messages = []
 
     for message in messages.messages:
-        parsed_messages.append(await types.Message._parse(client, message, users, chats, replies=0))
+        parsed_messages.append(
+            await types.Message._parse(
+                client,
+                message,
+                users,
+                chats,
+                is_scheduled=is_scheduled,
+                replies=0
+            )
+        )
 
     return types.List(parsed_messages)
 
