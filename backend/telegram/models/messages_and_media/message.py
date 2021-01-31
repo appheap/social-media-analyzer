@@ -9,6 +9,7 @@ from django.db import DatabaseError
 from core.globals import logger
 from ..chats import ChatUpdater
 from ..users import UserUpdater
+from .message_updater import MessageUpdater
 from telegram import models as tg_models
 
 
@@ -54,6 +55,15 @@ class MessageTypes(models.TextChoices):
 class MessageQuerySet(SoftDeletableQS):
     def filter_by_message_id(self, *, message_id: int) -> "MessageQuerySet":
         return self.filter(message_id=message_id)
+
+    def filter_by_date_ts(self, *, date_ts: int) -> "MessageQuerySet":
+        return self.filter(date_ts=date_ts)
+
+    def scheduled(self) -> "MessageQuerySet":
+        return self.filter(is_scheduled=True)
+
+    def non_scheduled(self) -> "MessageQuerySet":
+        return self.filter(is_scheduled=False)
 
     def filter_by_id(self, *, id: str) -> "MessageQuerySet":
         return self.filter(id=id)
@@ -210,8 +220,21 @@ class MessageManager(models.Manager):
 
         return False
 
-    @staticmethod
-    def _update_message_related_models(db_message: 'Message', raw_message: types.Message):
+    def get_scheduled_message(
+            self,
+            db_chat: 'tg_models.Chat',
+            date_ts: int
+    ) -> Optional['Message']:
+        if db_chat is None or date_ts is None:
+            return None
+
+        qs = self.get_queryset().scheduled().filter_by_chat(db_chat=db_chat).filter_by_date_ts(date_ts=date_ts)
+        if qs.exists():
+            return qs[0]
+
+        return None
+
+    def _update_message_related_models(self, db_message: 'Message', raw_message: types.Message):
         if db_message and raw_message:
             db_message.update_or_create_chat_from_raw(
                 model=db_message,
@@ -265,6 +288,18 @@ class MessageManager(models.Manager):
                 MessageManager.create_restrictions(
                     raw_message=raw_message,
                     db_message=db_message,
+                )
+
+            db_scheduled_message = self.get_scheduled_message(
+                db_chat=db_message.chat,
+                date_ts=db_message.date_ts,
+            )
+            if db_scheduled_message:
+                db_scheduled_message.update_sent_status()
+                db_message.update_or_create_message_from_db_message(
+                    model=db_message,
+                    field_name='scheduled_message',
+                    db_message=db_scheduled_message,
                 )
 
     @staticmethod
@@ -322,7 +357,7 @@ class MessageManager(models.Manager):
             )
 
 
-class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
+class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater, MessageUpdater):
     id = models.CharField(max_length=256, primary_key=True)  # `chat_id:is_scheduled{0|1}:message_id:edit_date_ts|0`
 
     message_id = models.BigIntegerField()
@@ -499,6 +534,10 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater):
             raw_message=raw_message,
             logger_account=logger_account
         )
+
+    def update_sent_status(self):
+        self.is_scheduled_message_sent = True
+        self.save()
 
     class Meta:
         ordering = ('-date_ts', 'chat',)
