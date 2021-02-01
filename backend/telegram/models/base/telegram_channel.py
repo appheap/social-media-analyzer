@@ -178,6 +178,7 @@ class TelegramChannel(BaseModel, SoftDeletableBaseModel):
     # `chat_member_analyzer_metadata` : chat member analyzer of this channel
     # `admin_log_analyzer_metadata` : admin log analyzer of this channel
     # `add_requests` : requests made for adding this channel to an user's accounts
+    # `posts` : posts published to this channel
 
     channels = TelegramChannelManager()
 
