@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'pages',
     'telegram',
     'dashboard',
+    'db',
+
 ]
 
 MIDDLEWARE = [
