@@ -23,8 +23,9 @@ class File(BaseModel, SoftDeletableBaseModel):
     file = models.FileField(upload_to='files/')
 
     # the user who uploaded this file
-    site_user = models.ForeignKey(
+    uploader = models.ForeignKey(
         'users.SiteUser',
         on_delete=models.CASCADE,
         null=False,
+        related_name='uploaded_files',
     )
