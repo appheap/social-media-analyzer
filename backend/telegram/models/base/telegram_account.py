@@ -156,6 +156,7 @@ class TelegramAccount(BaseModel, SoftDeletableBaseModel):
     # `member_count_history` : member counts logged by this account
     # `shared_media_history` : shared media counts logged by this account
     # `dialogs` : dialogs belonging to this account
+    # `sent_posts` : posts published by this account
 
     # User who is the owner of this telegram account
     site_user = models.ForeignKey(
