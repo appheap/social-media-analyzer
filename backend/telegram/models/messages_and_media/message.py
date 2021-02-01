@@ -501,6 +501,9 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater, Messa
     # `actions_stop_poll` : actions were this poll message was stopped
     # `new_message` : the new edited message if this message id an edited one
     # `restrictions` : restrictions of this message
+    # `sent_message` : the scheduled message is this post is published from
+    # `post_from_sent_message` : the post this message is published from
+    # `post_from_scheduled_message` : the post this message is created of
 
     # Telegram account who logged this message
     logged_by = models.ForeignKey(

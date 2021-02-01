@@ -38,6 +38,25 @@ class Post(BaseModel, SoftDeletableBaseModel):
         blank=True,
     )
 
+    sent_message = models.OneToOneField(
+        'telegram.Message',
+        on_delete=models.CASCADE,
+        related_name='post_from_sent_message',
+        null=True,
+        blank=True,
+    )
+
+    is_scheduled = models.BooleanField(default=False)
+    is_uploaded_to_telegram_schedule_list = models.BooleanField(null=True, blank=True)
+    schedule_date_ts = models.BigIntegerField(null=True, blank=True)
+    scheduled_message = models.OneToOneField(
+        'telegram.Message',
+        on_delete=models.CASCADE,
+        related_name='post_from_scheduled_message',
+        null=True,
+        blank=True,
+    )
+
     # creator of this post
     created_by = models.ForeignKey(
         'users.SiteUser',
@@ -48,8 +67,6 @@ class Post(BaseModel, SoftDeletableBaseModel):
 
     is_edited = models.BooleanField(default=False)
     edit_date_ts = models.BigIntegerField(null=True, blank=True)
-    is_scheduled = models.BooleanField(default=False)
-    schedule_date_ts = models.BigIntegerField(null=True, blank=True)
 
     ##########################
 
