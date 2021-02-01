@@ -8,7 +8,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
 
     text = models.TextField(
-        max_length=1024,
+        max_length=4096,
         null=True,
         blank=True,
     )
