@@ -61,8 +61,9 @@ class Post(BaseModel, SoftDeletableBaseModel):
     created_by = models.ForeignKey(
         'users.SiteUser',
         on_delete=models.CASCADE,
-        null=False,
         related_name='telegram_posts',
+        null=False,
+        blank=True,
     )
 
     is_edited = models.BooleanField(default=False)
