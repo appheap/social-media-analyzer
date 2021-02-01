@@ -54,7 +54,7 @@ class UserQuerySet(models.QuerySet):
 
         return False
 
-    def create_user(self, **kwargs) -> "User":
+    def create_user(self, **kwargs) -> Optional["User"]:
         try:
             return self.create(
                 **kwargs
@@ -82,7 +82,7 @@ class UserManager(models.Manager):
     def get_queryset(self) -> "UserQuerySet":
         return UserQuerySet(self.model, using=self._db)
 
-    def update_from_raw(self, *, user_id: int, raw_user: Union[types.User, types.UserFull]) -> bool:
+    def update_from_raw(self, *, user_id: int, raw_user: Union[types.User, types.UserFull]) -> Optional['bool']:
         if not user_id or not user_id:
             return False
 
