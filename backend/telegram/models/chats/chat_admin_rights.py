@@ -32,7 +32,7 @@ class ChatAdminRightsQuerySet(models.QuerySet):
         except Exception as e:
             logger.exception(e)
 
-        return None
+        return False
 
     def filter_by_id(self, *, id: int) -> "ChatAdminRightsQuerySet":
         return self.filter(id=id)
@@ -72,7 +72,7 @@ class ChatAdminRightsManager(models.Manager):
 
         parsed_object = self._parse(raw_chat_admin_rights=raw_chat_admin_rights)
         if len(parsed_object):
-            return self.get_queryset().filter_by_id(id=id).create_admin_rights(**parsed_object)
+            return self.get_queryset().filter_by_id(id=id).update_admin_rights(**parsed_object)
 
         return False
 
