@@ -48,11 +48,11 @@ INSTALLED_APPS = [
     'debug_toolbar',
 
     # local
-    'users',
-    'pages',
-    'telegram',
-    'dashboard',
-    'db',
+    'users.apps.UsersConfig',
+    'pages.apps.PagesConfig',
+    'telegram.apps.TelegramConfig',
+    'dashboard.apps.DashboardConfig',
+    'db.apps.DBConfig',
 
 ]
 
