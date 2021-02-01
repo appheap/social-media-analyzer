@@ -13,7 +13,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
         blank=True,
     )
     medias = models.ManyToManyField(
-        'db.File',
+        'telegram.File',
         related_name='telegram_posts',
     )
     has_media = models.BooleanField(default=False)
