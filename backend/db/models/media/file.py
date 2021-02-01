@@ -26,6 +26,5 @@ class File(BaseModel, SoftDeletableBaseModel):
     site_user = models.ForeignKey(
         'users.SiteUser',
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
+        null=False,
     )
