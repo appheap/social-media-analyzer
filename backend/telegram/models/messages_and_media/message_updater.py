@@ -1,6 +1,5 @@
 from pyrogram import types
 from django.db import models
-from .message import Message
 from telegram import models as tg_models
 
 
@@ -15,6 +14,8 @@ class MessageUpdater:
             chat_id: int,
             logger_account: "tg_models.TelegramAccount" = None
     ):
+        from .message import Message
+
         field = getattr(model, field_name, None)
         if field and not isinstance(field, Message):
             return
