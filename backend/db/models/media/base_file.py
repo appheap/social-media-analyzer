@@ -12,7 +12,7 @@ class FileTypes(models.TextChoices):
     undefined = 'undefined'
 
 
-class File(BaseModel, SoftDeletableBaseModel):
+class BaseFile(BaseModel, SoftDeletableBaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     type = models.CharField(
         FileTypes.choices,
@@ -30,3 +30,6 @@ class File(BaseModel, SoftDeletableBaseModel):
         null=False,
         blank=True,
     )
+
+    class Meta:
+        abstract = True

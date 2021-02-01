@@ -1,7 +1,7 @@
-from .file import File, FileTypes
+from .base_file import BaseFile, FileTypes
 
 __all__ = [
-    'File',
+    'BaseFile',
     'FileTypes',
 
 ]
