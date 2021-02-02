@@ -37,6 +37,7 @@ class SendVideoNote(Scaffold):
             length: int = 1,
             thumb: Union[str, BinaryIO] = None,
             disable_notification: bool = None,
+            send_in_background: bool = True,
             reply_to_message_id: int = None,
             schedule_date: int = None,
             reply_markup: Union[
@@ -78,6 +79,10 @@ class SendVideoNote(Scaffold):
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
                 Users will receive a notification with no sound.
+
+            send_in_background (``bool``, *optional*):
+                Sends the message in background.
+                Defaults to True.
 
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message
@@ -171,6 +176,7 @@ class SendVideoNote(Scaffold):
                             peer=await self.resolve_peer(chat_id),
                             media=media,
                             silent=disable_notification or None,
+                            background=send_in_background,
                             reply_to_msg_id=reply_to_message_id,
                             random_id=self.rnd_id(),
                             schedule_date=schedule_date,
