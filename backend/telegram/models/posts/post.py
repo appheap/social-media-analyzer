@@ -1,7 +1,55 @@
 import uuid
 
 from db.models import BaseModel, SoftDeletableBaseModel
-from django.db import models
+from django.db import models, transaction
+from typing import List, Optional
+from telegram import models as tg_models
+from users import models as site_models
+
+from db.models import SoftDeletableQS
+
+
+class PostQuerySet(SoftDeletableQS):
+    pass
+
+
+class PostManager(models.Manager):
+    def get_queryset(self) -> 'PostQuerySet':
+        return PostQuerySet(self.model, using=self._db)
+
+    def create_post(
+            self,
+            *,
+            db_created_by: 'site_models.SiteUser',
+            db_telegram_channel: 'tg_models.TelegramChannel',
+            text: str = None,
+            input_files: List['tg_models.InputFile'],
+            is_scheduled: bool = False,
+            uploaded_to_telegram_schedule_list: bool = False,
+            is_uploaded_to_telegram_schedule_list: bool = False,
+            schedule_date_ts: int = None,
+    ) -> Optional['Post']:
+        if db_created_by is None or db_telegram_channel is None:
+            return None
+
+        with transaction.atomic():
+
+            db_post = Post(
+                text=text,
+                has_media=bool(len(input_files)),
+                telegram_channel=db_telegram_channel,
+                is_scheduled=is_scheduled,
+                uploaded_to_telegram_schedule_list=uploaded_to_telegram_schedule_list,
+                is_uploaded_to_telegram_schedule_list=is_uploaded_to_telegram_schedule_list,
+                schedule_date_ts=schedule_date_ts,
+            )
+            if db_post:
+                for input_file in input_files:
+                    input_file.save()
+                    db_post.medias.add(
+                        input_file.file
+                    )
+            return db_post
 
 
 class Post(BaseModel, SoftDeletableBaseModel):
@@ -69,6 +117,8 @@ class Post(BaseModel, SoftDeletableBaseModel):
 
     is_edited = models.BooleanField(default=False)
     edit_date_ts = models.BigIntegerField(null=True, blank=True)
+
+    posts = PostManager()
 
     ##########################
 
