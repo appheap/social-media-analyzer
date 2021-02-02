@@ -49,7 +49,7 @@ class PostManager(models.Manager):
             db_created_by: 'site_models.SiteUser',
             db_telegram_channel: 'tg_models.TelegramChannel',
             text: str = None,
-            input_files: List['tg_models.InputFile'],
+            files: List['tg_models.File'],
             is_scheduled: bool = False,
             upload_to_telegram_schedule_list: bool = None,
             schedule_date_ts: int = None,
@@ -57,25 +57,22 @@ class PostManager(models.Manager):
         if db_created_by is None or db_telegram_channel is None:
             return None
 
-        if text is None and len(input_files):
+        if text is None and len(files):
             return None
 
         with transaction.atomic():
 
             db_post = Post(
                 text=text,
-                has_media=bool(len(input_files)),
+                has_media=bool(len(files)),
                 telegram_channel=db_telegram_channel,
                 is_scheduled=is_scheduled,
                 upload_to_telegram_schedule_list=upload_to_telegram_schedule_list,
                 schedule_date_ts=schedule_date_ts,
             )
             if db_post:
-                for input_file in input_files:
-                    input_file.save()
-                    db_post.medias.add(
-                        input_file.file
-                    )
+                for file in files:
+                    db_post.medias.add(file)
             return db_post
 
 
