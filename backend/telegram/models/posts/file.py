@@ -1,6 +1,17 @@
 from db.models import BaseFile
 from django.db import models
 
+from db.models import SoftDeletableQS
+
+
+class FileQuerySet(SoftDeletableQS):
+    pass
+
+
+class FileManager(models.Manager):
+    def get_queryset(self) -> 'FileQuerySet':
+        return FileQuerySet(self.model, using=self._db)
+
 
 class File(BaseFile):
     caption = models.TextField(
@@ -8,3 +19,5 @@ class File(BaseFile):
         null=True,
         blank=True,
     )
+
+    files = FileManager()
