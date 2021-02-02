@@ -10,12 +10,22 @@ from db.models import SoftDeletableQS
 
 
 class PostQuerySet(SoftDeletableQS):
-    pass
+    def filter_by_creator(self, creator: 'site_models.SiteUser') -> 'PostQuerySet':
+        return self.filter(created_by=creator)
 
 
 class PostManager(models.Manager):
     def get_queryset(self) -> 'PostQuerySet':
         return PostQuerySet(self.model, using=self._db)
+
+    def get_site_user_posts(
+            self,
+            *,
+            db_site_user: 'site_models.SiteUser',
+    ) -> Optional['PostQuerySet']:
+        if db_site_user is None:
+            return None
+        return self.get_queryset().filter_by_creator(db_site_user)
 
     def create_post(
             self,
