@@ -44,6 +44,7 @@ class SendVideo(Scaffold):
             thumb: Union[str, BinaryIO] = None,
             file_name: str = None,
             supports_streaming: bool = True,
+            send_in_background: bool = True,
             disable_notification: bool = None,
             reply_to_message_id: int = None,
             schedule_date: int = None,
@@ -111,6 +112,10 @@ class SendVideo(Scaffold):
             supports_streaming (``bool``, *optional*):
                 Pass True, if the uploaded video is suitable for streaming.
                 Defaults to True.
+
+            send_in_background (``bool``, *optional*):
+                Sends the message in background.
+                Defaults to False.
 
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
@@ -228,6 +233,7 @@ class SendVideo(Scaffold):
                             reply_to_msg_id=reply_to_message_id,
                             random_id=self.rnd_id(),
                             schedule_date=schedule_date,
+                            background=send_in_background,
                             reply_markup=reply_markup.write() if reply_markup else None,
                             **await utils.parse_text_entities(self, caption, parse_mode, caption_entities)
                         )

@@ -42,7 +42,7 @@ class SendMediaGroup(Scaffold):
                 "types.InputMediaDocument"
             ]],
             disable_notification: bool = None,
-            send_in_background: bool = False,
+            send_in_background: bool = True,
             reply_to_message_id: int = None,
             schedule_date: int = None,
     ) -> List["types.Message"]:
@@ -63,6 +63,7 @@ class SendMediaGroup(Scaffold):
 
             send_in_background (``bool``, *optional*):
                 Sends the message in background.
+                Defaults to True.
 
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
