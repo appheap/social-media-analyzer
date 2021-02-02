@@ -42,6 +42,7 @@ class SendMediaGroup(Scaffold):
                 "types.InputMediaDocument"
             ]],
             disable_notification: bool = None,
+            send_in_background: bool = False,
             reply_to_message_id: int = None,
             schedule_date: int = None,
     ) -> List["types.Message"]:
@@ -59,6 +60,9 @@ class SendMediaGroup(Scaffold):
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
                 Users will receive a notification with no sound.
+
+            send_in_background (``bool``, *optional*):
+                Sends the message in background.
 
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
@@ -275,7 +279,8 @@ class SendMediaGroup(Scaffold):
                 multi_media=multi_media,
                 silent=disable_notification or None,
                 reply_to_msg_id=reply_to_message_id,
-                schedule_date=schedule_date
+                schedule_date=schedule_date,
+                background=send_in_background,
             ),
             sleep_threshold=60
         )
