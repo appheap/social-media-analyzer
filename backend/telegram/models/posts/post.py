@@ -57,6 +57,9 @@ class PostManager(models.Manager):
         if db_created_by is None or db_telegram_channel is None:
             return None
 
+        if text is None and len(input_files):
+            return None
+
         with transaction.atomic():
 
             db_post = Post(
