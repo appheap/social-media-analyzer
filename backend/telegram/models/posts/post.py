@@ -25,8 +25,7 @@ class PostManager(models.Manager):
             text: str = None,
             input_files: List['tg_models.InputFile'],
             is_scheduled: bool = False,
-            uploaded_to_telegram_schedule_list: bool = False,
-            is_uploaded_to_telegram_schedule_list: bool = False,
+            upload_to_telegram_schedule_list: bool = None,
             schedule_date_ts: int = None,
     ) -> Optional['Post']:
         if db_created_by is None or db_telegram_channel is None:
@@ -39,8 +38,7 @@ class PostManager(models.Manager):
                 has_media=bool(len(input_files)),
                 telegram_channel=db_telegram_channel,
                 is_scheduled=is_scheduled,
-                uploaded_to_telegram_schedule_list=uploaded_to_telegram_schedule_list,
-                is_uploaded_to_telegram_schedule_list=is_uploaded_to_telegram_schedule_list,
+                upload_to_telegram_schedule_list=upload_to_telegram_schedule_list,
                 schedule_date_ts=schedule_date_ts,
             )
             if db_post:
@@ -95,7 +93,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
     )
 
     is_scheduled = models.BooleanField(default=False)
-    uploaded_to_telegram_schedule_list = models.BooleanField(null=True, blank=True)
+    upload_to_telegram_schedule_list = models.BooleanField(null=True, blank=True)
     is_uploaded_to_telegram_schedule_list = models.BooleanField(null=True, blank=True)
     schedule_date_ts = models.BigIntegerField(null=True, blank=True)
     scheduled_message = models.OneToOneField(
