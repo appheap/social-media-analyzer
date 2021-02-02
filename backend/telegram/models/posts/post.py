@@ -13,6 +13,22 @@ class PostQuerySet(SoftDeletableQS):
     def filter_by_creator(self, creator: 'site_models.SiteUser') -> 'PostQuerySet':
         return self.filter(created_by=creator)
 
+    def filter_by_channel(self, db_telegram_channel: 'tg_models.TelegramChannel') -> 'PostQuerySet':
+        return self.filter(telegram_channel=db_telegram_channel)
+
+    def filter_by_creator_and_channel(
+            self,
+            db_creator: 'site_models.SiteUser',
+            db_telegram_channel: 'tg_models.TelegramChannel'
+    ) -> 'PostQuerySet':
+        if db_creator is None or db_telegram_channel is None:
+            return self.none()
+
+        return self.filter(
+            created_by=db_creator,
+            telegram_channel=db_telegram_channel
+        )
+
 
 class PostManager(models.Manager):
     def get_queryset(self) -> 'PostQuerySet':
