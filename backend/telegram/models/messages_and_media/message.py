@@ -232,7 +232,7 @@ class MessageManager(models.Manager):
 
         qs = self.get_queryset().scheduled().filter_by_chat(db_chat=db_chat).filter_by_date_ts(date_ts=date_ts)
         if qs.exists():
-            return qs[0]
+            return qs.first()
 
         return None
 
@@ -302,6 +302,9 @@ class MessageManager(models.Manager):
                     model=db_message,
                     field_name='scheduled_message',
                     db_message=db_scheduled_message,
+                )
+                tg_models.Post.posts.update_post_status_from_message(
+                    db_message=db_message
                 )
 
     @staticmethod
