@@ -17,7 +17,6 @@ class UploadPost(TaskScaffold):
         if db_post is None:
             return BaseResponse().fail('post does not exist')
 
-
         if db_post.is_sent:
             return BaseResponse().fail('Post is already sent!')
 
@@ -68,6 +67,10 @@ class UploadPost(TaskScaffold):
             ))
             if db_messages is None or not len(db_messages):
                 raise ValueError('could not store messages in db')
+
+            db_post.update_post_from_raw_message(
+                db_message=db_messages[0]
+            )
 
             return BaseResponse().done('uploaded_successfully', data={
                 'db_message_id': db_messages[0].id,
@@ -123,6 +126,10 @@ class UploadPost(TaskScaffold):
             )
             if db_message is None:
                 raise ValueError('could not store message in db')
+
+            db_post.update_post_from_raw_message(
+                db_message=db_message
+            )
 
             return BaseResponse().done('uploaded_successfully', data={
                 'db_message_id': db_message.id,

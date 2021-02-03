@@ -170,3 +170,25 @@ class Post(BaseModel, SoftDeletableBaseModel):
 
     def __str__(self):
         return f'{self.created_by} : {self.telegram_channel} @ {self.created_ts}'
+
+    def update_post_from_raw_message(
+            self,
+            *,
+            db_message: 'tg_models.Message'
+    ) -> Optional['tg_models.Post']:
+        if db_message is None:
+            return None
+
+        self.sent_by = db_message.logged_by
+        self.media_group_id = db_message.media_group_id
+        if db_message.is_scheduled:
+            self.is_uploaded_to_telegram_schedule_list = True
+            self.scheduled_message = db_message
+        else:
+            self.is_sent = True
+            self.sent_date_ts = db_message.date_ts
+            self.sent_message = db_message
+
+        self.save()
+
+        return self
