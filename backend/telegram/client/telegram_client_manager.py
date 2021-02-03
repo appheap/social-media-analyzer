@@ -65,6 +65,27 @@ class TelegramClientManager:
             message: 'types.Message'
     ):
         logger.info(f"in on_message : {threading.current_thread()}")
+        if message.type != 'empty':
+            db_account = self.db.telegram.get_telegram_account_by_session_name(
+                session_name=client.session_name
+            )
+            db_chat = self.db.telegram.get_chat_by_id(message.chat.id)
+            if db_chat is None:
+                raw_chat = client.get_chat(message.chat.id)
+                db_chat = self.db.telegram.get_updated_chat(
+                    raw_chat=raw_chat,
+                    db_telegram_account=db_account,
+
+                    downloader=client.download_media
+                )
+                if db_chat is None:
+                    return
+
+            self.db.telegram.get_updated_message(
+                db_chat=db_chat,
+                raw_message=message,
+                logger_account=db_account,
+            )
 
     def on_raw_update(
             self,
