@@ -154,7 +154,9 @@ class MessageManager(models.Manager):
 
     @staticmethod
     def _get_id_from_raw_message(chat_id: int, raw_message: 'types.Message'):
-        return f"{chat_id}:{int(raw_message.is_scheduled)}:{raw_message.message_id}:{getattr(raw_message.content, 'edit_date', 0)}"
+        edit_date = getattr(raw_message.content, 'edit_date', 0)
+        edit_date = edit_date if edit_date is not None else 0
+        return f"{chat_id}:{int(raw_message.is_scheduled)}:{raw_message.message_id}:{edit_date}"
 
     def update_or_create_from_raw(
             self,
