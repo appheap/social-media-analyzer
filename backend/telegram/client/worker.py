@@ -12,7 +12,7 @@ from db.database_manager import DataBaseManager
 from telegram import globals as tg_globals
 from utils.utils import prettify
 from .base_response import BaseResponse
-from .tasks.telegram_tasks import TelegramTasks
+from .tasks import TelegramTasks
 
 clients_lock = threading.RLock()
 
@@ -82,6 +82,9 @@ class Worker(ConsumerProducerMixin):
 
         elif func == 'task_analyze_chat_members':
             response = self.task_analyze_chat_members(*args, **kwargs)
+
+        elif func == 'upload_post':
+            response = self.telegram_tasks.upload_post(*args, **kwargs)
 
         else:
             response = BaseResponse().done()

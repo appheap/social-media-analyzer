@@ -114,3 +114,12 @@ def analyze_chat_members(*args, **kwargs):
         'args': args,
         'kwargs': kwargs
     })
+
+
+@shared_task(queue='default', timeout=60)
+def upload_post(*args, **kwargs):
+    tg_function({
+        'func': 'upload_post',
+        'args': args,
+        'kwargs': kwargs
+    })
