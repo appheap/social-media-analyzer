@@ -137,7 +137,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
         null=True,
         blank=True,
     )
-    album_id = models.BigIntegerField(null=True, blank=True)
+    media_group_id = models.BigIntegerField(null=True, blank=True)
 
     is_scheduled = models.BooleanField(default=False)
     upload_to_telegram_schedule_list = models.BooleanField(null=True, blank=True)
