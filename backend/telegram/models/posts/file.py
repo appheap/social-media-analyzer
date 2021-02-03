@@ -20,4 +20,5 @@ class File(BaseFile):
         blank=True,
     )
 
+    objects = FileManager()
     files = FileManager()

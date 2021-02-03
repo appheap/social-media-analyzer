@@ -106,6 +106,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
     medias = models.ManyToManyField(
         'telegram.File',
         related_name='telegram_posts',
+        blank=True,
     )
     has_media = models.BooleanField(default=False)
 
@@ -136,6 +137,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
         null=True,
         blank=True,
     )
+    album_id = models.BigIntegerField(null=True, blank=True)
 
     is_scheduled = models.BooleanField(default=False)
     upload_to_telegram_schedule_list = models.BooleanField(null=True, blank=True)
@@ -161,6 +163,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
     is_edited = models.BooleanField(default=False)
     edit_date_ts = models.BigIntegerField(null=True, blank=True)
 
+    objects = PostManager()
     posts = PostManager()
 
     ##########################
