@@ -57,7 +57,7 @@ class MessageQuerySet(SoftDeletableQS):
         return self.filter(message_id=message_id)
 
     def filter_by_date_ts(self, *, date_ts: int) -> "MessageQuerySet":
-        return self.filter(date_ts=date_ts)
+        return self.filter(date_ts__in=(date_ts - 1, date_ts, date_ts + 1))
 
     def scheduled(self) -> "MessageQuerySet":
         return self.filter(is_scheduled=True)
@@ -292,20 +292,21 @@ class MessageManager(models.Manager):
                     db_message=db_message,
                 )
 
-            db_scheduled_message = self.get_scheduled_message(
-                db_chat=db_message.chat,
-                date_ts=db_message.date_ts,
-            )
-            if db_scheduled_message:
-                db_scheduled_message.update_sent_status()
-                db_message.update_or_create_message_from_db_message(
-                    model=db_message,
-                    field_name='scheduled_message',
-                    db_message=db_scheduled_message,
+            if db_message.from_scheduled:
+                db_scheduled_message = self.get_scheduled_message(
+                    db_chat=db_message.chat,
+                    date_ts=db_message.date_ts,
                 )
-                tg_models.Post.posts.update_post_status_from_message(
-                    db_message=db_message
-                )
+                if db_scheduled_message:
+                    db_scheduled_message.update_sent_status()
+                    db_message.update_or_create_message_from_db_message(
+                        model=db_message,
+                        field_name='scheduled_message',
+                        db_message=db_scheduled_message,
+                    )
+                    tg_models.Post.posts.update_post_status_from_message(
+                        db_message=db_message
+                    )
 
     @staticmethod
     def _parse_normal(*, raw_message: types.Message) -> dict:
