@@ -1,9 +1,9 @@
-from django.db.models.signals import (
-    pre_save, post_save, pre_delete, )
+from django.db.models.signals import (pre_save, post_save, pre_delete, )
 from django.dispatch import receiver
 
 from core.globals import logger
-from telegram import models
+from .models import *
+from . import tasks
 
 # @receiver(pre_save, sender=models.AddChannelRequest)
 # def handle_presave(sender, **kwargs):
@@ -42,12 +42,14 @@ def post_postsave(sender, instance: 'Post', created: 'bool', update_fields, raw,
         if instance.is_scheduled:
             if instance.upload_to_telegram_schedule_list:
                 # upload to the telegram now
-                pass
+                response = tasks.upload_post(db_post_id=instance.id)
+                logger.info(response)
             else:
                 # schedule to upload to the telegram later
                 pass
         else:
             # send now
-            pass
+            response = tasks.upload_post(db_post_id=instance.id)
+            logger.info(response)
     else:
         pass
