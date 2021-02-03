@@ -33,3 +33,21 @@ def handle_predelete(sender, instance, **kwargs):
             logger.info(message)
     # db_chat = models.Chat.objects.get(chat_id=instance.chat_id)
     # logger.info(db_chat.messages)
+
+
+@receiver(post_save, sender=Post)
+def post_postsave(sender, instance: 'Post', created: 'bool', update_fields, raw, **kwargs):
+    # logger.info(f"\npostsave: {str(sender)} : <{str(instance)}> : {kwargs}")
+    if created:
+        if instance.is_scheduled:
+            if instance.upload_to_telegram_schedule_list:
+                # upload to the telegram now
+                pass
+            else:
+                # schedule to upload to the telegram later
+                pass
+        else:
+            # send now
+            pass
+    else:
+        pass
