@@ -62,6 +62,26 @@ class PostManager(models.Manager):
             return None
         return self.get_queryset().get_post_by_id(post_id=post_id)
 
+    def update_post_status_from_message(
+            self,
+            *,
+            db_message: 'tg_models.Message'
+    ) -> Optional['tg_models.Post']:
+        if db_message is None:
+            return None
+
+        qs = self.get_queryset().filter(
+            telegram_channel__chat=db_message.chat,
+            scheduled_message__isnull=False,
+            scheduled_message__date_ts=db_message.date_ts
+        )
+        if qs.exists():
+            db_post = qs.first()
+            db_post = db_post.update_post_from_message(
+                db_message=db_message
+            )
+            return db_post
+
     def create_post(
             self,
             *,
@@ -171,7 +191,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
     def __str__(self):
         return f'{self.created_by} : {self.telegram_channel} @ {self.created_ts}'
 
-    def update_post_from_raw_message(
+    def update_post_from_message(
             self,
             *,
             db_message: 'tg_models.Message'
