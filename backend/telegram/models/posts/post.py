@@ -201,7 +201,7 @@ class Post(BaseModel, SoftDeletableBaseModel):
 
         self.sent_by = db_message.logged_by
         self.media_group_id = db_message.media_group_id
-        if db_message.is_scheduled:
+        if db_message.is_scheduled and not db_message.from_scheduled:
             self.is_uploaded_to_telegram_schedule_list = True
             self.scheduled_message = db_message
         else:
