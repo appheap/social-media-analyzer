@@ -69,7 +69,7 @@ class TelegramClientManager:
             db_account = self.db.telegram.get_telegram_account_by_session_name(
                 session_name=client.session_name
             )
-            db_chat = self.db.telegram.get_chat_by_id(message.chat.id)
+            db_chat = self.db.telegram.get_chat_by_id(chat_id=message.chat.id)
             if db_chat is None:
                 raw_chat = client.get_chat(message.chat.id)
                 db_chat = self.db.telegram.get_updated_chat(
