@@ -41,15 +41,16 @@ class UploadPost(TaskScaffold):
 
         medias = []
         if db_post.has_media and db_post.medias.count() > 1:
-            for media in db_post.medias:
+            for media in db_post.medias.all():
+                caption = media.caption if media.caption is not None else ''
                 if media.type == FileTypes.photo:
-                    medias.append(types.InputMediaPhoto(media.file, media.caption))
+                    medias.append(types.InputMediaPhoto(media.file.path, caption))
                 elif media.type == FileTypes.document:
-                    medias.append(types.InputMediaDocument(media.file, media.caption))
+                    medias.append(types.InputMediaDocument(media.file.path, caption))
                 elif media.type == FileTypes.video:
-                    medias.append(types.InputMediaVideo(media.file, media.caption))
+                    medias.append(types.InputMediaVideo(media.file.path, caption))
                 elif media.type == FileTypes.audio:
-                    medias.append(types.InputMediaAudio(media.file, media.caption))
+                    medias.append(types.InputMediaAudio(media.file.path, caption))
                 else:
                     # fixme : what now?
                     pass
@@ -61,7 +62,7 @@ class UploadPost(TaskScaffold):
                 send_in_background=False
             )
             for raw_message in raw_messages:
-                raw_message.content.is_scheduled = True
+                raw_message.content.is_scheduled = db_post.is_scheduled
 
             db_messages = list(self.db.telegram.get_updated_messages(
                 db_chat=db_post.telegram_channel.chat,
@@ -85,29 +86,29 @@ class UploadPost(TaskScaffold):
                 if db_media.type == FileTypes.photo:
                     raw_message = client.send_photo(
                         chat_id=chat_id,
-                        photo=db_media.file,
-                        caption=db_media.caption,
+                        photo=db_media.file.path,
+                        caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
                     )
                 elif db_media.type == FileTypes.document:
                     raw_message = client.send_document(
                         chat_id=chat_id,
-                        document=db_media.file,
-                        caption=db_media.caption,
+                        document=db_media.file.path,
+                        caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
                     )
                 elif db_media.type == FileTypes.video:
                     raw_message = client.send_video(
                         chat_id=chat_id,
-                        video=db_media.file,
-                        caption=db_media.caption,
+                        video=db_media.file.path,
+                        caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
                     )
                 elif db_media.type == FileTypes.audio:
                     raw_message = client.send_audio(
                         chat_id=chat_id,
-                        audio=db_media.file,
-                        caption=db_media.caption,
+                        audio=db_media.file.path,
+                        caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
                     )
                 else:
@@ -115,14 +116,14 @@ class UploadPost(TaskScaffold):
             else:
                 raw_message = client.send_message(
                     chat_id=chat_id,
-                    text=db_post.text,
+                    text=db_post.text if db_post.text is not None else '',
                     schedule_date=schedule_date,
                 )
 
             if raw_message is None:
                 return BaseResponse().fail('Failed to upload')
 
-            raw_message.content.is_scheduled = True
+            raw_message.content.is_scheduled = db_post.is_scheduled
 
             db_message = self.db.telegram.get_updated_message(
                 db_chat=db_post.telegram_channel.chat,
