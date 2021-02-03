@@ -9,6 +9,7 @@ class FileTypes(models.TextChoices):
     file = 'file'
     photo = 'photo'
     video = 'video'
+    audio = 'audio'
     document = 'document'
     undefined = 'undefined'
 
