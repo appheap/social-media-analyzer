@@ -1,12 +1,13 @@
 import uuid
 
 from db.models import BaseModel, SoftDeletableBaseModel
-from django.db import models, transaction
+from django.db import models, transaction, DatabaseError
 from typing import List, Optional
 from telegram import models as tg_models
 from users import models as site_models
 
 from db.models import SoftDeletableQS
+from core.globals import logger
 
 
 class PostQuerySet(SoftDeletableQS):
@@ -15,6 +16,19 @@ class PostQuerySet(SoftDeletableQS):
 
     def filter_by_channel(self, db_telegram_channel: 'tg_models.TelegramChannel') -> 'PostQuerySet':
         return self.filter(telegram_channel=db_telegram_channel)
+
+    def get_post_by_id(self, *, post_id: str) -> Optional['Post']:
+        try:
+            return self.get(id=post_id)
+        except Post.DoesNotExist as e:
+            pass
+        except Post.MultipleObjectsReturned as e:
+            pass
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+        return None
 
     def filter_by_creator_and_channel(
             self,
@@ -42,6 +56,11 @@ class PostManager(models.Manager):
         if db_site_user is None:
             return None
         return self.get_queryset().filter_by_creator(db_site_user)
+
+    def get_post_by_id(self, *, post_id: str):
+        if post_id is None:
+            return None
+        return self.get_queryset().get_post_by_id(post_id=post_id)
 
     def create_post(
             self,
