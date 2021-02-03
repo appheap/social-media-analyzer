@@ -41,6 +41,20 @@ class TelegramAccountQuerySet(SoftDeletableQS):
 
         return None
 
+    def get_by_session_name(self, session_name: str) -> Optional['TelegramAccount']:
+        try:
+            return self.get(session_name=session_name)
+        except TelegramAccount.DoesNotExist as e:
+            pass
+        except TelegramAccount.MultipleObjectsReturned as e:
+            pass
+        except DatabaseError as e:
+            logger.exception(e)
+        except Exception as e:
+            logger.exception(e)
+
+        return None
+
     def get_telegram_accounts_by_ids(
             self,
             *,
@@ -80,6 +94,15 @@ class TelegramAccountManager(models.Manager):
         return self.get_queryset().get_by_user_id(
             user_id=id
         )
+
+    def get_telegram_account_by_session_name(
+            self,
+            *,
+            session_name: 'str',
+    ) -> Optional['TelegramAccount']:
+        if session_name is None:
+            return None
+        return self.get_queryset().not_deleted().get_by_session_name(session_name=session_name)
 
     def update_or_create_from_raw(
             self,
