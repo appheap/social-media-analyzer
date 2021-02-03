@@ -60,6 +60,9 @@ class UploadPost(TaskScaffold):
                 schedule_date=schedule_date,
                 send_in_background=False
             )
+            for raw_message in raw_messages:
+                raw_message.content.is_scheduled = True
+
             db_messages = list(self.db.telegram.get_updated_messages(
                 db_chat=db_post.telegram_channel.chat,
                 raw_messages=raw_messages,
@@ -118,6 +121,8 @@ class UploadPost(TaskScaffold):
 
             if raw_message is None:
                 return BaseResponse().fail('Failed to upload')
+
+            raw_message.content.is_scheduled = True
 
             db_message = self.db.telegram.get_updated_message(
                 db_chat=db_post.telegram_channel.chat,
