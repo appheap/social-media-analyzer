@@ -68,7 +68,7 @@ class UploadPost(TaskScaffold):
             if db_messages is None or not len(db_messages):
                 raise ValueError('could not store messages in db')
 
-            db_post.update_post_from_raw_message(
+            db_post.update_post_from_message(
                 db_message=db_messages[0]
             )
 
@@ -127,7 +127,7 @@ class UploadPost(TaskScaffold):
             if db_message is None:
                 raise ValueError('could not store message in db')
 
-            db_post.update_post_from_raw_message(
+            db_post.update_post_from_message(
                 db_message=db_message
             )
 
