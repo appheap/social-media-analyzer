@@ -49,7 +49,7 @@ class AdminShipQuerySet(models.QuerySet):
         except Exception as e:
             logger.exception(e)
 
-        return None
+        return False
 
     def filter_by_id(self, *, id: int) -> 'AdminShipQuerySet':
         return self.filter(id=id)
@@ -74,7 +74,7 @@ class AdminShipManger(models.Manager):
             db_chat: 'tg_models.Chat',
             session_names: List['str'],
             with_admin_permissions: bool = False,
-    ) -> List['tg_models.TelegramAccount']:
+    ) -> Optional[List['tg_models.TelegramAccount']]:
         if db_chat is None or session_names is None or not len(session_names):
             return None
 
