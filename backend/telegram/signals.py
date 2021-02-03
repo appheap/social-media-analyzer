@@ -37,19 +37,26 @@ def handle_predelete(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Post)
 def post_postsave(sender, instance: 'Post', created: 'bool', update_fields, raw, **kwargs):
-    # logger.info(f"\npostsave: {str(sender)} : <{str(instance)}> : {kwargs}")
     if created:
         if instance.is_scheduled:
             if instance.upload_to_telegram_schedule_list:
                 # upload to the telegram now
-                response = tasks.upload_post(db_post_id=instance.id)
-                logger.info(response)
+                tasks.upload_post.apply_async(
+                    kwargs={
+                        'db_post_id': instance.id,
+                    },
+                    countdown=1
+                )
             else:
                 # schedule to upload to the telegram later
                 pass
         else:
             # send now
-            response = tasks.upload_post(db_post_id=instance.id)
-            logger.info(response)
+            tasks.upload_post.apply_async(
+                kwargs={
+                    'db_post_id': instance.id,
+                },
+                countdown=1
+            )
     else:
         pass

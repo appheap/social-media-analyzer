@@ -17,7 +17,6 @@ class UploadPost(TaskScaffold):
         if db_post is None:
             return BaseResponse().fail('post does not exist')
 
-        logger.info(db_post)
 
         if db_post.is_sent:
             return BaseResponse().fail('Post is already sent!')
