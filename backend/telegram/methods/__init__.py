@@ -5,6 +5,7 @@ from .chats import Chats
 from .requests import Requests
 from .messages_and_media import MessageAndMedia
 from .users_and_chats import UsersAndChats
+from .posts import Posts
 
 
 class TelegramMethods(
@@ -15,6 +16,7 @@ class TelegramMethods(
     MessageAndMedia,
     Requests,
     UsersAndChats,
+    Posts,
 
 ):
     pass
