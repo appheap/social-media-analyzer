@@ -31,32 +31,19 @@ class IterateDialogsTask(TaskScaffold):
             _valid_raw_dialogs = []
             for raw_dialog in raw_dialogs:
                 if raw_dialog.chat.group and raw_dialog.chat.group.migrated_to:
-                    db_chat_migrated_from = self.db.telegram.get_updated_chat(
+                    raw_migrated_chat = self.db.telegram.get_updated_migrated_raw_chat(
                         raw_chat=raw_dialog.chat,
                         db_telegram_account=db_telegram_account,
-
-                        downloader=client.download_media
+                        client=client,
                     )
-                    try:
-                        raw_chat = client.get_chat(raw_dialog.chat.group.migrated_to.id)
-                    except tg_errors.ChannelInvalid as e:
-                        logger.info(raw_dialog.chat)
-                        logger.error(e)
-                    except tg_errors.ChannelPrivate as e:
-                        logger.info(raw_dialog.chat)
-                        logger.error(e)
-                    except tg_errors.ChannelPublicGroupNa as e:
-                        logger.info(raw_dialog.chat)
-                        logger.error(e)
-                    else:
-                        if raw_chat:
-                            raw_dialog.chat = raw_chat
-                            db_chat = self.db.telegram.get_updated_chat(
-                                raw_chat=raw_chat,
-                                db_telegram_account=db_telegram_account,
-                                downloader=client.download_media
-                            )
-                            _valid_raw_dialogs.append(raw_dialog)
+                    if raw_migrated_chat:
+                        raw_dialog.chat = raw_migrated_chat
+                        db_chat = self.db.telegram.get_updated_chat(
+                            raw_chat=raw_migrated_chat,
+                            db_telegram_account=db_telegram_account,
+                            downloader=client.download_media
+                        )
+                        _valid_raw_dialogs.append(raw_dialog)
                 else:
                     db_chat = self.db.telegram.get_updated_chat(
                         raw_chat=raw_dialog.chat,

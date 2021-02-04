@@ -1,7 +1,8 @@
 from pyrogram import types
-from typing import Optional, List
+from typing import Optional, List, Callable
 from telegram import models as tg_models
 from users import models as site_models
+from core.globals import logger
 
 
 class Scaffold:
@@ -9,6 +10,7 @@ class Scaffold:
     def __init__(self):
         self.tg_models = tg_models
         self.site_models = site_models
+        self.logger = logger
 
     def get_updated_user(
             self,
@@ -25,7 +27,8 @@ class Scaffold:
             raw_chat: types.Chat,
             db_telegram_account: 'tg_models.TelegramAccount',
 
-            db_message_view: 'tg_models.MessageView' = None
+            db_message_view: 'tg_models.MessageView' = None,
+            downloader: Callable = None,
     ) -> Optional["tg_models.Chat"]:
         pass
 

@@ -6,6 +6,7 @@ from .admin_log_exists import AdminLogExists
 from .create_admin_log import CreateAdminLog
 from .get_chat_by_id import GetChatById
 from .get_chat_by_username import GetChatByUsername
+from .get_updated_migrated_raw_chat import GetUpdatedMigratedRawChat
 
 
 class Chats(
@@ -17,6 +18,7 @@ class Chats(
     CreateAdminLog,
     GetChatById,
     GetChatByUsername,
+    GetUpdatedMigratedRawChat,
 
 ):
     pass
