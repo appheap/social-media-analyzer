@@ -9,6 +9,8 @@ from core.globals import logger
 from db.database_manager import DataBaseManager
 from pyrogram import raw, idle
 from pyrogram import types
+from pyrogram import errors as tg_errors
+
 #############################################
 from pyrogram.handlers import DisconnectHandler, MessageHandler, RawUpdateHandler
 #############################################
@@ -66,16 +68,36 @@ class TelegramClientManager:
     ):
         logger.info(f"in on_message : {threading.current_thread()}")
         if message.type != 'empty':
-            db_account = self.db.telegram.get_telegram_account_by_session_name(
+            db_telegram_account = self.db.telegram.get_telegram_account_by_session_name(
                 session_name=client.session_name
             )
             db_chat = self.db.telegram.get_chat_by_id(chat_id=message.chat.id)
             if db_chat is None:
-                raw_chat = client.get_chat(message.chat.id)
+                raw_chat: types.Chat = client.get_chat(message.chat.id)
+                if raw_chat is not None:
+                    if raw_chat.group and raw_chat.group.migrated_to:
+                        db_chat_migrated_from = self.db.telegram.get_updated_chat(
+                            raw_chat=raw_chat,
+                            db_telegram_account=db_telegram_account,
+                            downloader=client.download_media
+                        )
+                        try:
+                            raw_chat: types.Chat = client.get_chat(raw_chat.group.migrated_to.id)
+                        except tg_errors.ChannelInvalid as e:
+                            logger.info(raw_chat)
+                            logger.error(e)
+                        except tg_errors.ChannelPrivate as e:
+                            logger.info(raw_chat)
+                            logger.error(e)
+                        except tg_errors.ChannelPublicGroupNa as e:
+                            logger.info(raw_chat)
+                            logger.error(e)
+                else:
+                    return
+
                 db_chat = self.db.telegram.get_updated_chat(
                     raw_chat=raw_chat,
-                    db_telegram_account=db_account,
-
+                    db_telegram_account=db_telegram_account,
                     downloader=client.download_media
                 )
                 if db_chat is None:
@@ -84,7 +106,7 @@ class TelegramClientManager:
             self.db.telegram.get_updated_message(
                 db_chat=db_chat,
                 raw_message=message,
-                logger_account=db_account,
+                logger_account=db_telegram_account,
             )
 
     def on_raw_update(
