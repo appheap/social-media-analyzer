@@ -26,11 +26,11 @@ class GetUpdatedMigratedRawChat(Scaffold):
             downloader=client.download_media
         )
 
-        migrated_raw_chat = None
         if not raw_chat.group or not raw_chat.group.migrated_to:
             return None
 
         try:
+            migrated_raw_chat = None
             migrated_raw_chat = client.get_chat(raw_chat.group.migrated_to.id)
         except tg_errors.ChannelInvalid as e:
             self.logger.info(raw_chat)
@@ -43,5 +43,7 @@ class GetUpdatedMigratedRawChat(Scaffold):
             self.logger.error(e)
         except Exception as e:
             self.logger.exception(e)
+        else:
+            return migrated_raw_chat
 
-        return migrated_raw_chat
+        return None
