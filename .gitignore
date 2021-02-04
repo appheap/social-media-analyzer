@@ -167,3 +167,4 @@ dmypy.json
 /backend/.env
 /Pipfile.lock
 /backend/media_files/
+/backend/unknown_errors.txt
