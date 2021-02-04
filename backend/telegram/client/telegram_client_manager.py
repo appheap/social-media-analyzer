@@ -15,6 +15,7 @@ from pyrogram import errors as tg_errors
 from pyrogram.handlers import DisconnectHandler, MessageHandler, RawUpdateHandler
 #############################################
 from telegram.client.client_manager import *
+from utils.utils import prettify
 
 clients_lock = threading.RLock()
 
@@ -66,6 +67,7 @@ class TelegramClientManager:
             client: 'pyrogram.Client',
             message: 'types.Message'
     ):
+        now = arrow.utcnow().timestamp
         logger.info(f"in on_message : {threading.current_thread()}")
         if message.type != 'empty':
             db_telegram_account = self.db.telegram.get_telegram_account_by_session_name(
@@ -74,26 +76,12 @@ class TelegramClientManager:
             db_chat = self.db.telegram.get_chat_by_id(chat_id=message.chat.id)
             if db_chat is None:
                 raw_chat: types.Chat = client.get_chat(message.chat.id)
-                if raw_chat is not None:
-                    if raw_chat.group and raw_chat.group.migrated_to:
-                        db_chat_migrated_from = self.db.telegram.get_updated_chat(
-                            raw_chat=raw_chat,
-                            db_telegram_account=db_telegram_account,
-                            downloader=client.download_media
-                        )
-                        try:
-                            raw_chat: types.Chat = client.get_chat(raw_chat.group.migrated_to.id)
-                        except tg_errors.ChannelInvalid as e:
-                            logger.info(raw_chat)
-                            logger.error(e)
-                        except tg_errors.ChannelPrivate as e:
-                            logger.info(raw_chat)
-                            logger.error(e)
-                        except tg_errors.ChannelPublicGroupNa as e:
-                            logger.info(raw_chat)
-                            logger.error(e)
-                else:
-                    return
+                if raw_chat is not None and raw_chat.group and raw_chat.group.migrated_to:
+                    raw_chat = self.db.telegram.get_updated_migrated_raw_chat(
+                        raw_chat=raw_chat,
+                        db_telegram_account=db_telegram_account,
+                        client=client,
+                    )
 
                 db_chat = self.db.telegram.get_updated_chat(
                     raw_chat=raw_chat,
@@ -101,12 +89,14 @@ class TelegramClientManager:
                     downloader=client.download_media
                 )
                 if db_chat is None:
+                    logger.error('could not save chat')
                     return
 
-            self.db.telegram.get_updated_message(
+            self.db.telegram.update_message_and_view(
                 db_chat=db_chat,
                 raw_message=message,
                 logger_account=db_telegram_account,
+                now=now,
             )
 
     def on_raw_update(
@@ -117,6 +107,7 @@ class TelegramClientManager:
             chats: List['types.Chat']
     ):
         logger.info(f"in on_raw_update : {threading.current_thread()}")
+        # logger.info(raw_update)
 
     def run(self) -> None:
         logger.info(mp.current_process().name)
