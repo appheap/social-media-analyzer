@@ -54,3 +54,8 @@ class BaseFile(BaseModel, SoftDeletableBaseModel):
             self.hash_hexhdigest = m.hexdigest()
 
         return super().save(*args, **kwargs)
+
+    def __str__(self):
+        if self.uploaded_by and self.name:
+            return f'{self.uploaded_by} : {self.name}'
+        return str(self.id)
