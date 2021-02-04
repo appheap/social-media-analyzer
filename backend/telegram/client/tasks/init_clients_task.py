@@ -12,7 +12,7 @@ class InitClientsTask(TaskScaffold):
             client: pyrogram.Client = client
 
             me: types.User = client.get_me()
-            db_site_user = self.db.users.get_default_user()
+            db_site_user = self.db.users.get_default_site_user()
             if db_site_user is None:
                 return BaseResponse().fail('Could not find site_user with DEFAULT_USER_USERNAME')
 
