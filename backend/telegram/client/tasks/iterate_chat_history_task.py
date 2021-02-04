@@ -36,20 +36,12 @@ class IterateChatHistoryTask(TaskScaffold):
                             db_chat.chat_id,
                             last_raw_message.message_id,
                     ):
-                        db_message = self.db.telegram.get_updated_message(
+                        self.db.telegram.update_message_and_view(
                             db_chat=db_chat,
                             raw_message=raw_message,
                             logger_account=db_telegram_account,
+                            now=now
                         )
-
-                        if raw_message.views and db_message:
-                            self.db.telegram.get_updated_message_view(
-                                raw_message_view=raw_message.views,
-                                db_chat=db_chat,
-                                db_message=db_message,
-                                logger_account=db_telegram_account,
-                                date_ts=now,
-                            )
 
                     self.db.telegram.update_analyzer_metadata(
                         analyzer=db_chat.message_view_analyzer,

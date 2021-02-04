@@ -1,5 +1,6 @@
 from .get_updated_message import GetUpdatedMessage
 from .get_updated_messages import GetUpdatedMessages
+from .update_message_and_view import UpdateMessageAndView
 from .get_message_by_message_id import GetMessageByMessageId
 from .get_message_from_raw import GetMessageFromRaw
 from .get_updated_message_entities import GetUpdatedMessageEntities
@@ -12,6 +13,7 @@ from .get_latest_profile_photo import GetLatestProfilePhoto
 class MessageAndMedia(
     GetUpdatedMessage,
     GetUpdatedMessages,
+    UpdateMessageAndView,
     GetMessageByMessageId,
     GetMessageFromRaw,
     GetUpdatedMessageEntities,

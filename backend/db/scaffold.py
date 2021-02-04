@@ -107,6 +107,16 @@ class Scaffold:
     ) -> Optional['tg_models.Message']:
         pass
 
+    def update_message_and_view(
+            self,
+            *,
+            db_chat: 'tg_models.Chat',
+            raw_message: types.Message,
+            logger_account: "tg_models.TelegramAccount",
+            now: int,
+    ) -> None:
+        pass
+
     def get_updated_message_view(
             self,
             *,
