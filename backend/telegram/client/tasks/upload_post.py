@@ -89,6 +89,7 @@ class UploadPost(TaskScaffold):
                         photo=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
+                        schedule_date=schedule_date,
                     )
                 elif db_media.type == FileTypes.document:
                     raw_message = client.send_document(
@@ -96,6 +97,7 @@ class UploadPost(TaskScaffold):
                         document=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
+                        schedule_date=schedule_date,
                     )
                 elif db_media.type == FileTypes.video:
                     raw_message = client.send_video(
@@ -103,6 +105,7 @@ class UploadPost(TaskScaffold):
                         video=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
+                        schedule_date=schedule_date,
                     )
                 elif db_media.type == FileTypes.audio:
                     raw_message = client.send_audio(
@@ -110,6 +113,7 @@ class UploadPost(TaskScaffold):
                         audio=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
                         send_in_background=False,
+                        schedule_date=schedule_date,
                     )
                 else:
                     raw_message = None
