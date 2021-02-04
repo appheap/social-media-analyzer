@@ -24,7 +24,7 @@ class BaseFile(BaseModel, SoftDeletableBaseModel):
     )
 
     file = models.FileField(upload_to='files/')
-    hash_hexhdigest = models.CharField(max_length=256, blank=True)
+    hash_hexdigest = models.CharField(max_length=256, blank=True)
     name = models.CharField(max_length=1024, blank=True)
     content_type = models.CharField(max_length=128, blank=True)
     size = models.BigIntegerField(blank=True)
