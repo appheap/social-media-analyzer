@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from django.core.validators import MinLengthValidator
@@ -127,6 +128,8 @@ class TelegramChannelManager(models.Manager):
 
 
 class TelegramChannel(BaseModel, SoftDeletableBaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+
     channel_id = models.BigIntegerField()
     is_account_creator = models.BooleanField(null=True, blank=True)
     is_account_admin = models.BooleanField(null=False, default=False)
