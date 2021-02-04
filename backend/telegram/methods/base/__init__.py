@@ -1,5 +1,6 @@
 from .get_updated_telegram_account import GetUpdatedTelegramAccount
 from .get_updated_telegram_channel import GetUpdatedTelegramChannel
+from .create_telegram_channel import CreateTelegramChannel
 from .get_telegram_channel_by_id import GetTelegramChannelById
 from .get_telegram_accounts_by_ids import GetTelegramAccountsByIds
 from .get_telegram_account_by_id import GetTelegramAccountById
@@ -12,6 +13,7 @@ from .get_telegram_account_by_session_name import GetTelegramAccountBySessionNam
 class Base(
     GetUpdatedTelegramAccount,
     GetUpdatedTelegramChannel,
+    CreateTelegramChannel,
     TelegramChannelExists,
     GetTelegramChannelById,
     GetTelegramAccountsByIds,
