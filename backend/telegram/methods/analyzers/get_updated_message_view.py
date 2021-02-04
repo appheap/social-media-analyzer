@@ -54,4 +54,4 @@ class GetUpdatedMessageView(Scaffold):
                                 db_message_view=db_message_view,
                             )
 
-            return db_message
+            return db_message_view
