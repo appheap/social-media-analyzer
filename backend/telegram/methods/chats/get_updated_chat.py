@@ -21,11 +21,11 @@ class GetUpdatedChat(Scaffold):
 
         _user = db_telegram_account.telegram_user
         if raw_chat.type in ('channel', 'supergroup',):
-            db_creator = _user if raw_chat.channel.is_creator else None
+            db_creator = _user if raw_chat.channel and raw_chat.channel.is_creator else None
         elif raw_chat.type == 'group':
-            db_creator = _user if raw_chat.group.is_creator else None
+            db_creator = _user if raw_chat.group and raw_chat.group.is_creator else None
         else:
-            db_creator = _user if raw_chat.user.is_self else None
+            db_creator = _user if raw_chat.user and raw_chat.user.is_self else None
 
         db_chat = self.tg_models.Chat.chats.update_or_create_from_raw(
             raw_chat=raw_chat,

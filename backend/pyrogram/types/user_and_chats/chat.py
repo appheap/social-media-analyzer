@@ -49,7 +49,7 @@ class Chat(Object):
         self.channel = channel
 
     @staticmethod
-    def _parse_user_chat(client, user: raw.types.User) -> "Chat":
+    def _parse_user_chat(client, user: raw.types.User) -> Optional["Chat"]:
         if user is None:
             return None
 
@@ -78,7 +78,7 @@ class Chat(Object):
         )
 
     @staticmethod
-    async def _parse_group_chat(client, chat: raw.types.Chat) -> "Chat":
+    async def _parse_group_chat(client, chat: raw.types.Chat) -> Optional["Chat"]:
         if chat is None:
             return None
 
