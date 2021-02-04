@@ -47,3 +47,6 @@ class SoftDeletableBaseModel(models.Model):
     class Meta:
         abstract = True
         ordering = ('-deleted_ts',)
+        indexes = [
+            models.Index(fields=('-deleted_ts',)),
+        ]

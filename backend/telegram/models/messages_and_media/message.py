@@ -551,6 +551,11 @@ class Message(BaseModel, SoftDeletableBaseModel, ChatUpdater, UserUpdater, Messa
     class Meta:
         ordering = ('-date_ts', 'chat',)
         get_latest_by = ('-date_ts', 'chat',)
+        indexes = [
+            models.Index(fields=('message_id',)),
+            models.Index(fields=('date_ts',)),
+            models.Index(fields=('-date_ts', 'chat',)),
+        ]
 
     def __str__(self):
         return f"message {self.message_id} from {self.chat}"

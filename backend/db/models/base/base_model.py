@@ -10,6 +10,9 @@ class BaseModel(models.Model):
         abstract = True
         ordering = ('-modified_ts', '-created_ts')
         get_latest_by = ('-modified_ts', '-created_ts')
+        indexes = [
+            models.Index(fields=('-modified_ts', '-created_ts')),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.created_ts:
