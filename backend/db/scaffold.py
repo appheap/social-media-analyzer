@@ -172,3 +172,15 @@ class Scaffold:
             file_size: float,
     ) -> Optional['tg_models.ProfilePhoto']:
         pass
+
+    def get_site_user_by_username(
+            self,
+            *,
+            username: int,
+    ) -> Optional['site_models.SiteUser']:
+        pass
+
+    def get_default_site_user(
+            self,
+    ) -> Optional['site_models.SiteUser']:
+        pass
