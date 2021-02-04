@@ -18,11 +18,7 @@ class LogChatMemberCountTask(TaskScaffold):
             made_request = False
             for db_chat in db_chats:
                 now = arrow.utcnow().timestamp
-                client_session_names = self.get_client_session_names()
-                db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_session_names(
-                    db_chat=db_chat,
-                    session_names=client_session_names
-                )
+                db_telegram_accounts = self.get_telegram_accounts(db_chat)
                 if db_telegram_accounts is None or not len(db_telegram_accounts):
                     # return BaseResponse().done(message='No Telegram Account is available now.')
                     continue

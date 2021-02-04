@@ -15,12 +15,7 @@ class IterateChatHistoryTask(TaskScaffold):
         )
         if db_chats.exists():
             for db_chat in db_chats:
-                client_session_names = self.get_client_session_names()
-                db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_session_names(
-                    db_chat=db_chat,
-                    session_names=client_session_names
-                )
-                logger.info((db_chat, len(db_telegram_accounts) if db_telegram_accounts else None))
+                db_telegram_accounts = self.get_telegram_accounts(db_chat)
                 if db_telegram_accounts is None or not len(db_telegram_accounts):
                     # return BaseResponse().done(message='No Telegram Account is available now.')
                     continue

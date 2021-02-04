@@ -5,7 +5,6 @@ import pyrogram
 from core.globals import logger
 from db.database_manager import DataBaseManager
 from pyrogram import types
-from telegram import models as tg_models
 
 
 class TaskScaffold:

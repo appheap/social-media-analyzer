@@ -1,8 +1,6 @@
-from tasks.task_scaffold import TaskScaffold
-import pyrogram
-from ..base_response import BaseResponse
 from pyrogram import types
-from core.globals import logger
+from tasks.task_scaffold import TaskScaffold
+from ..base_response import BaseResponse
 
 
 class UploadPost(TaskScaffold):
@@ -25,12 +23,7 @@ class UploadPost(TaskScaffold):
         if db_post.is_scheduled and not db_post.upload_to_telegram_schedule_list:
             return BaseResponse().done()
 
-        client_session_names = self.get_client_session_names()
-        db_telegram_accounts = self.db.telegram.get_telegram_accounts_by_session_names(
-            db_chat=db_post.telegram_channel.chat,
-            session_names=client_session_names,
-            with_admin_permissions=True,
-        )
+        db_telegram_accounts = self.get_telegram_accounts(db_post.telegram_channel.chat, with_admin_permissions=True)
         if db_telegram_accounts is None or not len(db_telegram_accounts):
             return BaseResponse().done(message='No Telegram Account is available now.')
 
