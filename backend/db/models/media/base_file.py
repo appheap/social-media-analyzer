@@ -42,7 +42,7 @@ class BaseFile(BaseModel, SoftDeletableBaseModel):
         abstract = True
 
     def save(self, *args, **kwargs):
-        if self.hash_hexhdigest is None or len(self.hash_hexhdigest) < 128:
+        if self.hash_hexdigest is None or len(self.hash_hexdigest) < 128:
 
             self.name = self.file.file.name
             self.content_type = self.file.file.content_type
@@ -51,7 +51,7 @@ class BaseFile(BaseModel, SoftDeletableBaseModel):
             m = hashlib.sha3_512()
             for chunk in self.file.chunks():
                 m.update(chunk)
-            self.hash_hexhdigest = m.hexdigest()
+            self.hash_hexdigest = m.hexdigest()
 
         return super().save(*args, **kwargs)
 
