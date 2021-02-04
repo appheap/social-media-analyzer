@@ -5,6 +5,7 @@ import pyrogram
 from core.globals import logger
 from db.database_manager import DataBaseManager
 from pyrogram import types
+from telegram import models as tg_models
 
 
 class TaskScaffold:
@@ -50,6 +51,18 @@ class TaskScaffold:
         if is_first and message is None:
             return self.get_last_valid_message(client, chat_id, limit=limit + 20, is_first=False)
         return message
+
+    def get_telegram_accounts(
+            self,
+            db_chat: 'tg_models.Chat',
+            with_admin_permissions: bool = False
+    ) -> List['tg_models.TelegramAccount']:
+        client_session_names = self.get_client_session_names()
+        return self.db.telegram.get_telegram_accounts_by_session_names(
+            db_chat=db_chat,
+            session_names=client_session_names,
+            with_admin_permissions=with_admin_permissions
+        )
 
     @staticmethod
     def iter_messages(
