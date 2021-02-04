@@ -217,7 +217,7 @@ class Chat(Object):
         )
 
     @staticmethod
-    def _parse_channel_chat(client, channel: raw.types.Channel) -> "Chat":
+    def _parse_channel_chat(client, channel: raw.types.Channel) -> Optional["Chat"]:
         if channel is None:
             return None
 
