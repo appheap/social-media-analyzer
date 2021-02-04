@@ -68,7 +68,7 @@ class IterateDialogsTask(TaskScaffold):
                     continue
 
                 if raw_chat.type == 'channel':
-                    db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
+                    db_telegram_channel, updated = self.db.telegram.get_updated_telegram_channel(
                         raw_chat=raw_chat,
                         db_account=db_telegram_account,
                     )

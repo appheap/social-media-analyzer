@@ -120,7 +120,7 @@ class AddTelegramChannelTask(TaskScaffold):
 
             downloader=client.download_media
         )
-        db_telegram_channel = self.db.telegram.get_updated_telegram_channel(
+        db_telegram_channel = self.db.telegram.create_telegram_channel(
             raw_chat=raw_chat,
             db_account=db_admin_telegram_account,
             db_site_user=db_site_user,
