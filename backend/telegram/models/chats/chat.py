@@ -35,7 +35,7 @@ class ChatTypes(models.TextChoices):
 
 
 class ChatQuerySet(SoftDeletableQS):
-    def get_chat_by_id(self, *, chat_id: int) -> "Chat":
+    def get_chat_by_id(self, *, chat_id: int) -> Optional["Chat"]:
         try:
             return self.get(chat_id=chat_id)
         except Chat.DoesNotExist as e:
@@ -48,9 +48,9 @@ class ChatQuerySet(SoftDeletableQS):
             logger.exception(e)
         return None
 
-    def get_chat_by_username(self, *, username: str) -> "Chat":
+    def get_chat_by_username(self, *, username: str) -> Optional["Chat"]:
         try:
-            return self.get(username=username)
+            return self.get(username=username)  # fixme: `username` is not field of the class
         except DatabaseError as e:
             logger.exception(e)
         except Chat.MultipleObjectsReturned as e:
@@ -164,7 +164,7 @@ class BaseChatManager(models.Manager):
 
         if admin_log_analyzer is None and members_analyzer is None and shared_media_analyzer is None \
                 and member_count_analyzer is None and message_view_analyzer is None:
-            return None
+            return self.get_queryset().none()
 
         _filter_obj = {}
         if admin_log_analyzer is not None:
@@ -429,6 +429,14 @@ class Chat(
             return 2
         else:
             return None
+
+    class Meta:
+        indexes = [
+            models.Index(fields=('type',)),
+            models.Index(fields=('group',)),
+            models.Index(fields=('channel',)),
+            models.Index(fields=('user',)),
+        ]
 
     def __str__(self):
         _type = '📢'
