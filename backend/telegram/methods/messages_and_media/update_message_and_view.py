@@ -14,7 +14,7 @@ class UpdateMessageAndView(Scaffold):
             now: int,
     ) -> None:
         if db_chat is None or raw_message is None or logger_account is None or now is None:
-            return None
+            return
 
         db_message = self.get_updated_message(
             db_chat=db_chat,
