@@ -73,31 +73,51 @@ class TelegramClientManager:
             db_telegram_account = self.db.telegram.get_telegram_account_by_session_name(
                 session_name=client.session_name
             )
-            db_chat = self.db.telegram.get_chat_by_id(chat_id=message.chat.id)
-            if db_chat is None:
-                raw_chat: types.Chat = client.get_chat(message.chat.id)
-                if raw_chat is not None and raw_chat.group and raw_chat.group.migrated_to:
-                    raw_chat = self.db.telegram.get_updated_migrated_raw_chat(
-                        raw_chat=raw_chat,
-                        db_telegram_account=db_telegram_account,
-                        client=client,
-                    )
-
-                db_chat = self.db.telegram.get_updated_chat(
-                    raw_chat=raw_chat,
-                    db_telegram_account=db_telegram_account,
-                    downloader=client.download_media
-                )
+            if message.chat.type in ('group', 'supergroup', 'channel',):
+                db_chat = self.db.telegram.get_chat_by_id(chat_id=message.chat.id)
                 if db_chat is None:
-                    logger.error(f'could not save chat : {raw_chat.title if raw_chat else ""}')
-                    return
+                    raw_chat = None
+                    try:
+                        raw_chat = client.get_chat(message.chat.id)
+                    except tg_errors.ChannelInvalid as e:
+                        logger.info(raw_chat)
+                        logger.error(e)
+                    except tg_errors.ChannelPrivate as e:
+                        logger.info(raw_chat)
+                        logger.error(e)
+                    except tg_errors.ChannelPublicGroupNa as e:
+                        logger.info(raw_chat)
+                        logger.error(e)
+                    except Exception as e:
+                        logger.exception(e)
+                    else:
+                        if raw_chat is not None and raw_chat.group and raw_chat.group.migrated_to:
+                            raw_chat = self.db.telegram.get_updated_migrated_raw_chat(
+                                raw_chat=raw_chat,
+                                db_telegram_account=db_telegram_account,
+                                client=client,
+                            )
 
-            self.db.telegram.update_message_and_view(
-                db_chat=db_chat,
-                raw_message=message,
-                logger_account=db_telegram_account,
-                now=now,
-            )
+                        db_chat = self.db.telegram.get_updated_chat(
+                            raw_chat=raw_chat,
+                            db_telegram_account=db_telegram_account,
+                            downloader=client.download_media
+                        )
+                        if db_chat is None:
+                            logger.error(f'could not save chat : {raw_chat.title if raw_chat else ""}')
+                            logger.error(message)
+                            return
+
+                self.db.telegram.update_message_and_view(
+                    db_chat=db_chat,
+                    raw_message=message,
+                    logger_account=db_telegram_account,
+                    now=now,
+                )
+            else:
+                db_user = self.db.telegram.get_updated_user(
+                    raw_user=message.chat.user,
+                )
 
     def on_raw_update(
             self,
