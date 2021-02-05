@@ -1,6 +1,14 @@
 from django.contrib import admin
 
 from .models import *
+from django.core.paginator import Paginator
+
+
+class NoCountPaginator(Paginator):
+    @property
+    def count(self):
+        return 999999999  # Some arbitrarily large number,
+        # so we can still get our page tab.
 
 
 # Register your models here.
@@ -8,8 +16,8 @@ class TelegramChannelInline(admin.TabularInline):
     model = TelegramChannel
 
 
-# class ChatsInline(admin.TabularInline):
-#     model = Chat
+class ChatsInline(admin.TabularInline):
+    model = Chat
 
 
 class AdminLogEventInline(admin.TabularInline):
@@ -40,6 +48,17 @@ class TelegramAccountAdmin(admin.ModelAdmin):
     list_display = ['first_name', 'username', 'created_ts', 'modified_ts']
 
 
+class TelegramChannelAdmin(admin.ModelAdmin):
+    list_per_page = 20
+    list_select_related = ()
+    raw_id_fields = (
+        'site_user',
+        'telegram_account',
+        'chat',
+        'blockage',
+    )
+
+
 #################################################################################
 
 class TelegramAccountInline(admin.TabularInline):
@@ -54,7 +73,7 @@ class ForwardedMessageInline(admin.TabularInline):
 
 class SentMessageInline(admin.TabularInline):
     model = Message
-    fk_name = 'from_user'
+    fk_name = 'user'
     verbose_name_plural = 'Sent Messages'
 
 
@@ -104,10 +123,40 @@ class ProfilePhotoInline(admin.TabularInline):
 
 
 class UserAdmin(admin.ModelAdmin):
+    list_per_page = 20
+    list_select_related = ()
+    raw_id_fields = (
+        'message_view',
+    )
+    fields = (
+        'user_id',
+        'first_name',
+        'last_name',
+        'username',
+        'language_code',
+        'dc_id',
+        'phone_number',
+        'can_we_pin_message',
+        'about',
+        'common_chats_count',
+        'is_empty',
+        'is_mutual_contact',
+        'is_deleted',
+        'is_bot',
+        'is_verified',
+        'is_restricted',
+        'is_scam',
+        'is_blocked',
+        'is_support',
+        'bot_inline_placeholder',
+        'bot_can_see_history',
+        'bot_can_request_geo',
+    )
+
     inlines = [
-        TelegramAccountInline,
-        MembershipInline,
-        ProfilePhotoInline,
+        # TelegramAccountInline,
+        # MembershipInline,
+        # ProfilePhotoInline,
         # ForwardedMessageInline,
         # SentMessageInline,
         # ViaBotMessageInline,
@@ -144,11 +193,35 @@ class ForwardedMessageChannelInline(admin.TabularInline):
 
 
 class ChatAdmin(admin.ModelAdmin):
-    inlines = [
-        TelegramChannelInline,
-        ChatMemberInline,
-        AdminLogEventInline,
+    list_per_page = 20
+    list_select_related = ()
+    raw_id_fields = (
+        'channel',
+        'group',
+        'user',
+        'shared_media_analyzer',
+        'member_count_analyzer',
+        'message_view_analyzer',
+        'members_analyzer',
+        'admin_log_analyzer',
+    )
+    fields = (
+        'chat_id',
+        'type',
+        'channel',
+        'group',
+        'user',
+        'shared_media_analyzer',
+        'member_count_analyzer',
+        'message_view_analyzer',
+        'members_analyzer',
+        'admin_log_analyzer',
+    )
 
+    inlines = [
+        # TelegramChannelInline,
+        # ChatMemberInline,
+        # AdminLogEventInline,
         # MessageInline,
         # ForwardedMessageChannelInline,
         # LinkedChatInline,
@@ -209,16 +282,49 @@ class ActionMessageStopPollInline(admin.TabularInline):
 
 
 class MessageAdmin(admin.ModelAdmin):
+    list_per_page = 20
+    list_select_related = ()
+
+    raw_id_fields = (
+        'chat',
+        'scheduled_message',
+        'sender_chat',
+        'user',
+        'forward_from_chat',
+        'forward_from_user',
+        'forward_from_message',
+        'saved_from_chat',
+        'saved_from_user',
+        'via_bot',
+        'reply_to_message',
+        'reply_to_user',
+        'reply_to_chat',
+        'reply_to_top_message',
+        'logged_by',
+    )
+    list_display = ('message_id', 'chat')
+    show_full_result_count = False
     inlines = [
         # MessageReplyInline,
-        EntityInline,
-        EntityTypeInline,
-        MessageViewInline,
-        ActionMessagePinnedInline,
-        ActionMessageEditedPrevInline,
-        ActionMessageEditedNewInline,
-        ActionMessageStopPollInline,
+        # EntityInline,
+        # EntityTypeInline,
+        # MessageViewInline,
+        # ActionMessagePinnedInline,
+        # ActionMessageEditedPrevInline,
+        # ActionMessageEditedNewInline,
+        # ActionMessageStopPollInline,
     ]
+
+
+class MessageViewAdmin(admin.ModelAdmin):
+    list_per_page = 20
+    list_select_related = ()
+    raw_id_fields = (
+        'discussion_chat',
+        'message',
+        'logged_by',
+        'chat',
+    )
 
 
 #################################################################################
@@ -239,23 +345,78 @@ class MembershipAdmin(admin.ModelAdmin):
     ]
 
 
+class PostAdmin(admin.ModelAdmin):
+    list_select_related = ()
+    raw_id_fields = (
+        'telegram_channel',
+        'created_by',
+        'sent_by',
+    )
+
+    fields = (
+        'telegram_channel',
+        'created_by',
+        'is_scheduled',
+        'schedule_date_ts',
+        'upload_to_telegram_schedule_list',
+        'is_uploaded_to_telegram_schedule_list',
+        'is_sent',
+        'sent_date_ts',
+        'sent_by',
+        'text',
+        'has_media',
+        'medias',
+    )
+
+
+class DialogAdmin(admin.ModelAdmin):
+    list_per_page = 20
+    list_select_related = ()
+    raw_id_fields = (
+        'chat',
+        'account'
+    )
+
+
+class ChannelAdmin(admin.ModelAdmin):
+    list_per_page = 20
+    list_select_related = ()
+    raw_id_fields = (
+        'migrated_from',
+        'linked_chat',
+        'creator',
+        'default_banned_rights',
+    )
+
+
+class AdminshipAdmin(admin.ModelAdmin):
+    list_per_page = 20
+    list_select_related = ()
+    raw_id_fields = (
+        'account',
+        'chat',
+        'admin_rights',
+        'banned_rights',
+    )
+
+
 #################################################################################
 #################################################################################
 
 admin.site.register(TelegramAccount, TelegramAccountAdmin)
-admin.site.register(TelegramChannel)
+admin.site.register(TelegramChannel, TelegramChannelAdmin)
 admin.site.register(AddChannelRequest)
 
 admin.site.register(User, UserAdmin)
-admin.site.register(Dialog)
+admin.site.register(Dialog, DialogAdmin)
 admin.site.register(Chat, ChatAdmin)
-admin.site.register(Channel)
+admin.site.register(Channel, ChannelAdmin)
 admin.site.register(Group)
-admin.site.register(AdminShip)
+admin.site.register(AdminShip, AdminshipAdmin)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Message, MessageAdmin)
+admin.site.register(MessageView, MessageViewAdmin)
 admin.site.register(ProfilePhoto)
-admin.site.register(MessageView)
 admin.site.register(Entity)
 admin.site.register(EntityType)
 admin.site.register(ChatMemberCount)
@@ -291,5 +452,5 @@ admin.site.register(ChatMessageViewsAnalyzerMetaData)
 admin.site.register(ChatMemberCountAnalyzerMetaData)
 admin.site.register(ChatMembersAnalyzerMetaData)
 admin.site.register(AdminLogAnalyzerMetaData)
-admin.site.register(Post)
+admin.site.register(Post, PostAdmin)
 admin.site.register(File)
