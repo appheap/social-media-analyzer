@@ -113,6 +113,20 @@ class Chat(Object):
         )
 
     @property
+    def title(self):
+        if self.group:
+            return self.group.title
+        elif self.channel:
+            return self.channel.title
+        elif self.user:
+            s = ''
+            s += self.user.first_name if self.user.first_name else ''
+            s += ' : ' if len(s) else ''
+            s += self.user.last_name if self.user.last_name else ''
+            return s if len(s) else self.user.username if self.user.username else str(self.user.id)
+        return None
+
+    @property
     def username(self):
         username = None
         if self.group:
