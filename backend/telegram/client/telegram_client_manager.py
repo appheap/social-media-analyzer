@@ -89,7 +89,7 @@ class TelegramClientManager:
                     downloader=client.download_media
                 )
                 if db_chat is None:
-                    logger.error('could not save chat')
+                    logger.error(f'could not save chat : {raw_chat.title if raw_chat else ""}')
                     return
 
             self.db.telegram.update_message_and_view(
