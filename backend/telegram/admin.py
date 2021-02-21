@@ -146,6 +146,7 @@ class UserAdmin(admin.ModelAdmin):
         'is_verified',
         'is_restricted',
         'is_scam',
+        'is_fake',
         'is_blocked',
         'is_support',
         'bot_inline_placeholder',

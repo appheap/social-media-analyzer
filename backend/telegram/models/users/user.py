@@ -163,6 +163,7 @@ class UserManager(models.Manager):
             'is_verified': user.is_verified,
             'is_restricted': user.is_restricted,
             'is_scam': user.is_scam,
+            'is_fake': user.is_fake,
             'is_support': user.is_support,
             'first_name': user.first_name,
             'last_name': user.last_name,
@@ -196,6 +197,7 @@ class User(BaseModel):
     is_verified = models.BooleanField(null=True, blank=True)
     is_restricted = models.BooleanField(null=True, blank=True)
     is_scam = models.BooleanField(null=True, blank=True)
+    is_fake = models.BooleanField(null=True, blank=True)
     is_support = models.BooleanField(null=True, blank=True)
     first_name = models.CharField(max_length=64, null=True, blank=True)
     last_name = models.CharField(max_length=64, null=True, blank=True)

@@ -127,6 +127,7 @@ class ChannelManager(models.Manager):
             'has_geo': channel.has_geo,
             'is_restricted': channel.is_restricted,
             'is_scam': channel.is_scam,
+            'is_fake': channel.is_fake,
             'is_verified': channel.is_verified,
             'signatures_enabled': channel.signatures_enabled,
             'slow_mode_enabled': channel.slow_mode,
@@ -196,6 +197,7 @@ class Channel(BaseModel, ChatPermissionsUpdater, ChatUpdater):
     has_geo = models.BooleanField(null=True, blank=True, )
     is_restricted = models.BooleanField(null=True, blank=True, )
     is_scam = models.BooleanField(null=True, blank=True, )
+    is_fake = models.BooleanField(null=True, blank=True, )
     is_verified = models.BooleanField(null=True, blank=True)
     signatures_enabled = models.BooleanField(null=True, blank=True, )
     slow_mode_enabled = models.BooleanField(null=True, blank=True, )
