@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,41 +34,47 @@ class DeleteChatUser(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0xe0611f16``
+        - Layer: ``123``
+        - ID: ``0xc534459a``
 
     Parameters:
         chat_id: ``int`` ``32-bit``
         user_id: :obj:`InputUser <pyrogram.raw.base.InputUser>`
+        revoke_history (optional): ``bool``
 
     Returns:
         :obj:`Updates <pyrogram.raw.base.Updates>`
     """
 
-    __slots__: List[str] = ["chat_id", "user_id"]
+    __slots__: List[str] = ["chat_id", "user_id", "revoke_history"]
 
-    ID = 0xe0611f16
+    ID = 0xc534459a
     QUALNAME = "functions.messages.DeleteChatUser"
 
-    def __init__(self, *, chat_id: int, user_id: "raw.base.InputUser") -> None:
+    def __init__(self, *, chat_id: int, user_id: "raw.base.InputUser",
+                 revoke_history: Union[None, bool] = None) -> None:
         self.chat_id = chat_id  # int
         self.user_id = user_id  # InputUser
+        self.revoke_history = revoke_history  # flags.0?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "DeleteChatUser":
-        # No flags
+        flags = Int.read(data)
 
+        revoke_history = True if flags & (1 << 0) else False
         chat_id = Int.read(data)
 
         user_id = TLObject.read(data)
 
-        return DeleteChatUser(chat_id=chat_id, user_id=user_id)
+        return DeleteChatUser(chat_id=chat_id, user_id=user_id, revoke_history=revoke_history)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.revoke_history else 0
+        data.write(Int(flags))
 
         data.write(Int(self.chat_id))
 

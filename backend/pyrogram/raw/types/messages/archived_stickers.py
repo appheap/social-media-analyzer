@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,7 +34,7 @@ class ArchivedStickers(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.messages.ArchivedStickers`.
 
     Details:
-        - Layer: ``122``
+        - Layer: ``123``
         - ID: ``0x4fcba9c8``
 
     Parameters:

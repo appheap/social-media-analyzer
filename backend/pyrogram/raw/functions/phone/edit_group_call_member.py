@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -23,7 +23,6 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
-
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -35,28 +34,30 @@ class EditGroupCallMember(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0x63146ae4``
+        - Layer: ``123``
+        - ID: ``0xa5e76cd8``
 
     Parameters:
         call: :obj:`InputGroupCall <pyrogram.raw.base.InputGroupCall>`
         user_id: :obj:`InputUser <pyrogram.raw.base.InputUser>`
         muted (optional): ``bool``
+        volume (optional): ``int`` ``32-bit``
 
     Returns:
         :obj:`Updates <pyrogram.raw.base.Updates>`
     """
 
-    __slots__: List[str] = ["call", "user_id", "muted"]
+    __slots__: List[str] = ["call", "user_id", "muted", "volume"]
 
-    ID = 0x63146ae4
+    ID = 0xa5e76cd8
     QUALNAME = "functions.phone.EditGroupCallMember"
 
     def __init__(self, *, call: "raw.base.InputGroupCall", user_id: "raw.base.InputUser",
-                 muted: Union[None, bool] = None) -> None:
+                 muted: Union[None, bool] = None, volume: Union[None, int] = None) -> None:
         self.call = call  # InputGroupCall
         self.user_id = user_id  # InputUser
         self.muted = muted  # flags.0?true
+        self.volume = volume  # flags.1?int
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "EditGroupCallMember":
@@ -67,7 +68,8 @@ class EditGroupCallMember(TLObject):  # type: ignore
 
         user_id = TLObject.read(data)
 
-        return EditGroupCallMember(call=call, user_id=user_id, muted=muted)
+        volume = Int.read(data) if flags & (1 << 1) else None
+        return EditGroupCallMember(call=call, user_id=user_id, muted=muted, volume=volume)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -75,10 +77,14 @@ class EditGroupCallMember(TLObject):  # type: ignore
 
         flags = 0
         flags |= (1 << 0) if self.muted else 0
+        flags |= (1 << 1) if self.volume is not None else 0
         data.write(Int(flags))
 
         data.write(self.call.write())
 
         data.write(self.user_id.write())
+
+        if self.volume is not None:
+            data.write(Int(self.volume))
 
         return data.getvalue()

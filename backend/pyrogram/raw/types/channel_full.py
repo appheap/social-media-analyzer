@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,8 +34,8 @@ class ChannelFull(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatFull`.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0xef3a6acd``
+        - Layer: ``123``
+        - ID: ``0x7a7de4f7``
 
     Parameters:
         id: ``int`` ``32-bit``
@@ -45,7 +45,6 @@ class ChannelFull(TLObject):  # type: ignore
         unread_count: ``int`` ``32-bit``
         chat_photo: :obj:`Photo <pyrogram.raw.base.Photo>`
         notify_settings: :obj:`PeerNotifySettings <pyrogram.raw.base.PeerNotifySettings>`
-        exported_invite: :obj:`ExportedChatInvite <pyrogram.raw.base.ExportedChatInvite>`
         bot_info: List of :obj:`BotInfo <pyrogram.raw.base.BotInfo>`
         pts: ``int`` ``32-bit``
         can_view_participants (optional): ``bool``
@@ -61,6 +60,7 @@ class ChannelFull(TLObject):  # type: ignore
         kicked_count (optional): ``int`` ``32-bit``
         banned_count (optional): ``int`` ``32-bit``
         online_count (optional): ``int`` ``32-bit``
+        exported_invite (optional): :obj:`ExportedChatInvite <pyrogram.raw.base.ExportedChatInvite>`
         migrated_from_chat_id (optional): ``int`` ``32-bit``
         migrated_from_max_id (optional): ``int`` ``32-bit``
         pinned_msg_id (optional): ``int`` ``32-bit``
@@ -76,27 +76,27 @@ class ChannelFull(TLObject):  # type: ignore
     """
 
     __slots__: List[str] = ["id", "about", "read_inbox_max_id", "read_outbox_max_id", "unread_count", "chat_photo",
-                            "notify_settings", "exported_invite", "bot_info", "pts", "can_view_participants",
-                            "can_set_username", "can_set_stickers", "hidden_prehistory", "can_set_location",
-                            "has_scheduled", "can_view_stats", "blocked", "participants_count", "admins_count",
-                            "kicked_count", "banned_count", "online_count", "migrated_from_chat_id",
+                            "notify_settings", "bot_info", "pts", "can_view_participants", "can_set_username",
+                            "can_set_stickers", "hidden_prehistory", "can_set_location", "has_scheduled",
+                            "can_view_stats", "blocked", "participants_count", "admins_count", "kicked_count",
+                            "banned_count", "online_count", "exported_invite", "migrated_from_chat_id",
                             "migrated_from_max_id", "pinned_msg_id", "stickerset", "available_min_id", "folder_id",
                             "linked_chat_id", "location", "slowmode_seconds", "slowmode_next_send_date", "stats_dc",
                             "call"]
 
-    ID = 0xef3a6acd
+    ID = 0x7a7de4f7
     QUALNAME = "types.ChannelFull"
 
     def __init__(self, *, id: int, about: str, read_inbox_max_id: int, read_outbox_max_id: int, unread_count: int,
                  chat_photo: "raw.base.Photo", notify_settings: "raw.base.PeerNotifySettings",
-                 exported_invite: "raw.base.ExportedChatInvite", bot_info: List["raw.base.BotInfo"], pts: int,
-                 can_view_participants: Union[None, bool] = None, can_set_username: Union[None, bool] = None,
-                 can_set_stickers: Union[None, bool] = None, hidden_prehistory: Union[None, bool] = None,
-                 can_set_location: Union[None, bool] = None, has_scheduled: Union[None, bool] = None,
-                 can_view_stats: Union[None, bool] = None, blocked: Union[None, bool] = None,
-                 participants_count: Union[None, int] = None, admins_count: Union[None, int] = None,
-                 kicked_count: Union[None, int] = None, banned_count: Union[None, int] = None,
-                 online_count: Union[None, int] = None, migrated_from_chat_id: Union[None, int] = None,
+                 bot_info: List["raw.base.BotInfo"], pts: int, can_view_participants: Union[None, bool] = None,
+                 can_set_username: Union[None, bool] = None, can_set_stickers: Union[None, bool] = None,
+                 hidden_prehistory: Union[None, bool] = None, can_set_location: Union[None, bool] = None,
+                 has_scheduled: Union[None, bool] = None, can_view_stats: Union[None, bool] = None,
+                 blocked: Union[None, bool] = None, participants_count: Union[None, int] = None,
+                 admins_count: Union[None, int] = None, kicked_count: Union[None, int] = None,
+                 banned_count: Union[None, int] = None, online_count: Union[None, int] = None,
+                 exported_invite: "raw.base.ExportedChatInvite" = None, migrated_from_chat_id: Union[None, int] = None,
                  migrated_from_max_id: Union[None, int] = None, pinned_msg_id: Union[None, int] = None,
                  stickerset: "raw.base.StickerSet" = None, available_min_id: Union[None, int] = None,
                  folder_id: Union[None, int] = None, linked_chat_id: Union[None, int] = None,
@@ -110,7 +110,6 @@ class ChannelFull(TLObject):  # type: ignore
         self.unread_count = unread_count  # int
         self.chat_photo = chat_photo  # Photo
         self.notify_settings = notify_settings  # PeerNotifySettings
-        self.exported_invite = exported_invite  # ExportedChatInvite
         self.bot_info = bot_info  # Vector<BotInfo>
         self.pts = pts  # int
         self.can_view_participants = can_view_participants  # flags.3?true
@@ -126,6 +125,7 @@ class ChannelFull(TLObject):  # type: ignore
         self.kicked_count = kicked_count  # flags.2?int
         self.banned_count = banned_count  # flags.2?int
         self.online_count = online_count  # flags.13?int
+        self.exported_invite = exported_invite  # flags.23?ExportedChatInvite
         self.migrated_from_chat_id = migrated_from_chat_id  # flags.4?int
         self.migrated_from_max_id = migrated_from_max_id  # flags.4?int
         self.pinned_msg_id = pinned_msg_id  # flags.5?int
@@ -170,7 +170,7 @@ class ChannelFull(TLObject):  # type: ignore
 
         notify_settings = TLObject.read(data)
 
-        exported_invite = TLObject.read(data)
+        exported_invite = TLObject.read(data) if flags & (1 << 23) else None
 
         bot_info = TLObject.read(data)
 
@@ -193,17 +193,18 @@ class ChannelFull(TLObject):  # type: ignore
 
         return ChannelFull(id=id, about=about, read_inbox_max_id=read_inbox_max_id,
                            read_outbox_max_id=read_outbox_max_id, unread_count=unread_count, chat_photo=chat_photo,
-                           notify_settings=notify_settings, exported_invite=exported_invite, bot_info=bot_info, pts=pts,
+                           notify_settings=notify_settings, bot_info=bot_info, pts=pts,
                            can_view_participants=can_view_participants, can_set_username=can_set_username,
                            can_set_stickers=can_set_stickers, hidden_prehistory=hidden_prehistory,
                            can_set_location=can_set_location, has_scheduled=has_scheduled,
                            can_view_stats=can_view_stats, blocked=blocked, participants_count=participants_count,
                            admins_count=admins_count, kicked_count=kicked_count, banned_count=banned_count,
-                           online_count=online_count, migrated_from_chat_id=migrated_from_chat_id,
-                           migrated_from_max_id=migrated_from_max_id, pinned_msg_id=pinned_msg_id,
-                           stickerset=stickerset, available_min_id=available_min_id, folder_id=folder_id,
-                           linked_chat_id=linked_chat_id, location=location, slowmode_seconds=slowmode_seconds,
-                           slowmode_next_send_date=slowmode_next_send_date, stats_dc=stats_dc, call=call)
+                           online_count=online_count, exported_invite=exported_invite,
+                           migrated_from_chat_id=migrated_from_chat_id, migrated_from_max_id=migrated_from_max_id,
+                           pinned_msg_id=pinned_msg_id, stickerset=stickerset, available_min_id=available_min_id,
+                           folder_id=folder_id, linked_chat_id=linked_chat_id, location=location,
+                           slowmode_seconds=slowmode_seconds, slowmode_next_send_date=slowmode_next_send_date,
+                           stats_dc=stats_dc, call=call)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -223,6 +224,7 @@ class ChannelFull(TLObject):  # type: ignore
         flags |= (1 << 2) if self.kicked_count is not None else 0
         flags |= (1 << 2) if self.banned_count is not None else 0
         flags |= (1 << 13) if self.online_count is not None else 0
+        flags |= (1 << 23) if self.exported_invite is not None else 0
         flags |= (1 << 4) if self.migrated_from_chat_id is not None else 0
         flags |= (1 << 4) if self.migrated_from_max_id is not None else 0
         flags |= (1 << 5) if self.pinned_msg_id is not None else 0
@@ -266,7 +268,8 @@ class ChannelFull(TLObject):  # type: ignore
 
         data.write(self.notify_settings.write())
 
-        data.write(self.exported_invite.write())
+        if self.exported_invite is not None:
+            data.write(self.exported_invite.write())
 
         data.write(Vector(self.bot_info))
 

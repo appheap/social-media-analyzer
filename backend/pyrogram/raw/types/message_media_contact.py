@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,7 +34,7 @@ class MessageMediaContact(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageMedia`.
 
     Details:
-        - Layer: ``122``
+        - Layer: ``123``
         - ID: ``0xcbf24940``
 
     Parameters:
@@ -45,13 +45,14 @@ class MessageMediaContact(TLObject):  # type: ignore
         user_id: ``int`` ``32-bit``
 
     See Also:
-        This object can be returned by 2 methods:
+        This object can be returned by 3 methods:
 
         .. hlist::
             :columns: 2
 
             - :obj:`messages.GetWebPagePreview <pyrogram.raw.functions.messages.GetWebPagePreview>`
             - :obj:`messages.UploadMedia <pyrogram.raw.functions.messages.UploadMedia>`
+            - :obj:`messages.UploadImportedMedia <pyrogram.raw.functions.messages.UploadImportedMedia>`
     """
 
     __slots__: List[str] = ["phone_number", "first_name", "last_name", "vcard", "user_id"]

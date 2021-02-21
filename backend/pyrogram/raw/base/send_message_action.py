@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 SendMessageAction = Union[
-    raw.types.SendMessageCancelAction, raw.types.SendMessageChooseContactAction, raw.types.SendMessageGamePlayAction, raw.types.SendMessageGeoLocationAction, raw.types.SendMessageRecordAudioAction, raw.types.SendMessageRecordRoundAction, raw.types.SendMessageRecordVideoAction, raw.types.SendMessageTypingAction, raw.types.SendMessageUploadAudioAction, raw.types.SendMessageUploadDocumentAction, raw.types.SendMessageUploadPhotoAction, raw.types.SendMessageUploadRoundAction, raw.types.SendMessageUploadVideoAction, raw.types.SpeakingInGroupCallAction]
+    raw.types.SendMessageCancelAction, raw.types.SendMessageChooseContactAction, raw.types.SendMessageGamePlayAction, raw.types.SendMessageGeoLocationAction, raw.types.SendMessageHistoryImportAction, raw.types.SendMessageRecordAudioAction, raw.types.SendMessageRecordRoundAction, raw.types.SendMessageRecordVideoAction, raw.types.SendMessageTypingAction, raw.types.SendMessageUploadAudioAction, raw.types.SendMessageUploadDocumentAction, raw.types.SendMessageUploadPhotoAction, raw.types.SendMessageUploadRoundAction, raw.types.SendMessageUploadVideoAction, raw.types.SpeakingInGroupCallAction]
 
 
 # noinspection PyRedeclaration
 class SendMessageAction:  # type: ignore
-    """This base type has 14 constructors available.
+    """This base type has 15 constructors available.
 
     Constructors:
         .. hlist::
@@ -42,6 +42,7 @@ class SendMessageAction:  # type: ignore
             - :obj:`SendMessageChooseContactAction <pyrogram.raw.types.SendMessageChooseContactAction>`
             - :obj:`SendMessageGamePlayAction <pyrogram.raw.types.SendMessageGamePlayAction>`
             - :obj:`SendMessageGeoLocationAction <pyrogram.raw.types.SendMessageGeoLocationAction>`
+            - :obj:`SendMessageHistoryImportAction <pyrogram.raw.types.SendMessageHistoryImportAction>`
             - :obj:`SendMessageRecordAudioAction <pyrogram.raw.types.SendMessageRecordAudioAction>`
             - :obj:`SendMessageRecordRoundAction <pyrogram.raw.types.SendMessageRecordRoundAction>`
             - :obj:`SendMessageRecordVideoAction <pyrogram.raw.types.SendMessageRecordVideoAction>`

@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,7 +34,7 @@ class Channel(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Chat`.
 
     Details:
-        - Layer: ``122``
+        - Layer: ``123``
         - ID: ``0xd31a961e``
 
     Parameters:
@@ -57,6 +57,7 @@ class Channel(TLObject):  # type: ignore
         slowmode_enabled (optional): ``bool``
         call_active (optional): ``bool``
         call_not_empty (optional): ``bool``
+        fake (optional): ``bool``
         access_hash (optional): ``int`` ``64-bit``
         username (optional): ``str``
         restriction_reason (optional): List of :obj:`RestrictionReason <pyrogram.raw.base.RestrictionReason>`
@@ -68,7 +69,7 @@ class Channel(TLObject):  # type: ignore
 
     __slots__: List[str] = ["id", "title", "photo", "date", "version", "creator", "left", "broadcast", "verified",
                             "megagroup", "restricted", "signatures", "min", "scam", "has_link", "has_geo",
-                            "slowmode_enabled", "call_active", "call_not_empty", "access_hash", "username",
+                            "slowmode_enabled", "call_active", "call_not_empty", "fake", "access_hash", "username",
                             "restriction_reason", "admin_rights", "banned_rights", "default_banned_rights",
                             "participants_count"]
 
@@ -82,7 +83,8 @@ class Channel(TLObject):  # type: ignore
                  min: Union[None, bool] = None, scam: Union[None, bool] = None, has_link: Union[None, bool] = None,
                  has_geo: Union[None, bool] = None, slowmode_enabled: Union[None, bool] = None,
                  call_active: Union[None, bool] = None, call_not_empty: Union[None, bool] = None,
-                 access_hash: Union[None, int] = None, username: Union[None, str] = None,
+                 fake: Union[None, bool] = None, access_hash: Union[None, int] = None,
+                 username: Union[None, str] = None,
                  restriction_reason: Union[None, List["raw.base.RestrictionReason"]] = None,
                  admin_rights: "raw.base.ChatAdminRights" = None, banned_rights: "raw.base.ChatBannedRights" = None,
                  default_banned_rights: "raw.base.ChatBannedRights" = None,
@@ -106,6 +108,7 @@ class Channel(TLObject):  # type: ignore
         self.slowmode_enabled = slowmode_enabled  # flags.22?true
         self.call_active = call_active  # flags.23?true
         self.call_not_empty = call_not_empty  # flags.24?true
+        self.fake = fake  # flags.25?true
         self.access_hash = access_hash  # flags.13?long
         self.username = username  # flags.6?string
         self.restriction_reason = restriction_reason  # flags.9?Vector<RestrictionReason>
@@ -132,6 +135,7 @@ class Channel(TLObject):  # type: ignore
         slowmode_enabled = True if flags & (1 << 22) else False
         call_active = True if flags & (1 << 23) else False
         call_not_empty = True if flags & (1 << 24) else False
+        fake = True if flags & (1 << 25) else False
         id = Int.read(data)
 
         access_hash = Long.read(data) if flags & (1 << 13) else None
@@ -157,7 +161,7 @@ class Channel(TLObject):  # type: ignore
                        broadcast=broadcast, verified=verified, megagroup=megagroup, restricted=restricted,
                        signatures=signatures, min=min, scam=scam, has_link=has_link, has_geo=has_geo,
                        slowmode_enabled=slowmode_enabled, call_active=call_active, call_not_empty=call_not_empty,
-                       access_hash=access_hash, username=username, restriction_reason=restriction_reason,
+                       fake=fake, access_hash=access_hash, username=username, restriction_reason=restriction_reason,
                        admin_rights=admin_rights, banned_rights=banned_rights,
                        default_banned_rights=default_banned_rights, participants_count=participants_count)
 
@@ -180,6 +184,7 @@ class Channel(TLObject):  # type: ignore
         flags |= (1 << 22) if self.slowmode_enabled else 0
         flags |= (1 << 23) if self.call_active else 0
         flags |= (1 << 24) if self.call_not_empty else 0
+        flags |= (1 << 25) if self.fake else 0
         flags |= (1 << 13) if self.access_hash is not None else 0
         flags |= (1 << 6) if self.username is not None else 0
         flags |= (1 << 9) if self.restriction_reason is not None else 0

@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -53,13 +53,14 @@ class MessageMedia:  # type: ignore
             - :obj:`MessageMediaWebPage <pyrogram.raw.types.MessageMediaWebPage>`
 
     See Also:
-        This object can be returned by 2 methods:
+        This object can be returned by 3 methods:
 
         .. hlist::
             :columns: 2
 
             - :obj:`messages.GetWebPagePreview <pyrogram.raw.functions.messages.GetWebPagePreview>`
             - :obj:`messages.UploadMedia <pyrogram.raw.functions.messages.UploadMedia>`
+            - :obj:`messages.UploadImportedMedia <pyrogram.raw.functions.messages.UploadImportedMedia>`
     """
 
     QUALNAME = "pyrogram.raw.base.MessageMedia"

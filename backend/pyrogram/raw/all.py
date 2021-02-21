@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -22,7 +22,7 @@
 # All changes made in this file will be lost! #
 # # # # # # # # # # # # # # # # # # # # # # # #
 
-layer = 122
+layer = 123
 
 objects = {
     0x05162463: "pyrogram.raw.types.ResPQ",
@@ -149,8 +149,8 @@ objects = {
     0x7328bdb: "pyrogram.raw.types.ChatForbidden",
     0xd31a961e: "pyrogram.raw.types.Channel",
     0x289da732: "pyrogram.raw.types.ChannelForbidden",
-    0xdc8c181: "pyrogram.raw.types.ChatFull",
-    0xef3a6acd: "pyrogram.raw.types.ChannelFull",
+    0xf3474af6: "pyrogram.raw.types.ChatFull",
+    0x7a7de4f7: "pyrogram.raw.types.ChannelFull",
     0xc8d7493e: "pyrogram.raw.types.ChatParticipant",
     0xda13538a: "pyrogram.raw.types.ChatParticipantCreator",
     0xe2d6e436: "pyrogram.raw.types.ChatParticipantAdmin",
@@ -158,7 +158,7 @@ objects = {
     0x3f460fed: "pyrogram.raw.types.ChatParticipants",
     0x37c1011c: "pyrogram.raw.types.ChatPhotoEmpty",
     0xd20b9f3c: "pyrogram.raw.types.ChatPhoto",
-    0x83e5de54: "pyrogram.raw.types.MessageEmpty",
+    0x90a6ca84: "pyrogram.raw.types.MessageEmpty",
     0x58ae39c9: "pyrogram.raw.types.Message",
     0x286fa604: "pyrogram.raw.types.MessageService",
     0x3ded6320: "pyrogram.raw.types.MessageMediaEmpty",
@@ -232,6 +232,7 @@ objects = {
     0xe1746d0a: "pyrogram.raw.types.InputReportReasonOther",
     0x9b89f93a: "pyrogram.raw.types.InputReportReasonCopyright",
     0xdbd4feed: "pyrogram.raw.types.InputReportReasonGeoIrrelevant",
+    0xf5ddd6e7: "pyrogram.raw.types.InputReportReasonFake",
     0xedf17c12: "pyrogram.raw.types.UserFull",
     0xf911c994: "pyrogram.raw.types.Contact",
     0xd0028438: "pyrogram.raw.types.ImportedContact",
@@ -384,7 +385,7 @@ objects = {
     0x3bf703dc: "pyrogram.raw.types.EncryptedChatWaiting",
     0x62718a82: "pyrogram.raw.types.EncryptedChatRequested",
     0xfa56ce36: "pyrogram.raw.types.EncryptedChat",
-    0x13d6dd27: "pyrogram.raw.types.EncryptedChatDiscarded",
+    0x1e1c7c45: "pyrogram.raw.types.EncryptedChatDiscarded",
     0xf141b5e1: "pyrogram.raw.types.InputEncryptedChat",
     0xc21f497e: "pyrogram.raw.types.EncryptedFileEmpty",
     0x4a70994c: "pyrogram.raw.types.EncryptedFile",
@@ -421,6 +422,7 @@ objects = {
     0x88f27fbc: "pyrogram.raw.types.SendMessageRecordRoundAction",
     0x243e1c66: "pyrogram.raw.types.SendMessageUploadRoundAction",
     0xd92c2285: "pyrogram.raw.types.SpeakingInGroupCallAction",
+    0xdbda9246: "pyrogram.raw.types.SendMessageHistoryImportAction",
     0xb3134d9d: "pyrogram.raw.types.contacts.Found",
     0x4f96cb18: "pyrogram.raw.types.InputPrivacyKeyStatusTimestamp",
     0xbdfb0426: "pyrogram.raw.types.InputPrivacyKeyChatInvite",
@@ -480,8 +482,7 @@ objects = {
     0xc23727c9: "pyrogram.raw.types.account.PasswordInputSettings",
     0x137948a5: "pyrogram.raw.types.auth.PasswordRecovery",
     0xa384b779: "pyrogram.raw.types.ReceivedNotifyMessage",
-    0x69df3769: "pyrogram.raw.types.ChatInviteEmpty",
-    0xfc2e05bc: "pyrogram.raw.types.ChatInviteExported",
+    0x6e24fc9d: "pyrogram.raw.types.ChatInviteExported",
     0x5a686d7c: "pyrogram.raw.types.ChatInviteAlready",
     0xdfc2f58e: "pyrogram.raw.types.ChatInvite",
     0x61695cb0: "pyrogram.raw.types.ChatInvitePeek",
@@ -694,7 +695,7 @@ objects = {
     0xc10eb2cf: "pyrogram.raw.types.InputPaymentCredentialsSaved",
     0x3417d728: "pyrogram.raw.types.InputPaymentCredentials",
     0xaa1c39f: "pyrogram.raw.types.InputPaymentCredentialsApplePay",
-    0xca05d50e: "pyrogram.raw.types.InputPaymentCredentialsAndroidPay",
+    0x8ac32801: "pyrogram.raw.types.InputPaymentCredentialsGooglePay",
     0xdb64fd34: "pyrogram.raw.types.account.TmpPassword",
     0xb6213cdf: "pyrogram.raw.types.ShippingOption",
     0xffa0a496: "pyrogram.raw.types.InputStickerSetItem",
@@ -935,7 +936,7 @@ objects = {
     0x7780bcb4: "pyrogram.raw.types.GroupCallDiscarded",
     0x55903081: "pyrogram.raw.types.GroupCall",
     0xd8aa840f: "pyrogram.raw.types.InputGroupCall",
-    0x56b087c9: "pyrogram.raw.types.GroupCallParticipant",
+    0x64c62a15: "pyrogram.raw.types.GroupCallParticipant",
     0x66ab0bfc: "pyrogram.raw.types.phone.GroupCall",
     0x9cfeb92d: "pyrogram.raw.types.phone.GroupParticipants",
     0x3081ed9d: "pyrogram.raw.types.InlineQueryPeerTypeSameBotPM",
@@ -943,6 +944,9 @@ objects = {
     0xd766c50a: "pyrogram.raw.types.InlineQueryPeerTypeChat",
     0x5ec4be43: "pyrogram.raw.types.InlineQueryPeerTypeMegagroup",
     0x6334ee9a: "pyrogram.raw.types.InlineQueryPeerTypeBroadcast",
+    0x1662af0b: "pyrogram.raw.types.messages.HistoryImport",
+    0x5e0fb7b9: "pyrogram.raw.types.messages.HistoryImportParsed",
+    0xef8d3e6c: "pyrogram.raw.types.messages.AffectedFoundMessages",
     0xcb9f372d: "pyrogram.raw.functions.InvokeAfterMsg",
     0x3dc4b4f0: "pyrogram.raw.functions.InvokeAfterMsgs",
     0xc1cd5ea9: "pyrogram.raw.functions.InitConnection",
@@ -1078,12 +1082,12 @@ objects = {
     0xdc452855: "pyrogram.raw.functions.messages.EditChatTitle",
     0xca4c79d8: "pyrogram.raw.functions.messages.EditChatPhoto",
     0xf9a0aa09: "pyrogram.raw.functions.messages.AddChatUser",
-    0xe0611f16: "pyrogram.raw.functions.messages.DeleteChatUser",
+    0xc534459a: "pyrogram.raw.functions.messages.DeleteChatUser",
     0x9cb126e: "pyrogram.raw.functions.messages.CreateChat",
     0x26cf8950: "pyrogram.raw.functions.messages.GetDhConfig",
     0xf64daf43: "pyrogram.raw.functions.messages.RequestEncryption",
     0x3dbc0415: "pyrogram.raw.functions.messages.AcceptEncryption",
-    0xedd923c5: "pyrogram.raw.functions.messages.DiscardEncryption",
+    0xf393aea0: "pyrogram.raw.functions.messages.DiscardEncryption",
     0x791451ed: "pyrogram.raw.functions.messages.SetEncryptedTyping",
     0x7f4b690a: "pyrogram.raw.functions.messages.ReadEncryptedHistory",
     0x44fa7a15: "pyrogram.raw.functions.messages.SendEncrypted",
@@ -1185,6 +1189,12 @@ objects = {
     0x446972fd: "pyrogram.raw.functions.messages.GetDiscussionMessage",
     0xf731a9f4: "pyrogram.raw.functions.messages.ReadDiscussion",
     0xf025bc8b: "pyrogram.raw.functions.messages.UnpinAllMessages",
+    0x83247d11: "pyrogram.raw.functions.messages.DeleteChat",
+    0xf9cbe409: "pyrogram.raw.functions.messages.DeletePhoneCallHistory",
+    0x43fe19f3: "pyrogram.raw.functions.messages.CheckHistoryImport",
+    0x34090c3b: "pyrogram.raw.functions.messages.InitHistoryImport",
+    0x2a862092: "pyrogram.raw.functions.messages.UploadImportedMedia",
+    0xb43df344: "pyrogram.raw.functions.messages.StartHistoryImport",
     0xedd4882a: "pyrogram.raw.functions.updates.GetState",
     0x25939651: "pyrogram.raw.functions.updates.GetDifference",
     0x3173d78: "pyrogram.raw.functions.updates.GetChannelDifference",
@@ -1284,7 +1294,7 @@ objects = {
     0xbd3dabe0: "pyrogram.raw.functions.phone.CreateGroupCall",
     0x5f9c8e62: "pyrogram.raw.functions.phone.JoinGroupCall",
     0x500377f9: "pyrogram.raw.functions.phone.LeaveGroupCall",
-    0x63146ae4: "pyrogram.raw.functions.phone.EditGroupCallMember",
+    0xa5e76cd8: "pyrogram.raw.functions.phone.EditGroupCallMember",
     0x7b393160: "pyrogram.raw.functions.phone.InviteToGroupCall",
     0x7a777135: "pyrogram.raw.functions.phone.DiscardGroupCall",
     0x74bbb43d: "pyrogram.raw.functions.phone.ToggleGroupCallSettings",

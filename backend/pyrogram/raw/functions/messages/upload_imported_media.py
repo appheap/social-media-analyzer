@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -23,6 +23,7 @@ from pyrogram.raw.core import TLObject
 from pyrogram import raw
 from typing import List, Union, Any
 
+
 # # # # # # # # # # # # # # # # # # # # # # # #
 #               !!! WARNING !!!               #
 #          This is a generated file!          #
@@ -30,37 +31,48 @@ from typing import List, Union, Any
 # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class InputPaymentCredentialsAndroidPay(TLObject):  # type: ignore
-    """This object is a constructor of the base type :obj:`~pyrogram.raw.base.InputPaymentCredentials`.
+class UploadImportedMedia(TLObject):  # type: ignore
+    """Telegram API method.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0xca05d50e``
+        - Layer: ``123``
+        - ID: ``0x2a862092``
 
     Parameters:
-        payment_token: :obj:`DataJSON <pyrogram.raw.base.DataJSON>`
-        google_transaction_id: ``str``
+        peer: :obj:`InputPeer <pyrogram.raw.base.InputPeer>`
+        import_id: ``int`` ``64-bit``
+        file_name: ``str``
+        media: :obj:`InputMedia <pyrogram.raw.base.InputMedia>`
+
+    Returns:
+        :obj:`MessageMedia <pyrogram.raw.base.MessageMedia>`
     """
 
-    __slots__: List[str] = ["payment_token", "google_transaction_id"]
+    __slots__: List[str] = ["peer", "import_id", "file_name", "media"]
 
-    ID = 0xca05d50e
-    QUALNAME = "types.InputPaymentCredentialsAndroidPay"
+    ID = 0x2a862092
+    QUALNAME = "functions.messages.UploadImportedMedia"
 
-    def __init__(self, *, payment_token: "raw.base.DataJSON", google_transaction_id: str) -> None:
-        self.payment_token = payment_token  # DataJSON
-        self.google_transaction_id = google_transaction_id  # string
+    def __init__(self, *, peer: "raw.base.InputPeer", import_id: int, file_name: str,
+                 media: "raw.base.InputMedia") -> None:
+        self.peer = peer  # InputPeer
+        self.import_id = import_id  # long
+        self.file_name = file_name  # string
+        self.media = media  # InputMedia
 
     @staticmethod
-    def read(data: BytesIO, *args: Any) -> "InputPaymentCredentialsAndroidPay":
+    def read(data: BytesIO, *args: Any) -> "UploadImportedMedia":
         # No flags
 
-        payment_token = TLObject.read(data)
+        peer = TLObject.read(data)
 
-        google_transaction_id = String.read(data)
+        import_id = Long.read(data)
 
-        return InputPaymentCredentialsAndroidPay(payment_token=payment_token,
-                                                 google_transaction_id=google_transaction_id)
+        file_name = String.read(data)
+
+        media = TLObject.read(data)
+
+        return UploadImportedMedia(peer=peer, import_id=import_id, file_name=file_name, media=media)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -68,8 +80,12 @@ class InputPaymentCredentialsAndroidPay(TLObject):  # type: ignore
 
         # No flags
 
-        data.write(self.payment_token.write())
+        data.write(self.peer.write())
 
-        data.write(String(self.google_transaction_id))
+        data.write(Long(self.import_id))
+
+        data.write(String(self.file_name))
+
+        data.write(self.media.write())
 
         return data.getvalue()

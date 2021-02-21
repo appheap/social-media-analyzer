@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,37 +34,42 @@ class DiscardEncryption(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0xedd923c5``
+        - Layer: ``123``
+        - ID: ``0xf393aea0``
 
     Parameters:
         chat_id: ``int`` ``32-bit``
+        delete_history (optional): ``bool``
 
     Returns:
         ``bool``
     """
 
-    __slots__: List[str] = ["chat_id"]
+    __slots__: List[str] = ["chat_id", "delete_history"]
 
-    ID = 0xedd923c5
+    ID = 0xf393aea0
     QUALNAME = "functions.messages.DiscardEncryption"
 
-    def __init__(self, *, chat_id: int) -> None:
+    def __init__(self, *, chat_id: int, delete_history: Union[None, bool] = None) -> None:
         self.chat_id = chat_id  # int
+        self.delete_history = delete_history  # flags.0?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "DiscardEncryption":
-        # No flags
+        flags = Int.read(data)
 
+        delete_history = True if flags & (1 << 0) else False
         chat_id = Int.read(data)
 
-        return DiscardEncryption(chat_id=chat_id)
+        return DiscardEncryption(chat_id=chat_id, delete_history=delete_history)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.delete_history else 0
+        data.write(Int(flags))
 
         data.write(Int(self.chat_id))
 

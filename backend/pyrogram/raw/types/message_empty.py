@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,35 +34,44 @@ class MessageEmpty(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.Message`.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0x83e5de54``
+        - Layer: ``123``
+        - ID: ``0x90a6ca84``
 
     Parameters:
         id: ``int`` ``32-bit``
+        peer_id (optional): :obj:`Peer <pyrogram.raw.base.Peer>`
     """
 
-    __slots__: List[str] = ["id"]
+    __slots__: List[str] = ["id", "peer_id"]
 
-    ID = 0x83e5de54
+    ID = 0x90a6ca84
     QUALNAME = "types.MessageEmpty"
 
-    def __init__(self, *, id: int) -> None:
+    def __init__(self, *, id: int, peer_id: "raw.base.Peer" = None) -> None:
         self.id = id  # int
+        self.peer_id = peer_id  # flags.0?Peer
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "MessageEmpty":
-        # No flags
+        flags = Int.read(data)
 
         id = Int.read(data)
 
-        return MessageEmpty(id=id)
+        peer_id = TLObject.read(data) if flags & (1 << 0) else None
+
+        return MessageEmpty(id=id, peer_id=peer_id)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.peer_id is not None else 0
+        data.write(Int(flags))
 
         data.write(Int(self.id))
+
+        if self.peer_id is not None:
+            data.write(self.peer_id.write())
 
         return data.getvalue()

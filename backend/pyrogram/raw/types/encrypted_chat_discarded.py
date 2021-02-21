@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,11 +34,12 @@ class EncryptedChatDiscarded(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.EncryptedChat`.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0x13d6dd27``
+        - Layer: ``123``
+        - ID: ``0x1e1c7c45``
 
     Parameters:
         id: ``int`` ``32-bit``
+        history_deleted (optional): ``bool``
 
     See Also:
         This object can be returned by 2 methods:
@@ -50,27 +51,31 @@ class EncryptedChatDiscarded(TLObject):  # type: ignore
             - :obj:`messages.AcceptEncryption <pyrogram.raw.functions.messages.AcceptEncryption>`
     """
 
-    __slots__: List[str] = ["id"]
+    __slots__: List[str] = ["id", "history_deleted"]
 
-    ID = 0x13d6dd27
+    ID = 0x1e1c7c45
     QUALNAME = "types.EncryptedChatDiscarded"
 
-    def __init__(self, *, id: int) -> None:
+    def __init__(self, *, id: int, history_deleted: Union[None, bool] = None) -> None:
         self.id = id  # int
+        self.history_deleted = history_deleted  # flags.0?true
 
     @staticmethod
     def read(data: BytesIO, *args: Any) -> "EncryptedChatDiscarded":
-        # No flags
+        flags = Int.read(data)
 
+        history_deleted = True if flags & (1 << 0) else False
         id = Int.read(data)
 
-        return EncryptedChatDiscarded(id=id)
+        return EncryptedChatDiscarded(id=id, history_deleted=history_deleted)
 
     def write(self) -> bytes:
         data = BytesIO()
         data.write(Int(self.ID, False))
 
-        # No flags
+        flags = 0
+        flags |= (1 << 0) if self.history_deleted else 0
+        data.write(Int(flags))
 
         data.write(Int(self.id))
 

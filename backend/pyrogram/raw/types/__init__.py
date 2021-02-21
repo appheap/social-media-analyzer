@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -203,6 +203,7 @@ from .input_report_reason_child_abuse import InputReportReasonChildAbuse
 from .input_report_reason_other import InputReportReasonOther
 from .input_report_reason_copyright import InputReportReasonCopyright
 from .input_report_reason_geo_irrelevant import InputReportReasonGeoIrrelevant
+from .input_report_reason_fake import InputReportReasonFake
 from .user_full import UserFull
 from .contact import Contact
 from .imported_contact import ImportedContact
@@ -358,6 +359,7 @@ from .send_message_game_play_action import SendMessageGamePlayAction
 from .send_message_record_round_action import SendMessageRecordRoundAction
 from .send_message_upload_round_action import SendMessageUploadRoundAction
 from .speaking_in_group_call_action import SpeakingInGroupCallAction
+from .send_message_history_import_action import SendMessageHistoryImportAction
 from .input_privacy_key_status_timestamp import InputPrivacyKeyStatusTimestamp
 from .input_privacy_key_chat_invite import InputPrivacyKeyChatInvite
 from .input_privacy_key_phone_call import InputPrivacyKeyPhoneCall
@@ -405,7 +407,6 @@ from .web_page import WebPage
 from .web_page_not_modified import WebPageNotModified
 from .authorization import Authorization
 from .received_notify_message import ReceivedNotifyMessage
-from .chat_invite_empty import ChatInviteEmpty
 from .chat_invite_exported import ChatInviteExported
 from .chat_invite_already import ChatInviteAlready
 from .chat_invite import ChatInvite
@@ -579,7 +580,7 @@ from .input_web_file_geo_point_location import InputWebFileGeoPointLocation
 from .input_payment_credentials_saved import InputPaymentCredentialsSaved
 from .input_payment_credentials import InputPaymentCredentials
 from .input_payment_credentials_apple_pay import InputPaymentCredentialsApplePay
-from .input_payment_credentials_android_pay import InputPaymentCredentialsAndroidPay
+from .input_payment_credentials_google_pay import InputPaymentCredentialsGooglePay
 from .shipping_option import ShippingOption
 from .input_sticker_set_item import InputStickerSetItem
 from .input_phone_call import InputPhoneCall

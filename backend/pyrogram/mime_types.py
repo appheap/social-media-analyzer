@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -1403,7 +1403,7 @@ audio/basic					au snd
 # audio/dat12
 # audio/dls
 # audio/dsr-es201108
-# audio/dsr-es202050
+# audio/dsr-es202150
 # audio/dsr-es202211
 # audio/dsr-es202212
 # audio/dv

@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -26,18 +26,17 @@ from typing import Union
 from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
-ExportedChatInvite = Union[raw.types.ChatInviteEmpty, raw.types.ChatInviteExported]
+ExportedChatInvite = Union[raw.types.ChatInviteExported]
 
 
 # noinspection PyRedeclaration
 class ExportedChatInvite:  # type: ignore
-    """This base type has 2 constructors available.
+    """This base type has 1 constructor available.
 
     Constructors:
         .. hlist::
             :columns: 2
 
-            - :obj:`ChatInviteEmpty <pyrogram.raw.types.ChatInviteEmpty>`
             - :obj:`ChatInviteExported <pyrogram.raw.types.ChatInviteExported>`
 
     See Also:

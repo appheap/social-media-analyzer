@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,11 +34,12 @@ class MessageFwdHeader(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.MessageFwdHeader`.
 
     Details:
-        - Layer: ``122``
+        - Layer: ``123``
         - ID: ``0x5f777dce``
 
     Parameters:
         date: ``int`` ``32-bit``
+        imported (optional): ``bool``
         from_id (optional): :obj:`Peer <pyrogram.raw.base.Peer>`
         from_name (optional): ``str``
         channel_post (optional): ``int`` ``32-bit``
@@ -48,17 +49,18 @@ class MessageFwdHeader(TLObject):  # type: ignore
         psa_type (optional): ``str``
     """
 
-    __slots__: List[str] = ["date", "from_id", "from_name", "channel_post", "post_author", "saved_from_peer",
-                            "saved_from_msg_id", "psa_type"]
+    __slots__: List[str] = ["date", "imported", "from_id", "from_name", "channel_post", "post_author",
+                            "saved_from_peer", "saved_from_msg_id", "psa_type"]
 
     ID = 0x5f777dce
     QUALNAME = "types.MessageFwdHeader"
 
-    def __init__(self, *, date: int, from_id: "raw.base.Peer" = None, from_name: Union[None, str] = None,
-                 channel_post: Union[None, int] = None, post_author: Union[None, str] = None,
-                 saved_from_peer: "raw.base.Peer" = None, saved_from_msg_id: Union[None, int] = None,
-                 psa_type: Union[None, str] = None) -> None:
+    def __init__(self, *, date: int, imported: Union[None, bool] = None, from_id: "raw.base.Peer" = None,
+                 from_name: Union[None, str] = None, channel_post: Union[None, int] = None,
+                 post_author: Union[None, str] = None, saved_from_peer: "raw.base.Peer" = None,
+                 saved_from_msg_id: Union[None, int] = None, psa_type: Union[None, str] = None) -> None:
         self.date = date  # int
+        self.imported = imported  # flags.7?true
         self.from_id = from_id  # flags.0?Peer
         self.from_name = from_name  # flags.5?string
         self.channel_post = channel_post  # flags.2?int
@@ -71,6 +73,7 @@ class MessageFwdHeader(TLObject):  # type: ignore
     def read(data: BytesIO, *args: Any) -> "MessageFwdHeader":
         flags = Int.read(data)
 
+        imported = True if flags & (1 << 7) else False
         from_id = TLObject.read(data) if flags & (1 << 0) else None
 
         from_name = String.read(data) if flags & (1 << 5) else None
@@ -82,8 +85,8 @@ class MessageFwdHeader(TLObject):  # type: ignore
 
         saved_from_msg_id = Int.read(data) if flags & (1 << 4) else None
         psa_type = String.read(data) if flags & (1 << 6) else None
-        return MessageFwdHeader(date=date, from_id=from_id, from_name=from_name, channel_post=channel_post,
-                                post_author=post_author, saved_from_peer=saved_from_peer,
+        return MessageFwdHeader(date=date, imported=imported, from_id=from_id, from_name=from_name,
+                                channel_post=channel_post, post_author=post_author, saved_from_peer=saved_from_peer,
                                 saved_from_msg_id=saved_from_msg_id, psa_type=psa_type)
 
     def write(self) -> bytes:
@@ -91,6 +94,7 @@ class MessageFwdHeader(TLObject):  # type: ignore
         data.write(Int(self.ID, False))
 
         flags = 0
+        flags |= (1 << 7) if self.imported else 0
         flags |= (1 << 0) if self.from_id is not None else 0
         flags |= (1 << 5) if self.from_name is not None else 0
         flags |= (1 << 2) if self.channel_post is not None else 0

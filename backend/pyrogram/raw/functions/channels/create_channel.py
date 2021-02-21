@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,7 +34,7 @@ class CreateChannel(TLObject):  # type: ignore
     """Telegram API method.
 
     Details:
-        - Layer: ``122``
+        - Layer: ``123``
         - ID: ``0x3d5fb10f``
 
     Parameters:
@@ -42,6 +42,7 @@ class CreateChannel(TLObject):  # type: ignore
         about: ``str``
         broadcast (optional): ``bool``
         megagroup (optional): ``bool``
+        for_import (optional): ``bool``
         geo_point (optional): :obj:`InputGeoPoint <pyrogram.raw.base.InputGeoPoint>`
         address (optional): ``str``
 
@@ -49,18 +50,19 @@ class CreateChannel(TLObject):  # type: ignore
         :obj:`Updates <pyrogram.raw.base.Updates>`
     """
 
-    __slots__: List[str] = ["title", "about", "broadcast", "megagroup", "geo_point", "address"]
+    __slots__: List[str] = ["title", "about", "broadcast", "megagroup", "for_import", "geo_point", "address"]
 
     ID = 0x3d5fb10f
     QUALNAME = "functions.channels.CreateChannel"
 
     def __init__(self, *, title: str, about: str, broadcast: Union[None, bool] = None,
-                 megagroup: Union[None, bool] = None, geo_point: "raw.base.InputGeoPoint" = None,
-                 address: Union[None, str] = None) -> None:
+                 megagroup: Union[None, bool] = None, for_import: Union[None, bool] = None,
+                 geo_point: "raw.base.InputGeoPoint" = None, address: Union[None, str] = None) -> None:
         self.title = title  # string
         self.about = about  # string
         self.broadcast = broadcast  # flags.0?true
         self.megagroup = megagroup  # flags.1?true
+        self.for_import = for_import  # flags.3?true
         self.geo_point = geo_point  # flags.2?InputGeoPoint
         self.address = address  # flags.2?string
 
@@ -70,6 +72,7 @@ class CreateChannel(TLObject):  # type: ignore
 
         broadcast = True if flags & (1 << 0) else False
         megagroup = True if flags & (1 << 1) else False
+        for_import = True if flags & (1 << 3) else False
         title = String.read(data)
 
         about = String.read(data)
@@ -77,8 +80,8 @@ class CreateChannel(TLObject):  # type: ignore
         geo_point = TLObject.read(data) if flags & (1 << 2) else None
 
         address = String.read(data) if flags & (1 << 2) else None
-        return CreateChannel(title=title, about=about, broadcast=broadcast, megagroup=megagroup, geo_point=geo_point,
-                             address=address)
+        return CreateChannel(title=title, about=about, broadcast=broadcast, megagroup=megagroup, for_import=for_import,
+                             geo_point=geo_point, address=address)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -87,6 +90,7 @@ class CreateChannel(TLObject):  # type: ignore
         flags = 0
         flags |= (1 << 0) if self.broadcast else 0
         flags |= (1 << 1) if self.megagroup else 0
+        flags |= (1 << 3) if self.for_import else 0
         flags |= (1 << 2) if self.geo_point is not None else 0
         flags |= (1 << 2) if self.address is not None else 0
         data.write(Int(flags))

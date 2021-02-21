@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -27,7 +27,7 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 InputPaymentCredentials = Union[
-    raw.types.InputPaymentCredentials, raw.types.InputPaymentCredentialsAndroidPay, raw.types.InputPaymentCredentialsApplePay, raw.types.InputPaymentCredentialsSaved]
+    raw.types.InputPaymentCredentials, raw.types.InputPaymentCredentialsApplePay, raw.types.InputPaymentCredentialsGooglePay, raw.types.InputPaymentCredentialsSaved]
 
 
 # noinspection PyRedeclaration
@@ -39,8 +39,8 @@ class InputPaymentCredentials:  # type: ignore
             :columns: 2
 
             - :obj:`InputPaymentCredentials <pyrogram.raw.types.InputPaymentCredentials>`
-            - :obj:`InputPaymentCredentialsAndroidPay <pyrogram.raw.types.InputPaymentCredentialsAndroidPay>`
             - :obj:`InputPaymentCredentialsApplePay <pyrogram.raw.types.InputPaymentCredentialsApplePay>`
+            - :obj:`InputPaymentCredentialsGooglePay <pyrogram.raw.types.InputPaymentCredentialsGooglePay>`
             - :obj:`InputPaymentCredentialsSaved <pyrogram.raw.types.InputPaymentCredentialsSaved>`
     """
 

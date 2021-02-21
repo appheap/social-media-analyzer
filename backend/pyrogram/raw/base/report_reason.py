@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -27,12 +27,12 @@ from pyrogram import raw
 from pyrogram.raw.core import TLObject
 
 ReportReason = Union[
-    raw.types.InputReportReasonChildAbuse, raw.types.InputReportReasonCopyright, raw.types.InputReportReasonGeoIrrelevant, raw.types.InputReportReasonOther, raw.types.InputReportReasonPornography, raw.types.InputReportReasonSpam, raw.types.InputReportReasonViolence]
+    raw.types.InputReportReasonChildAbuse, raw.types.InputReportReasonCopyright, raw.types.InputReportReasonFake, raw.types.InputReportReasonGeoIrrelevant, raw.types.InputReportReasonOther, raw.types.InputReportReasonPornography, raw.types.InputReportReasonSpam, raw.types.InputReportReasonViolence]
 
 
 # noinspection PyRedeclaration
 class ReportReason:  # type: ignore
-    """This base type has 7 constructors available.
+    """This base type has 8 constructors available.
 
     Constructors:
         .. hlist::
@@ -40,6 +40,7 @@ class ReportReason:  # type: ignore
 
             - :obj:`InputReportReasonChildAbuse <pyrogram.raw.types.InputReportReasonChildAbuse>`
             - :obj:`InputReportReasonCopyright <pyrogram.raw.types.InputReportReasonCopyright>`
+            - :obj:`InputReportReasonFake <pyrogram.raw.types.InputReportReasonFake>`
             - :obj:`InputReportReasonGeoIrrelevant <pyrogram.raw.types.InputReportReasonGeoIrrelevant>`
             - :obj:`InputReportReasonOther <pyrogram.raw.types.InputReportReasonOther>`
             - :obj:`InputReportReasonPornography <pyrogram.raw.types.InputReportReasonPornography>`

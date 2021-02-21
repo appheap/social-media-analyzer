@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,44 +34,44 @@ class ChatFull(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.ChatFull`.
 
     Details:
-        - Layer: ``122``
-        - ID: ``0xdc8c181``
+        - Layer: ``123``
+        - ID: ``0xf3474af6``
 
     Parameters:
         id: ``int`` ``32-bit``
         about: ``str``
         participants: :obj:`ChatParticipants <pyrogram.raw.base.ChatParticipants>`
         notify_settings: :obj:`PeerNotifySettings <pyrogram.raw.base.PeerNotifySettings>`
-        exported_invite: :obj:`ExportedChatInvite <pyrogram.raw.base.ExportedChatInvite>`
         can_set_username (optional): ``bool``
         has_scheduled (optional): ``bool``
         chat_photo (optional): :obj:`Photo <pyrogram.raw.base.Photo>`
+        exported_invite (optional): :obj:`ExportedChatInvite <pyrogram.raw.base.ExportedChatInvite>`
         bot_info (optional): List of :obj:`BotInfo <pyrogram.raw.base.BotInfo>`
         pinned_msg_id (optional): ``int`` ``32-bit``
         folder_id (optional): ``int`` ``32-bit``
         call (optional): :obj:`InputGroupCall <pyrogram.raw.base.InputGroupCall>`
     """
 
-    __slots__: List[str] = ["id", "about", "participants", "notify_settings", "exported_invite", "can_set_username",
-                            "has_scheduled", "chat_photo", "bot_info", "pinned_msg_id", "folder_id", "call"]
+    __slots__: List[str] = ["id", "about", "participants", "notify_settings", "can_set_username", "has_scheduled",
+                            "chat_photo", "exported_invite", "bot_info", "pinned_msg_id", "folder_id", "call"]
 
-    ID = 0xdc8c181
+    ID = 0xf3474af6
     QUALNAME = "types.ChatFull"
 
     def __init__(self, *, id: int, about: str, participants: "raw.base.ChatParticipants",
-                 notify_settings: "raw.base.PeerNotifySettings", exported_invite: "raw.base.ExportedChatInvite",
-                 can_set_username: Union[None, bool] = None, has_scheduled: Union[None, bool] = None,
-                 chat_photo: "raw.base.Photo" = None, bot_info: Union[None, List["raw.base.BotInfo"]] = None,
-                 pinned_msg_id: Union[None, int] = None, folder_id: Union[None, int] = None,
-                 call: "raw.base.InputGroupCall" = None) -> None:
+                 notify_settings: "raw.base.PeerNotifySettings", can_set_username: Union[None, bool] = None,
+                 has_scheduled: Union[None, bool] = None, chat_photo: "raw.base.Photo" = None,
+                 exported_invite: "raw.base.ExportedChatInvite" = None,
+                 bot_info: Union[None, List["raw.base.BotInfo"]] = None, pinned_msg_id: Union[None, int] = None,
+                 folder_id: Union[None, int] = None, call: "raw.base.InputGroupCall" = None) -> None:
         self.id = id  # int
         self.about = about  # string
         self.participants = participants  # ChatParticipants
         self.notify_settings = notify_settings  # PeerNotifySettings
-        self.exported_invite = exported_invite  # ExportedChatInvite
         self.can_set_username = can_set_username  # flags.7?true
         self.has_scheduled = has_scheduled  # flags.8?true
         self.chat_photo = chat_photo  # flags.2?Photo
+        self.exported_invite = exported_invite  # flags.13?ExportedChatInvite
         self.bot_info = bot_info  # flags.3?Vector<BotInfo>
         self.pinned_msg_id = pinned_msg_id  # flags.6?int
         self.folder_id = folder_id  # flags.11?int
@@ -93,7 +93,7 @@ class ChatFull(TLObject):  # type: ignore
 
         notify_settings = TLObject.read(data)
 
-        exported_invite = TLObject.read(data)
+        exported_invite = TLObject.read(data) if flags & (1 << 13) else None
 
         bot_info = TLObject.read(data) if flags & (1 << 3) else []
 
@@ -102,9 +102,9 @@ class ChatFull(TLObject):  # type: ignore
         call = TLObject.read(data) if flags & (1 << 12) else None
 
         return ChatFull(id=id, about=about, participants=participants, notify_settings=notify_settings,
-                        exported_invite=exported_invite, can_set_username=can_set_username, has_scheduled=has_scheduled,
-                        chat_photo=chat_photo, bot_info=bot_info, pinned_msg_id=pinned_msg_id, folder_id=folder_id,
-                        call=call)
+                        can_set_username=can_set_username, has_scheduled=has_scheduled, chat_photo=chat_photo,
+                        exported_invite=exported_invite, bot_info=bot_info, pinned_msg_id=pinned_msg_id,
+                        folder_id=folder_id, call=call)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -114,6 +114,7 @@ class ChatFull(TLObject):  # type: ignore
         flags |= (1 << 7) if self.can_set_username else 0
         flags |= (1 << 8) if self.has_scheduled else 0
         flags |= (1 << 2) if self.chat_photo is not None else 0
+        flags |= (1 << 13) if self.exported_invite is not None else 0
         flags |= (1 << 3) if self.bot_info is not None else 0
         flags |= (1 << 6) if self.pinned_msg_id is not None else 0
         flags |= (1 << 11) if self.folder_id is not None else 0
@@ -131,7 +132,8 @@ class ChatFull(TLObject):  # type: ignore
 
         data.write(self.notify_settings.write())
 
-        data.write(self.exported_invite.write())
+        if self.exported_invite is not None:
+            data.write(self.exported_invite.write())
 
         if self.bot_info is not None:
             data.write(Vector(self.bot_info))

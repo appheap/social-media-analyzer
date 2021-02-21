@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,7 +34,7 @@ class PeerSettings(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.PeerSettings`.
 
     Details:
-        - Layer: ``122``
+        - Layer: ``123``
         - ID: ``0x733f2961``
 
     Parameters:
@@ -45,6 +45,7 @@ class PeerSettings(TLObject):  # type: ignore
         need_contacts_exception (optional): ``bool``
         report_geo (optional): ``bool``
         autoarchived (optional): ``bool``
+        invite_members (optional): ``bool``
         geo_distance (optional): ``int`` ``32-bit``
 
     See Also:
@@ -57,7 +58,7 @@ class PeerSettings(TLObject):  # type: ignore
     """
 
     __slots__: List[str] = ["report_spam", "add_contact", "block_contact", "share_contact", "need_contacts_exception",
-                            "report_geo", "autoarchived", "geo_distance"]
+                            "report_geo", "autoarchived", "invite_members", "geo_distance"]
 
     ID = 0x733f2961
     QUALNAME = "types.PeerSettings"
@@ -65,7 +66,8 @@ class PeerSettings(TLObject):  # type: ignore
     def __init__(self, *, report_spam: Union[None, bool] = None, add_contact: Union[None, bool] = None,
                  block_contact: Union[None, bool] = None, share_contact: Union[None, bool] = None,
                  need_contacts_exception: Union[None, bool] = None, report_geo: Union[None, bool] = None,
-                 autoarchived: Union[None, bool] = None, geo_distance: Union[None, int] = None) -> None:
+                 autoarchived: Union[None, bool] = None, invite_members: Union[None, bool] = None,
+                 geo_distance: Union[None, int] = None) -> None:
         self.report_spam = report_spam  # flags.0?true
         self.add_contact = add_contact  # flags.1?true
         self.block_contact = block_contact  # flags.2?true
@@ -73,6 +75,7 @@ class PeerSettings(TLObject):  # type: ignore
         self.need_contacts_exception = need_contacts_exception  # flags.4?true
         self.report_geo = report_geo  # flags.5?true
         self.autoarchived = autoarchived  # flags.7?true
+        self.invite_members = invite_members  # flags.8?true
         self.geo_distance = geo_distance  # flags.6?int
 
     @staticmethod
@@ -86,10 +89,12 @@ class PeerSettings(TLObject):  # type: ignore
         need_contacts_exception = True if flags & (1 << 4) else False
         report_geo = True if flags & (1 << 5) else False
         autoarchived = True if flags & (1 << 7) else False
+        invite_members = True if flags & (1 << 8) else False
         geo_distance = Int.read(data) if flags & (1 << 6) else None
         return PeerSettings(report_spam=report_spam, add_contact=add_contact, block_contact=block_contact,
                             share_contact=share_contact, need_contacts_exception=need_contacts_exception,
-                            report_geo=report_geo, autoarchived=autoarchived, geo_distance=geo_distance)
+                            report_geo=report_geo, autoarchived=autoarchived, invite_members=invite_members,
+                            geo_distance=geo_distance)
 
     def write(self) -> bytes:
         data = BytesIO()
@@ -103,6 +108,7 @@ class PeerSettings(TLObject):  # type: ignore
         flags |= (1 << 4) if self.need_contacts_exception else 0
         flags |= (1 << 5) if self.report_geo else 0
         flags |= (1 << 7) if self.autoarchived else 0
+        flags |= (1 << 8) if self.invite_members else 0
         flags |= (1 << 6) if self.geo_distance is not None else 0
         data.write(Int(flags))
 

@@ -1,5 +1,5 @@
 #  Pyrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2020 Dan <https://github.com/delivrance>
+#  Copyright (C) 2017-2021 Dan <https://github.com/delivrance>
 #
 #  This file is part of Pyrogram.
 #
@@ -34,7 +34,7 @@ class User(TLObject):  # type: ignore
     """This object is a constructor of the base type :obj:`~pyrogram.raw.base.User`.
 
     Details:
-        - Layer: ``122``
+        - Layer: ``123``
         - ID: ``0x938458c1``
 
     Parameters:
@@ -53,6 +53,7 @@ class User(TLObject):  # type: ignore
         support (optional): ``bool``
         scam (optional): ``bool``
         apply_min_photo (optional): ``bool``
+        fake (optional): ``bool``
         access_hash (optional): ``int`` ``64-bit``
         first_name (optional): ``str``
         last_name (optional): ``str``
@@ -79,8 +80,9 @@ class User(TLObject):  # type: ignore
 
     __slots__: List[str] = ["id", "is_self", "contact", "mutual_contact", "deleted", "bot", "bot_chat_history",
                             "bot_nochats", "verified", "restricted", "min", "bot_inline_geo", "support", "scam",
-                            "apply_min_photo", "access_hash", "first_name", "last_name", "username", "phone", "photo",
-                            "status", "bot_info_version", "restriction_reason", "bot_inline_placeholder", "lang_code"]
+                            "apply_min_photo", "fake", "access_hash", "first_name", "last_name", "username", "phone",
+                            "photo", "status", "bot_info_version", "restriction_reason", "bot_inline_placeholder",
+                            "lang_code"]
 
     ID = 0x938458c1
     QUALNAME = "types.User"
@@ -92,8 +94,9 @@ class User(TLObject):  # type: ignore
                  restricted: Union[None, bool] = None, min: Union[None, bool] = None,
                  bot_inline_geo: Union[None, bool] = None, support: Union[None, bool] = None,
                  scam: Union[None, bool] = None, apply_min_photo: Union[None, bool] = None,
-                 access_hash: Union[None, int] = None, first_name: Union[None, str] = None,
-                 last_name: Union[None, str] = None, username: Union[None, str] = None, phone: Union[None, str] = None,
+                 fake: Union[None, bool] = None, access_hash: Union[None, int] = None,
+                 first_name: Union[None, str] = None, last_name: Union[None, str] = None,
+                 username: Union[None, str] = None, phone: Union[None, str] = None,
                  photo: "raw.base.UserProfilePhoto" = None, status: "raw.base.UserStatus" = None,
                  bot_info_version: Union[None, int] = None,
                  restriction_reason: Union[None, List["raw.base.RestrictionReason"]] = None,
@@ -113,6 +116,7 @@ class User(TLObject):  # type: ignore
         self.support = support  # flags.23?true
         self.scam = scam  # flags.24?true
         self.apply_min_photo = apply_min_photo  # flags.25?true
+        self.fake = fake  # flags.26?true
         self.access_hash = access_hash  # flags.0?long
         self.first_name = first_name  # flags.1?string
         self.last_name = last_name  # flags.2?string
@@ -143,6 +147,7 @@ class User(TLObject):  # type: ignore
         support = True if flags & (1 << 23) else False
         scam = True if flags & (1 << 24) else False
         apply_min_photo = True if flags & (1 << 25) else False
+        fake = True if flags & (1 << 26) else False
         id = Int.read(data)
 
         access_hash = Long.read(data) if flags & (1 << 0) else None
@@ -162,7 +167,7 @@ class User(TLObject):  # type: ignore
         return User(id=id, is_self=is_self, contact=contact, mutual_contact=mutual_contact, deleted=deleted, bot=bot,
                     bot_chat_history=bot_chat_history, bot_nochats=bot_nochats, verified=verified,
                     restricted=restricted, min=min, bot_inline_geo=bot_inline_geo, support=support, scam=scam,
-                    apply_min_photo=apply_min_photo, access_hash=access_hash, first_name=first_name,
+                    apply_min_photo=apply_min_photo, fake=fake, access_hash=access_hash, first_name=first_name,
                     last_name=last_name, username=username, phone=phone, photo=photo, status=status,
                     bot_info_version=bot_info_version, restriction_reason=restriction_reason,
                     bot_inline_placeholder=bot_inline_placeholder, lang_code=lang_code)
@@ -186,6 +191,7 @@ class User(TLObject):  # type: ignore
         flags |= (1 << 23) if self.support else 0
         flags |= (1 << 24) if self.scam else 0
         flags |= (1 << 25) if self.apply_min_photo else 0
+        flags |= (1 << 26) if self.fake else 0
         flags |= (1 << 0) if self.access_hash is not None else 0
         flags |= (1 << 1) if self.first_name is not None else 0
         flags |= (1 << 2) if self.last_name is not None else 0
