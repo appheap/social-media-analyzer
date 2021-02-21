@@ -3059,7 +3059,7 @@ class Message(Object, Update):
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
-        return await self._client.pin_chat_message(
+        return await self._client.unpin_chat_message(
             chat_id=self.chat.id,
             message_id=self.message_id
         )

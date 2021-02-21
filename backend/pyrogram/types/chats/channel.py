@@ -25,6 +25,7 @@ class Channel(Object):
             signatures_enabled: bool = None,
             min: bool = None,
             is_scam: bool = None,
+            is_fake: bool = None,
             has_private_join_link: bool = None,
             has_geo: bool = None,
             slow_mode: bool = None,
@@ -55,6 +56,7 @@ class Channel(Object):
         self.signatures_enabled = signatures_enabled
         self.min = min
         self.is_scam = is_scam
+        self.is_fake = is_fake
         self.has_private_join_link = has_private_join_link
         self.has_geo = has_geo
         self.slow_mode = slow_mode
@@ -93,6 +95,7 @@ class Channel(Object):
             signatures_enabled=getattr(channel, 'signatures', None),
             min=getattr(channel, 'min', None),
             is_scam=getattr(channel, 'scam', None),
+            is_fake=getattr(channel, "fake", None),
             has_private_join_link=getattr(channel, 'has_link', None),
             has_geo=getattr(channel, 'has_geo', None),
             slow_mode=getattr(channel, 'slowmode_enabled', None),

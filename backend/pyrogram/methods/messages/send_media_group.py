@@ -270,7 +270,7 @@ class SendMediaGroup(Scaffold):
                 raw.types.InputSingleMedia(
                     media=media,
                     random_id=self.rnd_id(),
-                    **await self.parser.parse(i.caption, i.parse_mode)
+                    **await self.parser.parse(i.caption or "", i.parse_mode)
                 )
             )
 
