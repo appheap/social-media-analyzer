@@ -24,7 +24,7 @@ class IterateDialogsTask(TaskScaffold):
             if client is None:
                 continue
 
-            raw_dialogs: List['types.Dialog'] = client.get_all_dialogs()
+            raw_dialogs: List['types.Dialog'] = client('get_all_dialogs')
             if raw_dialogs is None or not len(raw_dialogs):
                 continue
 
@@ -41,7 +41,7 @@ class IterateDialogsTask(TaskScaffold):
                         db_chat = self.db.telegram.get_updated_chat(
                             raw_chat=raw_migrated_chat,
                             db_telegram_account=db_telegram_account,
-                            downloader=client.download_media
+                            client=client
                         )
                         _valid_raw_dialogs.append(raw_dialog)
                 else:
@@ -49,7 +49,7 @@ class IterateDialogsTask(TaskScaffold):
                         raw_chat=raw_dialog.chat,
                         db_telegram_account=db_telegram_account,
 
-                        downloader=client.download_media
+                        client=client
                     )
                     _valid_raw_dialogs.append(raw_dialog)
 

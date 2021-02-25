@@ -8,6 +8,7 @@ import pyrogram
 from pyrogram import types
 from pyrogram import errors as tg_errors
 from core.globals import logger
+from tasks.client_proxy import ClientProxy
 
 
 class LogChatMembersTask(TaskScaffold):
@@ -52,13 +53,13 @@ class LogChatMembersTask(TaskScaffold):
 
     def _analyze_chat_members(
             self,
-            client: 'pyrogram.Client',
+            client: 'ClientProxy',
             chat_id: int,
             db_telegram_account: 'tg_models.TelegramAccount',
             now: int,
             _filter=None
     ):
-        raw_chat: types.Chat = client.get_chat(chat_id)
+        raw_chat: types.Chat = client('get_chat', chat_id)
         if not raw_chat:
             return BaseResponse().fail(message='cannot get chat')
 
@@ -66,10 +67,11 @@ class LogChatMembersTask(TaskScaffold):
             raw_chat=raw_chat,
             db_telegram_account=db_telegram_account,
 
-            downloader=client.download_media
+            client=client
         )
 
-        for raw_chat_member in client.iter_chat_members(
+        for raw_chat_member in client(
+                'iter_chat_members',
                 db_chat.chat_id,
                 filter=_filter if _filter else Filters.ALL,
                 last_member_count=raw_chat.members_count,

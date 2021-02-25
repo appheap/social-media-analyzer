@@ -34,7 +34,8 @@ class LogMessageViewsTask(TaskScaffold):
 
                     for i in range(start, int(last_message_id / 100) + 1):
                         try:
-                            raw_message_views = client.get_messages_views(
+                            raw_message_views = client(
+                                'get_messages_views',
                                 chat_id=db_chat.chat_id,
                                 message_ids=list(range(i, i + 100)),
                             )

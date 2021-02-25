@@ -30,7 +30,7 @@ class LogChatMemberCountTask(TaskScaffold):
                     if made_request:
                         time.sleep(0.7)
                     # todo: a better way to get member_count?
-                    raw_chat: types.Chat = client.get_chat(chat_id=db_chat.chat_id)
+                    raw_chat: types.Chat = client('get_chat', chat_id=db_chat.chat_id)
                 except tg_errors.RPCError as e:
                     made_request = False
                 except Exception as e:
@@ -43,7 +43,7 @@ class LogChatMemberCountTask(TaskScaffold):
                             raw_chat=raw_chat,
                             db_telegram_account=db_telegram_account,
 
-                            downloader=client.download_media,
+                            client=client,
                         )
                         self.db.telegram.get_updated_chat_member_count(
                             db_chat=db_chat,

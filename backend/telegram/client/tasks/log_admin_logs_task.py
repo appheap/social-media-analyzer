@@ -6,6 +6,7 @@ from pyrogram import errors as tg_errors
 from ..base_response import BaseResponse
 from tasks.task_scaffold import TaskScaffold
 from core.globals import logger
+from tasks.client_proxy import ClientProxy
 
 
 class LogAdminLogsTask(TaskScaffold):
@@ -44,10 +45,11 @@ class LogAdminLogsTask(TaskScaffold):
             *,
             db_chat: 'tg_models.Chat',
             db_tg_admin_account: 'tg_models.TelegramAccount',
-            client: 'pyrogram.Client',
+            client: 'ClientProxy',
     ) -> BaseResponse:
         try:
-            raw_admin_logs = client.get_admin_log(
+            raw_admin_logs = client(
+                'get_admin_log',
                 db_chat.chat_id,
             )
         except tg_errors.ChatAdminRequired or tg_errors.ChatWriteForbidden:

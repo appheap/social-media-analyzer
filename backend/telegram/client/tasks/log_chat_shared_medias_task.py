@@ -22,7 +22,7 @@ class LogChatSharedMediasTask(TaskScaffold):
                 db_telegram_account = db_telegram_accounts[0]
 
                 client = self.get_client(session_name=db_telegram_account.session_name)
-                raw_search_counters = client.get_search_counters(db_chat.chat_id)
+                raw_search_counters = client('get_search_counters', db_chat.chat_id)
                 if raw_search_counters is not None:
                     self.db.telegram.get_updated_chat_shared_media(
                         db_chat=db_chat,

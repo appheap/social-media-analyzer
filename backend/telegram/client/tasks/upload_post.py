@@ -48,7 +48,8 @@ class UploadPost(TaskScaffold):
                     # fixme : what now?
                     pass
         if len(medias):
-            raw_messages = client.send_media_group(
+            raw_messages = client(
+                'send_media_group',
                 chat_id=chat_id,
                 media=medias,
                 schedule_date=schedule_date,
@@ -77,7 +78,8 @@ class UploadPost(TaskScaffold):
             if db_post.has_media:
                 db_media = db_post.medias.first()
                 if db_media.type == FileTypes.photo:
-                    raw_message = client.send_photo(
+                    raw_message = client(
+                        'send_photo',
                         chat_id=chat_id,
                         photo=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
@@ -85,7 +87,8 @@ class UploadPost(TaskScaffold):
                         schedule_date=schedule_date,
                     )
                 elif db_media.type == FileTypes.document:
-                    raw_message = client.send_document(
+                    raw_message = client(
+                        'send_document',
                         chat_id=chat_id,
                         document=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
@@ -93,7 +96,8 @@ class UploadPost(TaskScaffold):
                         schedule_date=schedule_date,
                     )
                 elif db_media.type == FileTypes.video:
-                    raw_message = client.send_video(
+                    raw_message = client(
+                        'send_video',
                         chat_id=chat_id,
                         video=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
@@ -101,7 +105,8 @@ class UploadPost(TaskScaffold):
                         schedule_date=schedule_date,
                     )
                 elif db_media.type == FileTypes.audio:
-                    raw_message = client.send_audio(
+                    raw_message = client(
+                        'send_audio',
                         chat_id=chat_id,
                         audio=db_media.file.path,
                         caption=db_media.caption if db_media.caption is not None else '',
@@ -111,7 +116,8 @@ class UploadPost(TaskScaffold):
                 else:
                     raw_message = None
             else:
-                raw_message = client.send_message(
+                raw_message = client(
+                    'send_message',
                     chat_id=chat_id,
                     text=db_post.text if db_post.text is not None else '',
                     schedule_date=schedule_date,

@@ -8,10 +8,10 @@ from telegram import tasks
 class InitClientsTask(TaskScaffold):
     def init_clients_task(self, *args, **kwargs) -> BaseResponse:
         tg_accounts_to_be_iterated = []
-        for client in self.clients:
-            client: pyrogram.Client = client
+        for client_session_name, task_queue in self.task_queues.items():
+            client = self.get_client(client_session_name)
 
-            me: types.User = client.get_me()
+            me: types.User = client('get_me')
             db_site_user = self.db.users.get_default_site_user()
             if db_site_user is None:
                 return BaseResponse().fail('Could not find site_user with DEFAULT_USER_USERNAME')
