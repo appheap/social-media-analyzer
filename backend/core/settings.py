@@ -188,13 +188,19 @@ CELERY_BROKER_URL = 'amqp://localhost'
 CELERY_RESULT_BACKEND = config('DJANGO_CELERY_RESULT_BACKEND')
 
 # Celery Data Format
-CELERY_ACCEPT_CONTENT = ['application/json', 'pickle', ]
+CELERY_ACCEPT_CONTENT = ['pickle', 'application/x-python-serialize', 'json']
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_CREATE_MISSING_QUEUES = True
 CELERY_RESULT_EXPIRES = 3600
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+from kombu.serialization import registry
+
+registry.enable('json')
+registry.enable('application/text')
+registry.enable('application/x-python-serialize')
 
 # task_routes = {
 #     'path.to.the.new_task': {
