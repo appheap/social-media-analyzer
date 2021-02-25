@@ -1,36 +1,38 @@
 import time
-from typing import List, Optional, Generator
+from typing import List, Optional, Generator, Dict
 
 import pyrogram
 from core.globals import logger
 from db.database_manager import DataBaseManager
 from pyrogram import types
+import kombu
+from telegram.globals import *
+from tasks.client_proxy import ClientProxy
 
 
 class TaskScaffold:
 
-    def __init__(self, clients: List['pyrogram.Client']):
+    def __init__(self, task_queues: Dict['str', 'kombu.Queue']):
         self.db = DataBaseManager()
-        self.clients = clients
+        self.task_queues = task_queues
 
-    def get_client(self, session_name: str) -> Optional['pyrogram.Client']:
-        for client in self.clients:
-            logger.info(client.session_name)
-            if client.session_name == session_name:
-                return client
+    def get_client(self, session_name: str) -> Optional['ClientProxy']:
+        for client_session_name, task_queue in self.task_queues.items():
+            if client_session_name == session_name:
+                return ClientProxy(task_queue)
 
         return None
 
     def get_client_session_names(self) -> List['str']:
         _lst = []
-        for client in self.clients:
-            _lst.append(client.session_name)
+        for client_session_name, task_queue in self.task_queues.items():
+            _lst.append(client_session_name)
 
         return _lst
 
     def get_last_valid_message(
             self,
-            client: 'pyrogram.Client',
+            client: 'ClientProxy',
             chat_id: int,
             limit: int = 20,
             is_first=True
@@ -38,7 +40,7 @@ class TaskScaffold:
         if client is None or chat_id is None:
             return None
 
-        messages: List['types.Message'] = client.get_history(chat_id, limit=limit)
+        messages: List['types.Message'] = client('get_history', chat_id, limit=limit)
         message = None
         if not messages:
             return None
@@ -65,7 +67,7 @@ class TaskScaffold:
 
     @staticmethod
     def iter_messages(
-            client: 'pyrogram.Client',
+            client: 'ClientProxy',
             chat_id: int,
             last_message_id: int,
     ) -> Generator['types.Message', None, None]:
@@ -83,7 +85,8 @@ class TaskScaffold:
                 time.sleep(sleep_time)
             else:
                 time.sleep(0.1)
-            messages = client.get_history(
+            messages = client(
+                'get_history',
                 chat_id=chat_id,
                 limit=100,
                 offset=-1,
