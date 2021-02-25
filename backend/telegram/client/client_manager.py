@@ -71,10 +71,9 @@ class ClientManager(mp.Process):
             client: 'pyrogram.Client',
             message: 'types.Message'
     ):
-        # return
-        # now = arrow.utcnow().timestamp
+        now = arrow.utcnow().timestamp
         logger.info(f"in on_message : {threading.current_thread()}")
-        return
+        # return
         if message.type != 'empty':
             db_telegram_account = self.db.telegram.get_telegram_account_by_session_name(
                 session_name=client.session_name
