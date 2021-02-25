@@ -83,7 +83,7 @@ class ClientTaskConsumer(ConsumerProducerMixin):
         message.ack()
 
 
-class WorkerThread(Thread):
+class ClientWorkerThread(Thread):
 
     def __init__(self, client: 'pyrogram.Client', index: int, db, task_queues: Dict['str', 'kombu.Queue']):
         super().__init__()
