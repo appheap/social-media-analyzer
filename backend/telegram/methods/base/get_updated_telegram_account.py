@@ -5,6 +5,7 @@ import pyrogram
 from pyrogram import types
 from telegram import models as tg_models
 from users import models as site_models
+from tasks.client_proxy import ClientProxy
 
 
 class GetUpdatedTelegramAccount(Scaffold):
@@ -13,7 +14,7 @@ class GetUpdatedTelegramAccount(Scaffold):
             self,
             db_site_user: 'site_models.SiteUser',
             raw_user: 'types.User',
-            client: 'pyrogram.Client',
+            client: 'ClientProxy',
     ) -> Optional['tg_models.TelegramAccount']:
         if db_site_user is None or raw_user is None or client is None:
             return None

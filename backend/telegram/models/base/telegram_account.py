@@ -11,6 +11,7 @@ from pyrogram import types
 import pyrogram
 from users import models as site_models
 from telegram import models as tg_models
+from tasks.client_proxy import ClientProxy
 
 
 class TelegramAccountQuerySet(SoftDeletableQS):
@@ -109,7 +110,7 @@ class TelegramAccountManager(models.Manager):
             *,
             db_site_user: 'site_models.SiteUser',
             db_user: 'tg_models.User',
-            client: 'pyrogram.Client',
+            client: 'ClientProxy',
 
     ) -> Optional['TelegramAccount']:
 
