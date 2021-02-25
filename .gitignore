@@ -168,3 +168,4 @@ dmypy.json
 /Pipfile.lock
 /backend/media_files/
 /backend/unknown_errors.txt
+/backend/telegram/client/_client_manager.py

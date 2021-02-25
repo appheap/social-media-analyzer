@@ -1,21 +1,17 @@
 import multiprocessing as mp
 import threading
-from typing import List, Union
+from typing import Union
 
 import arrow
 
-import pyrogram
-from core.globals import logger
 from db.database_manager import DataBaseManager
+from pyrogram import errors as tg_errors
 from pyrogram import raw, idle
 from pyrogram import types
-from pyrogram import errors as tg_errors
-
 #############################################
 from pyrogram.handlers import DisconnectHandler, MessageHandler, RawUpdateHandler
 #############################################
-from telegram.client.client_manager import *
-from utils.utils import prettify
+from telegram.client._client_manager import *
 
 clients_lock = threading.RLock()
 
@@ -52,23 +48,33 @@ _update = Union[
     raw.types.UpdateWebPage
 ]
 
+import threading
 
-class TelegramClientManager:
-    def __init__(
-            self,
-            *,
-            clients: List['pyrogram.Client']
-    ):
+from telegram.globals import *
+
+from typing import List
+import pyrogram
+from .client_worker import Consumer
+
+
+class ClientManager(mp.Process):
+    def __init__(self, *, client_name: str, task_queues):
+        super().__init__()
         self.db = DataBaseManager()
-        self.clients = clients
+        self.client_name = client_name
+        self.client = None
+        self.consumer = None
+        self.task_queues = task_queues
 
     def on_message(
             self,
             client: 'pyrogram.Client',
             message: 'types.Message'
     ):
-        now = arrow.utcnow().timestamp
+        # return
+        # now = arrow.utcnow().timestamp
         logger.info(f"in on_message : {threading.current_thread()}")
+        return
         if message.type != 'empty':
             db_telegram_account = self.db.telegram.get_telegram_account_by_session_name(
                 session_name=client.session_name
@@ -126,29 +132,34 @@ class TelegramClientManager:
             users: List['types.User'],
             chats: List['types.Chat']
     ):
-        logger.info(f"in on_raw_update : {threading.current_thread()}")
+        # logger.info(f"in on_raw_update : {threading.current_thread()}")
         # logger.info(raw_update)
+        pass
 
     def run(self) -> None:
         logger.info(mp.current_process().name)
         logger.info(threading.current_thread())
 
-        for client in map(get_client, client_names, [False] * len(client_names)):
-            client.start()
-            with clients_lock:
-                self.clients.append(client)
+        client = get_client(self.client_name, False)
+        client.start()
+        self.client = client
 
-            me = str(client.get_me())
-            logger.info(me)
+        me = client.get_me()
+        logger.info(me)
 
-            client.add_handler(DisconnectHandler(self.on_disconnect))
-            client.add_handler(MessageHandler(self.on_message))
-            client.add_handler(RawUpdateHandler(self.on_raw_update))
+        client.add_handler(DisconnectHandler(self.on_disconnect))
+        client.add_handler(MessageHandler(self.on_message))
+        client.add_handler(RawUpdateHandler(self.on_raw_update))
 
+        consumer = Consumer(
+            client=client,
+            index=0,
+            db=self.db,
+            task_queues=self.task_queues,
+        )
+        consumer.start()
         idle()
-        with clients_lock:
-            for client in self.clients:
-                client.stop()
+        client.stop()
 
     @staticmethod
     def on_disconnect(client: 'pyrogram.Client'):

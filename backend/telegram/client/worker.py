@@ -1,5 +1,5 @@
 import threading
-from typing import List, Callable
+from typing import List, Callable, Dict
 
 from kombu import Consumer
 from kombu.connection import Connection
@@ -15,23 +15,26 @@ from .base_response import BaseResponse
 from .tasks import TelegramTasks
 
 clients_lock = threading.RLock()
+from telegram.globals import *
+import kombu
+from threading import Thread
 
 
 class Worker(ConsumerProducerMixin):
-    tg_exchange = tg_globals.tg_exchange
     info_queue = tg_globals.info_queue
 
     def __init__(
             self,
             connection: Connection,
-            clients: List['pyrogram.Client'],
-            index: int
+            index: int,
+            task_queues: Dict['str', 'kombu.Queue']
     ):
         self.connection = connection
-        self.clients = clients
         self.index = index
         self.db = DataBaseManager()
-        self.telegram_tasks = TelegramTasks(self.clients)
+        self.telegram_tasks = TelegramTasks(task_queues)
+        self.response = None
+        self.task_queues = task_queues
 
     def get_consumers(self, consumer, channel) -> List[Consumer]:
         return [
@@ -49,6 +52,21 @@ class Worker(ConsumerProducerMixin):
         kwargs = body['kwargs']
 
         logger.info(f'on consumer {self.index} Got task: {prettify(body)}')
+
+        logger.info(f"task_queue_length: {len(self.task_queues)}")
+
+        # if len(self.task_queues):
+        #     messages = client_task(
+        #         {
+        #             'func': 'iter_history',
+        #             'args': [],
+        #             'kwargs': {
+        #                 'chat_id':'just_123_test',
+        #             },
+        #         },
+        #         self.task_queues.values()[0]
+        #     )
+        #     logger.info(messages)
 
         if func == 'task_init_clients':
             response = self.telegram_tasks.init_clients_task(*args, **kwargs)
@@ -91,7 +109,8 @@ class Worker(ConsumerProducerMixin):
 
         self.producer.publish(
             body=prettify(response, include_class_name=False),
-            exchange='', routing_key=message.properties['reply_to'],
+            exchange='',
+            routing_key=message.properties['reply_to'],
             correlation_id=message.properties['correlation_id'],
             serializer='json',
             retry=True,
@@ -107,3 +126,18 @@ class Worker(ConsumerProducerMixin):
                     return BaseResponse().fail()
 
         return wrapper
+
+
+class TelegramConsumer(Thread):
+
+    def __init__(self, index: int, task_queues: Dict['str', 'kombu.Queue']):
+        Thread.__init__(self)
+
+        self.daemon = True
+        self.name = f'Telegram_Consumer_Manager_Thread {index}'
+        self.index = index
+        self.task_queues = task_queues
+
+    def run(self) -> None:
+        logger.info(f"Telegram Consumer {self.index} started ....")
+        Worker(connection=Connection('amqp://localhost'), index=self.index, task_queues=self.task_queues).run()
