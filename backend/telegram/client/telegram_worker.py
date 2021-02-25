@@ -20,7 +20,7 @@ import kombu
 from threading import Thread
 
 
-class Worker(ConsumerProducerMixin):
+class TelegramTaskConsumer(ConsumerProducerMixin):
     info_queue = tg_globals.info_queue
 
     def __init__(
@@ -51,7 +51,7 @@ class Worker(ConsumerProducerMixin):
         args = body['args']
         kwargs = body['kwargs']
 
-        logger.info(f'on consumer {self.index} Got task: {prettify(body)}')
+        logger.info(f'on telegram consumer {self.index} Got task: {prettify(body)}')
 
         logger.info(f"task_queue_length: {len(self.task_queues)}")
 
@@ -117,27 +117,21 @@ class Worker(ConsumerProducerMixin):
         )
         message.ack()
 
-    def acquire_clients(self, func: Callable):
-        def wrapper(*args, **kwargs):
-            with clients_lock as lock:
-                if len(self.clients) != 0:
-                    return func(*args, **kwargs) if callable(func) else BaseResponse().fail()
-                else:
-                    return BaseResponse().fail()
 
-        return wrapper
-
-
-class TelegramConsumer(Thread):
+class TelegramWorkerThread(Thread):
 
     def __init__(self, index: int, task_queues: Dict['str', 'kombu.Queue']):
         Thread.__init__(self)
 
         self.daemon = True
-        self.name = f'Telegram_Consumer_Manager_Thread {index}'
+        self.name = f'Telegram_Worker_Thread {index}'
         self.index = index
         self.task_queues = task_queues
 
     def run(self) -> None:
-        logger.info(f"Telegram Consumer {self.index} started ....")
-        Worker(connection=Connection('amqp://localhost'), index=self.index, task_queues=self.task_queues).run()
+        logger.info(f"Telegram Task Consumer {self.index} started ....")
+        TelegramTaskConsumer(
+            connection=Connection('amqp://localhost'),
+            index=self.index,
+            task_queues=self.task_queues
+        ).run()

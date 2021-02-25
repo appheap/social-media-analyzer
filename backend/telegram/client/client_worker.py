@@ -10,7 +10,7 @@ import pyrogram
 from telegram.globals import *
 
 
-class ClientWorker(ConsumerProducerMixin):
+class ClientTaskConsumer(ConsumerProducerMixin):
     def __init__(
             self,
             connection: Connection,
@@ -18,7 +18,7 @@ class ClientWorker(ConsumerProducerMixin):
             db,
             task_queues: Dict['str', 'kombu.Queue'],
     ):
-        logger.info('worker started...')
+        logger.info('client task consumer started...')
         self.connection = connection
         self.client = client
         self.db = db
@@ -47,7 +47,7 @@ class ClientWorker(ConsumerProducerMixin):
         attr_name = body['func']
         args = body['args']
         kwargs = body['kwargs']
-        logger.info(f"consumer_on_task : {self.client.session_name}")
+        logger.info(f"client_task_consumer_on_task : {self.client.session_name}")
 
         response = {}
         if self.client.is_connected and attr_name:
@@ -83,24 +83,24 @@ class ClientWorker(ConsumerProducerMixin):
         message.ack()
 
 
-class Consumer(Thread):
+class WorkerThread(Thread):
 
     def __init__(self, client: 'pyrogram.Client', index: int, db, task_queues: Dict['str', 'kombu.Queue']):
         super().__init__()
         self.daemon = True
         self.client = client
-        self.name = f'Consumer_Manager_Thread {index}'
+        self.name = f'Client_Worker_Thread {index}'
         self.index = index
         self.db = db
         self.task_queues = task_queues
-        self.worker = None
+        self.consumer = None
 
     def run(self) -> None:
-        logger.info(f"Consumer {self.index} started ....")
-        self.worker = ClientWorker(
+        logger.info(f"Client Worker {self.index} started ....")
+        self.consumer = ClientTaskConsumer(
             connection=Connection('amqp://localhost'),
             client=self.client,
             db=self.db,
             task_queues=self.task_queues,
         )
-        self.worker.run()
+        self.consumer.run()

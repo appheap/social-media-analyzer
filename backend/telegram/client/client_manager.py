@@ -54,7 +54,7 @@ from telegram.globals import *
 
 from typing import List
 import pyrogram
-from .client_worker import Consumer
+from .client_worker import WorkerThread
 
 
 class ClientManager(mp.Process):
@@ -150,13 +150,13 @@ class ClientManager(mp.Process):
         client.add_handler(MessageHandler(self.on_message))
         client.add_handler(RawUpdateHandler(self.on_raw_update))
 
-        consumer = Consumer(
+        worker = WorkerThread(
             client=client,
             index=0,
             db=self.db,
             task_queues=self.task_queues,
         )
-        consumer.start()
+        worker.start()
         idle()
         client.stop()
 

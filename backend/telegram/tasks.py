@@ -3,7 +3,7 @@ from celery import shared_task
 from telegram import globals as tg_globals
 from telegram.globals import telegram_task
 from .client.client_manager import ClientManager
-from .client.worker import TelegramConsumer
+from .client.telegram_worker import TelegramWorkerThread
 
 import multiprocessing as mp
 from telegram.client._client_manager import *
@@ -22,7 +22,7 @@ def init_consumer():
     task_queues = mgr.dict()
 
     client_mgrs = []
-    consumers = []
+    workers = []
 
     # for client_name, client_details in clients_dict.items():
 
@@ -33,15 +33,15 @@ def init_consumer():
 
     time.sleep(1)
     for i in range(tg_globals.number_of_telegram_workers):
-        consumer = TelegramConsumer(i + 1, task_queues=task_queues)
-        consumer.start()
-        consumers.append(consumer)
+        worker = TelegramWorkerThread(i + 1, task_queues=task_queues)
+        worker.start()
+        workers.append(worker)
 
     for client_mgr in client_mgrs:
         client_mgr.join()
 
-    for consumer in consumers:
-        consumer.join()
+    for worker in workers:
+        worker.join()
 
 
 @shared_task(queue='default', timeout=60)
