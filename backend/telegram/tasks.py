@@ -18,7 +18,6 @@ import time
 def init_consumer():
     global shared_ns
     global mgr
-    shared_ns.task_queues = []
     task_queues = mgr.dict()
 
     client_mgrs = []
