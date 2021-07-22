@@ -19,7 +19,7 @@ class LogChatMembersTask(TaskScaffold):
         )
         if db_chats.exists():
             for db_chat in db_chats:
-                now = arrow.utcnow().timestamp
+                now = arrow.utcnow().timestamp()
                 db_telegram_accounts = self.get_telegram_accounts(db_chat, with_admin_permissions=True)
                 if db_telegram_accounts is None or not len(db_telegram_accounts):
                     # return BaseResponse().done(message='No Telegram Account is available now.')

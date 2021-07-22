@@ -125,7 +125,7 @@ class IterChatMembers(Scaffold):
             offset = 0
 
             while True:
-                # now=arrow.utcnow().timestamp
+                # now=arrow.utcnow().timestamp()
                 chat_members = await self.get_chat_members(
                     chat_id=chat_id,
                     offset=offset,
@@ -133,7 +133,7 @@ class IterChatMembers(Scaffold):
                     query=q,
                     filter=filter
                 )
-                # print(f"got chat members in : {arrow.utcnow().timestamp-now}")
+                # print(f"got chat members in : {arrow.utcnow().timestamp()-now}")
 
                 if not chat_members:
                     break

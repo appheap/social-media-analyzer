@@ -27,7 +27,7 @@ class LogMessageViewsTask(TaskScaffold):
                 last_raw_message: 'types.Message' = self.get_last_valid_message(client, db_chat.chat_id)
                 if last_raw_message is not None:
                     last_message_id = last_raw_message.message_id
-                    now = arrow.utcnow().timestamp
+                    now = arrow.utcnow().timestamp()
                     start = int((- 10000) / 100)
                     if start < 1:
                         start = 1

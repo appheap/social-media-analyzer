@@ -71,7 +71,7 @@ class ClientManager(mp.Process):
             client: 'pyrogram.Client',
             message: 'types.Message'
     ):
-        now = arrow.utcnow().timestamp
+        now = arrow.utcnow().timestamp()
         logger.info(f"in on_message : {threading.current_thread()}")
         # return
         if message.type != 'empty':

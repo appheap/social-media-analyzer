@@ -14,14 +14,14 @@ class BaseTestCase(TestCase):
     username = 'newuser'
 
     def setUp(self) -> None:
-        self.timestamp = arrow.utcnow().timestamp
+        self.timestamp = arrow.utcnow().timestamp()
 
     def create_user(self, blockage=None):
         return get_user_model().objects.create_user(
             username=self.username,
             email=self.email,
-            created_at=arrow.utcnow().timestamp,
-            modified_at=arrow.utcnow().timestamp,
+            created_at=arrow.utcnow().timestamp(),
+            modified_at=arrow.utcnow().timestamp(),
             blockage=blockage
         )
 

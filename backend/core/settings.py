@@ -218,3 +218,4 @@ registry.enable('application/x-python-serialize')
 #     '*': {'rate_limit': '2/m'}
 # }
 #####################################################
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

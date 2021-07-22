@@ -4,6 +4,7 @@ from db.scaffold import Scaffold
 from pyrogram import types
 from telegram import models as tg_models
 from tasks.client_proxy import ClientProxy
+from core.globals import logger
 
 
 class GetUpdatedChat(Scaffold):

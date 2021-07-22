@@ -16,6 +16,6 @@ class BaseModel(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.created_ts:
-            self.created_ts = arrow.utcnow().timestamp
-        self.modified_ts = arrow.utcnow().timestamp
+            self.created_ts = arrow.utcnow().timestamp()
+        self.modified_ts = arrow.utcnow().timestamp()
         return super().save(*args, **kwargs)

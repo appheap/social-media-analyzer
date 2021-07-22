@@ -25,7 +25,7 @@ class IterateChatHistoryTask(TaskScaffold):
                 client = self.get_client(session_name=db_telegram_account.session_name)
                 last_raw_message: 'types.Message' = self.get_last_valid_message(client, db_chat.chat_id)
                 if last_raw_message is not None:
-                    now = arrow.utcnow().timestamp
+                    now = arrow.utcnow().timestamp()
                     for raw_message in self.iter_messages(
                             client,
                             db_chat.chat_id,
